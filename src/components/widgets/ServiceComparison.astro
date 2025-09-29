@@ -1,0 +1,141 @@
+---
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Button from '~/components/ui/Button.astro';
+
+interface Props {
+  id?: string;
+  isDark?: boolean;
+  classes?: Record<string, string>;
+  bg?: string;
+}
+
+const {
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+---
+
+<WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-6xl ${classes?.container ?? ''}`} bg={bg}>
+  <div class="text-center mb-16">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+      🤔 选择适合你的ChatGPT服务方案
+    </h2>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+    <!-- Plus代充服务 - 主推 -->
+    <div class="relative">
+      <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg z-10">
+        ⭐ 推荐首选
+      </div>
+
+      <div class="bg-white rounded-xl p-8 shadow-lg border border-gray-200 h-full">
+        <div class="text-center mb-6">
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Plus代充服务</h3>
+          <div class="text-3xl font-bold text-blue-600 mb-1">¥160/月</div>
+          <p class="text-sm text-gray-500">(原官方¥180，无价格优势)</p>
+        </div>
+
+        <div class="space-y-4 mb-8">
+          <div>
+            <h4 class="font-semibold text-gray-800 mb-3">🎯 核心优势：</h4>
+            <ul class="space-y-2 text-sm">
+              <li class="flex items-center gap-2">
+                <span class="text-green-600">✓</span>
+                <span>原版ChatGPT完整功能</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-600">✓</span>
+                <span>最新模型优先体验</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-600">✓</span>
+                <span>无功能限制，长期稳定</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-600">✓</span>
+                <span>iOS正规技术，安全充值</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-semibold text-gray-800 mb-3">🔧 适用场景：</h4>
+            <ul class="space-y-1 text-sm text-gray-600">
+              <li>• 重度使用，依赖最新功能</li>
+              <li>• 需要完整官方体验</li>
+              <li>• 长期稳定使用需求</li>
+            </ul>
+          </div>
+        </div>
+
+        <Button
+          variant="primary"
+          class="w-full"
+          href="https://sa.dtyuedan.cn//links/9BBA2C1F"
+          target="_blank"
+        >
+          💳 立即充值Plus
+        </Button>
+      </div>
+    </div>
+
+    <!-- 镜像服务 -->
+    <div class="bg-white rounded-xl p-8 shadow-lg border border-gray-200 h-full">
+      <div class="text-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">镜像服务</h3>
+        <div class="text-3xl font-bold text-purple-600 mb-1">¥5/天起</div>
+        <p class="text-sm text-gray-500">多种套餐，性价比高</p>
+      </div>
+
+      <div class="space-y-4 mb-8">
+        <div>
+          <h4 class="font-semibold text-gray-800 mb-3">🎯 核心优势：</h4>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-center gap-2">
+              <span class="text-green-600">✓</span>
+              <span>无需翻墙，国内直连</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-600">✓</span>
+              <span>即开即用，快速体验</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-600">✓</span>
+              <span>灵活套餐，按需购买</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-600">✓</span>
+              <span>适合轻中度使用需求</span>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-semibold text-gray-800 mb-3">🔧 适用场景：</h4>
+          <ul class="space-y-1 text-sm text-gray-600">
+            <li>• 无翻墙条件</li>
+            <li>• 偶尔使用，预算敏感</li>
+            <li>• 快速体验ChatGPT</li>
+          </ul>
+        </div>
+      </div>
+
+      <Button
+        variant="secondary"
+        class="w-full"
+        href="/chatgpt-mirror"
+      >
+        🌐 选择镜像套餐
+      </Button>
+    </div>
+  </div>
+
+  <div class="text-center mt-12">
+    <p class="text-lg text-gray-600">
+      💡 <span class="font-semibold">选择建议：</span>认真使用选Plus代充，临时体验选镜像服务
+    </p>
+  </div>
+</WidgetWrapper>
