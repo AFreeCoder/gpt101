@@ -1,14 +1,15 @@
-import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
+import { getPermalink, getBlogPermalink } from './utils/permalinks';
+import { siteConfig } from './config/site';
 
 export const headerData = {
   links: [
     {
       text: '首页',
-      href: getPermalink('/'),
+      href: getPermalink(siteConfig.navigation.links.home),
     },
     {
       text: '镜像服务',
-      href: getPermalink('/chatgpt-mirror'),
+      href: getPermalink(siteConfig.navigation.links.mirror),
     },
     {
       text: '教程',
@@ -16,7 +17,7 @@ export const headerData = {
     },
     {
       text: '客服支持',
-      href: getPermalink('/#customer-support'),
+      href: getPermalink(siteConfig.navigation.links.customerSupport),
     },
   ],
   actions: [],
@@ -27,8 +28,8 @@ export const footerData = {
     {
       title: '服务',
       links: [
-        { text: 'ChatGPT Plus代充', href: getPermalink('/') },
-        { text: 'ChatGPT镜像服务', href: getPermalink('/chatgpt-mirror') },
+        { text: 'ChatGPT Plus代充', href: getPermalink(siteConfig.navigation.links.home) },
+        { text: 'ChatGPT镜像服务', href: getPermalink(siteConfig.navigation.links.mirror) },
       ],
     },
     {

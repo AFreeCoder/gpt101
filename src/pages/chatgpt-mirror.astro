@@ -2,16 +2,14 @@
 import Layout from '~/layouts/PageLayout.astro';
 
 import Hero from '~/components/widgets/Hero.astro';
-import ServiceDetails from '~/components/widgets/ServiceDetails.astro';
-import ToolsAndTutorials from '~/components/widgets/ToolsAndTutorials.astro';
+import ServiceComparison from '~/components/widgets/ServiceComparison.astro';
 import CustomerSupport from '~/components/widgets/CustomerSupport.astro';
-import FAQs from '~/components/widgets/FAQs.astro';
 
 import { siteConfig } from '~/config/site';
 
 const metadata = {
-  title: 'ChatGPT 一站式 - ChatGPT Plus代充 & 镜像服务',
-  description: 'ChatGPT Plus代充和ChatGPT镜像服务 - 安全快捷的ChatGPT服务提供商',
+  title: 'ChatGPT 镜像服务 - 国内直连，无需翻墙',
+  description: 'ChatGPT镜像服务，国内网络直连访问，支持GPT-4、GPTs商店、Dell-3画图等全功能，天卡¥5起',
   ignoreTitleTemplate: true,
 };
 ---
@@ -22,11 +20,11 @@ const metadata = {
     <Fragment slot="title">
       <!-- 大标题 -->
       <h1 class="text-8xl md:text-8xl font-bold mb-6">
-        <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          ChatGPT Plus
+        <span class="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+          ChatGPT 镜像
         </span>
         <br>
-        <span class="text-gray-800">充值服务</span>
+        <span class="text-gray-800">服务</span>
       </h1>
     </Fragment>
 
@@ -35,37 +33,26 @@ const metadata = {
 
         <!-- 打字机效果核心特点 -->
         <div class="mb-8">
-          <div id="typewriter" class="text-2xl md:text-3xl font-semibold text-purple-600 min-h-[3rem] flex items-center justify-center">
+          <div id="typewriter" class="text-2xl md:text-3xl font-semibold text-green-600 min-h-[3rem] flex items-center justify-center">
             <!-- 打字机内容将通过JavaScript动态插入 -->
           </div>
         </div>
 
         <!-- 副标题 -->
         <p class="text-lg text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-          专业 ChatGPT Plus 充值服务，无需海外信用卡，正规充值渠道，1分钟即可完成充值。<br>
-          让每个人都能轻松订阅 ChatGPT Plus。
+          专业ChatGPT镜像服务，国内网络直连，无需科学上网工具<br>
+          支持GPT-5、GPTs商店、Dell-3画图等完整功能，体验与官方一致
         </p>
 
         <!-- 三个按钮 -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
-          <a href={siteConfig.homepage.links.cardPurchase} target="_blank"
-             class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300">
-            {siteConfig.homepage.buttons.cardPurchase}
+          <a href={siteConfig.mirrorPage.links.purchase} target="_blank"
+             class="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg">
+            {siteConfig.mirrorPage.buttons.purchase}
           </a>
-          <div class="relative group">
-            <a href={siteConfig.homepage.links.immediateUpgrade} target="_blank"
-               class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg block">
-              {siteConfig.homepage.buttons.immediateUpgrade}
-            </a>
-            <!-- Tooltip -->
-            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
-              升级前请先购买卡密
-              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-            </div>
-          </div>
-          <a href={siteConfig.homepage.links.orderQuery}
+          <a href={siteConfig.mirrorPage.links.query}
              class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300">
-            {siteConfig.homepage.buttons.orderQuery}
+            {siteConfig.mirrorPage.buttons.query}
           </a>
         </div>
 
@@ -78,12 +65,12 @@ const metadata = {
               </svg>
             </div>
             <p class="text-green-800 font-semibold">
-              服务保障：请放心购买，充值失败 100% 当天退款
+              服务保障：支持天、周、月灵活充值，完整功能无使用限制
             </p>
           </div>
         </div>
 
-        <!-- 横幅区域 - 嵌入到 Hero Section 底部 -->
+        <!-- 代充服务横幅 -->
         <div class="mt-12 max-w-5xl mx-auto">
           <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-xl p-4">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -95,16 +82,16 @@ const metadata = {
                   </svg>
                 </div>
                 <div class="flex flex-col sm:flex-row items-center gap-2">
-                  <span class="text-gray-700 font-medium">无翻墙条件？</span>
-                  <span class="text-gray-600">试试镜像服务</span>
-                  <span class="text-blue-600 font-semibold">→ 国内直连，¥58/月起</span>
+                  <span class="text-gray-700 font-medium">需要Plus完整移动端体验？</span>
+                  <span class="text-gray-600 font-medium">选择官方Plus代充（充你的号）</span>
+                  <span class="text-blue-600 font-semibold">→ 享受完整功能</span>
                 </div>
               </div>
               <!-- 右侧按钮 -->
               <div class="flex-shrink-0">
-                <a href={siteConfig.homepage.links.mirrorExperience}
+                <a href={siteConfig.mirrorPage.links.plusRecharge}
                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md">
-                  <span>{siteConfig.homepage.buttons.mirrorExperience}</span>
+                  <span>{siteConfig.mirrorPage.buttons.plusRecharge}</span>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                   </svg>
@@ -120,10 +107,10 @@ const metadata = {
         document.addEventListener('DOMContentLoaded', function() {
           const typewriterElement = document.getElementById('typewriter');
           const texts = [
-            '无需海外信用卡',
-            '正规充值渠道',
-            '1分钟完成充值',
-            '不成功100%退款'
+            '国内网络直接访问',
+            '月卡仅需 58 元',
+            '支持所有GPT模型',
+            '无使用限制'
           ];
 
           let currentTextIndex = 0;
@@ -165,59 +152,12 @@ const metadata = {
     </Fragment>
   </Hero>
 
-
-  <!-- Service Details Section ******************* -->
-  <ServiceDetails id="service-details">
+  <!-- Service Comparison Section ******************* -->
+  <ServiceComparison id="comparison">
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-gray-50 dark:bg-transparent"></div>
     </Fragment>
-  </ServiceDetails>
-
-  <!-- Tools and Tutorials Section ******************* -->
-  <ToolsAndTutorials id="tools-tutorials">
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-white dark:bg-transparent"></div>
-    </Fragment>
-  </ToolsAndTutorials>
-
-  <!-- FAQs Widget ******************* -->
-  <FAQs
-    id="faqs"
-    title="常见问题"
-    subtitle="关于ChatGPT Plus代充和镜像服务的常见问题解答"
-    tagline="FAQ"
-    classes={{ container: 'max-w-6xl' }}
-    items={[
-      {
-        title: 'Q: 代充服务安全吗？会不会影响我的账户？',
-        description: '我们采用iOS正规代充技术，直接向官方账户充值，不留后门，完全安全。使用正规Apple账户充值通道，全自动化充值技术，确保账户安全和服务稳定。',
-      },
-      {
-        title: 'Q: 充值失败怎么办？',
-        description: '如果遇到充值失败的情况，请立即联系客服QQ：2316149029。',
-      },
-      {
-        title: 'Q: 为什么价格和官方不一致？是正规服务吗？',
-        description: '受渠道成本影响，价格偶尔会波动，请以最新充值价格为准。服务完全正规，充值后享受与官方相同的Plus功能和权限。',
-      },
-      {
-        title: 'Q: 充值需要多长时间？',
-        description: '我们提供24/7自动处理服务。购买卡密后，整个充值流程通常在1-3分钟内完成。极少数情况下可能需要10-20分钟。',
-      },
-      {
-        title: 'Q: 支持哪些支付方式？',
-        description: '我们支持微信支付，方便快捷。购买流程简单，支付完成后即可获得卡密，然后按照指引完成充值流程。',
-      },
-      {
-        title: 'Q: 如何选择合适的服务？',
-        description: '认真使用ChatGPT且有翻墙条件的用户建议选择Plus代充，享受完整功能；无翻墙条件或中度使用的用户可选择镜像服务，性价比更高。',
-      },
-    ]}
-  >
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-gray-50 dark:bg-transparent"></div>
-    </Fragment>
-  </FAQs>
+  </ServiceComparison>
 
   <!-- Customer Support Section ******************* -->
   <CustomerSupport id="customer-support">
