@@ -1,10 +1,12 @@
----
-import favIcon from '~/assets/favicons/favicon.ico';
 import favIconSvg from '~/assets/favicons/favicon.svg';
 import appleTouchIcon from '~/assets/favicons/apple-touch-icon.png';
+
+// 添加版本参数强制刷新favicon缓存
+const version = '?v=2.0';
 ---
 
-<link rel="shortcut icon" href={favIcon} />
-<link rel="icon" type="image/svg+xml" href={favIconSvg.src} />
-<link rel="mask-icon" href={favIconSvg.src} color="#8D46E7" />
-<link rel="apple-touch-icon" sizes="180x180" href={appleTouchIcon.src} />
+<link rel="icon" type="image/svg+xml" href={favIconSvg.src + version} />
+<link rel="mask-icon" href={favIconSvg.src + version} color="#667eea" />
+<link rel="apple-touch-icon" sizes="180x180" href={appleTouchIcon.src + version} />
+<meta name="theme-color" content="#667eea" />
+<meta name="msapplication-TileColor" content="#667eea" />
