@@ -1,6 +1,6 @@
 site:
-  name: AstroWind
-  site: 'https://astrowind.vercel.app'
+  name: ChatGPT 一站式服务
+  site: 'https://gpt101.org'
   base: '/'
   trailingSlash: false
 
@@ -9,14 +9,14 @@ site:
 # Default SEO metadata
 metadata:
   title:
-    default: AstroWind
-    template: '%s — AstroWind'
-  description: "\U0001F680 Suitable for Startups, Small Business, Sass Websites, Professional Portfolios, Marketing Websites, Landing Pages & Blogs."
+    default: ChatGPT 一站式服务
+    template: '%s — ChatGPT 一站式服务'
+  description: "ChatGPT Plus代充和ChatGPT镜像服务 - 安全快捷的ChatGPT服务提供商"
   robots:
     index: true
     follow: true
   openGraph:
-    site_name: AstroWind
+    site_name: ChatGPT 一站式服务
     images:
       - url: '~/assets/images/default.png'
         width: 1200
@@ -44,7 +44,7 @@ apps:
 
     list:
       isEnabled: true
-      pathname: 'blog' # Blog main path, you can change this to "articles" (/articles)
+      pathname: 'tutorials' # Blog main path, you can change this to "articles" (/articles)
       robots:
         index: true
 
