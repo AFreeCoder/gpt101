@@ -119,6 +119,8 @@ const metadata = {
       <script>
         document.addEventListener('DOMContentLoaded', function() {
           const typewriterElement = document.getElementById('typewriter');
+          if (!typewriterElement) return;
+
           const texts = [
             '无需海外信用卡',
             '正规充值渠道',
@@ -131,6 +133,7 @@ const metadata = {
           let isDeleting = false;
 
           function typeWriter() {
+            if (!typewriterElement) return;
             const currentText = texts[currentTextIndex];
 
             if (isDeleting) {

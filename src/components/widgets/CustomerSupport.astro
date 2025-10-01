@@ -81,14 +81,14 @@ const {
 
 <script>
   // 复制功能
-  window.copyToClipboard = function(text) {
+  (window as unknown as { copyToClipboard: (text: string) => void }).copyToClipboard = function(text: string) {
     navigator.clipboard.writeText(text).then(() => {
       showToast('已复制到剪贴板');
     });
   }
 
   // Toast通知
-  function showToast(message) {
+  function showToast(message: string) {
     const toast = document.createElement('div');
     toast.textContent = message;
     toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';

@@ -38,11 +38,11 @@ const comparisonData = [
     <p class="text-lg text-gray-600">功能对比一目了然，选择最适合你的方案</p>
   </div>
 
-  <!-- 对比表格 -->
+  {/* 对比表格 */}
   <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full">
-        <!-- 表头 -->
+        {/* 表头 */}
         <thead class="bg-gray-50">
           <tr>
             <th class="px-6 py-4 text-left text-lg font-bold text-gray-800 w-1/3">功能</th>
@@ -51,9 +51,9 @@ const comparisonData = [
           </tr>
         </thead>
 
-        <!-- 表格内容 -->
+        {/* 表格内容 */}
         <tbody class="divide-y divide-gray-200">
-          {comparisonData.map((item, index) => {
+          {comparisonData.map((item) => {
             let rowClass = 'hover:bg-gray-50 transition-colors';
             let featureClass = 'text-gray-800';
 
@@ -70,7 +70,7 @@ const comparisonData = [
 
             return (
               <tr class={rowClass}>
-              <!-- 功能名称 -->
+              {/* 功能名称 */}
               <td class={`px-6 py-4 font-medium ${featureClass}`}>
                 {item.highlight && (
                   <span class="mr-2">
@@ -82,7 +82,7 @@ const comparisonData = [
                 {item.feature}
               </td>
 
-              <!-- 镜像服务 -->
+              {/* 镜像服务 */}
               <td class="px-6 py-4 text-center">
                 {typeof item.mirror === 'boolean' ? (
                   item.mirror ? (
@@ -113,7 +113,7 @@ const comparisonData = [
                 )}
               </td>
 
-              <!-- Plus会员 -->
+              {/* Plus会员 */}
               <td class="px-6 py-4 text-center">
                 {typeof item.plus === 'boolean' ? (
                   item.plus ? (
@@ -148,14 +148,14 @@ const comparisonData = [
     </div>
   </div>
 
-  <!-- 底部说明 -->
+  {/* 底部说明 */}
   <div class="mt-8 text-center">
     <div class="inline-flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-6 py-4">
       <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
         <span class="text-blue-600 text-lg">💡</span>
       </div>
       <p class="text-blue-800 font-medium">
-        镜像服务适合需要国内直连、高频使用的用户；Plus会员适合需要完整移动端体验的用户
+        镜像服务适合需要国内直连、中高频使用的用户；Plus会员适合需要完整移动端体验、对话记忆体验、Codex体验的用户
       </p>
     </div>
   </div>

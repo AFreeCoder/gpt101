@@ -82,9 +82,9 @@ const metadata = {
                   </svg>
                 </div>
                 <div class="flex flex-col sm:flex-row items-center gap-2">
-                  <span class="text-gray-700 font-medium">需要Plus完整移动端体验？</span>
+                  <span class="text-gray-700 font-medium">需要官方Plus原汁原味体验？</span>
                   <span class="text-gray-600 font-medium">选择官方Plus代充（充你的号）</span>
-                  <span class="text-blue-600 font-semibold">→ 享受完整功能</span>
+                  <span class="text-blue-600 font-semibold">→ 享受Plus官方功能</span>
                 </div>
               </div>
               <!-- 右侧按钮 -->
@@ -106,6 +106,8 @@ const metadata = {
       <script>
         document.addEventListener('DOMContentLoaded', function() {
           const typewriterElement = document.getElementById('typewriter');
+          if (!typewriterElement) return;
+
           const texts = [
             '国内网络直接访问',
             '月卡仅需 58 元',
@@ -118,6 +120,7 @@ const metadata = {
           let isDeleting = false;
 
           function typeWriter() {
+            if (!typewriterElement) return;
             const currentText = texts[currentTextIndex];
 
             if (isDeleting) {
