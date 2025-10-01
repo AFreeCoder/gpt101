@@ -4,7 +4,7 @@ export const siteConfig = {
   homepage: {
     links: {
       cardPurchase: 'https://yk.dtyuedan.cn//liebiao/9B8CF6155C962D6B',       // 卡密购买
-      immediateUpgrade: 'https://gptplus.biz/',   // 立即升级
+      immediateUpgrade: '/chatgpt-plus-maintenance',   // 立即升级 - 维护页面
       orderQuery: 'https://yk.dtyuedan.cn/orderquery',                                // 卡密订单查询
       mirrorExperience: '/chatgpt-mirror',                          // 镜像服务体验
     },
