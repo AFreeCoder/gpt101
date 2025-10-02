@@ -4,14 +4,14 @@ site:
   base: '/'
   trailingSlash: false
 
-  googleSiteVerificationId: 
+  googleSiteVerificationId:
 
 # Default SEO metadata
 metadata:
   title:
     default: ChatGPT 一站式服务
     template: '%s — ChatGPT 一站式服务'
-  description: "ChatGPT Plus代充和ChatGPT镜像服务 - 安全快捷的ChatGPT服务提供商"
+  description: 'ChatGPT Plus代充和ChatGPT镜像服务 - 安全快捷的ChatGPT服务提供商'
   robots:
     index: true
     follow: true

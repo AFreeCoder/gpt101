@@ -12,7 +12,6 @@ const metadata = {
 <Layout metadata={metadata}>
   <div class="min-h-screen bg-blue-50 flex items-center justify-center px-4 py-8">
     <div class="max-w-lg w-full">
-
       <!-- 返回按钮 -->
       <div class="mb-6">
         <a href="/" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors">
@@ -25,20 +24,24 @@ const metadata = {
 
       <!-- 主要内容卡片 -->
       <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-
         <!-- 维护状态头部 -->
         <div class="text-center py-8 px-6">
-          <div class="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+          <div
+            class="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <div
+              class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center"
+            >
               <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                <path
+                  fill-rule="evenodd"
+                  d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"></path>
               </svg>
             </div>
           </div>
           <h1 class="text-xl font-bold text-gray-800 mb-3">ChatGPT Plus 正在维护升级</h1>
-          <p class="text-gray-600 text-sm leading-relaxed">
-            当前系统升级中，升级期间请添加客服QQ进行充值
-          </p>
+          <p class="text-gray-600 text-sm leading-relaxed">当前系统升级中，升级期间请添加客服QQ进行充值</p>
         </div>
 
         <!-- 客服联系区域 -->
@@ -66,14 +69,21 @@ const metadata = {
               <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <!-- QQ号和复制按钮在同一行 -->
                 <div class="flex items-center justify-between gap-3 mb-3">
-                  <span class="text-gray-700 text-sm">QQ：<span class="font-mono font-semibold">{siteConfig.contact.qq}</span></span>
+                  <span class="text-gray-700 text-sm"
+                    >QQ：<span class="font-mono font-semibold">{siteConfig.contact.qq}</span></span
+                  >
                   <button
                     onclick="copyQQId()"
                     class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 py-1.5 rounded-md text-sm transition-all duration-300 flex items-center gap-1"
                     title="复制QQ号"
                   >
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      ></path>
                     </svg>
                     复制
                   </button>
@@ -97,8 +107,10 @@ const metadata = {
 
         <!-- 返回首页按钮 -->
         <div class="px-6 pb-6">
-          <a href="/"
-             class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium text-center transition-all duration-300 block text-sm">
+          <a
+            href="/"
+            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium text-center transition-all duration-300 block text-sm"
+          >
             返回首页
           </a>
         </div>
@@ -109,31 +121,35 @@ const metadata = {
 
 <script>
   // 复制QQ号功能
-  (window as unknown as { copyQQId: () => void }).copyQQId = function() {
+  (window as unknown as { copyQQId: () => void }).copyQQId = function () {
     const qqId = '2316149029';
-    navigator.clipboard.writeText(qqId).then(() => {
-      showToast('QQ号已复制到剪贴板');
-    }).catch(() => {
-      // 降级方案
-      const textArea = document.createElement('textarea');
-      textArea.value = qqId;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
+    navigator.clipboard
+      .writeText(qqId)
+      .then(() => {
         showToast('QQ号已复制到剪贴板');
-      } catch {
-        showToast('复制失败，请手动复制');
-      }
-      document.body.removeChild(textArea);
-    });
-  }
+      })
+      .catch(() => {
+        // 降级方案
+        const textArea = document.createElement('textarea');
+        textArea.value = qqId;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          showToast('QQ号已复制到剪贴板');
+        } catch {
+          showToast('复制失败，请手动复制');
+        }
+        document.body.removeChild(textArea);
+      });
+  };
 
   // Toast 通知
   function showToast(message: string) {
     const toast = document.createElement('div');
     toast.textContent = message;
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+    toast.className =
+      'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
     document.body.appendChild(toast);
 
     setTimeout(() => {

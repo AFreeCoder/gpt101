@@ -49,9 +49,7 @@ export const footerData = {
     },
     {
       title: '联系',
-      links: [
-        { text: '客服QQ: 2316149029' },
-      ],
+      links: [{ text: '客服QQ: 2316149029' }],
     },
   ],
   secondaryLinks: [

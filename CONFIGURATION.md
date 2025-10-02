@@ -15,19 +15,23 @@ src/config/site.ts
 ### 1. 链接配置 (`siteConfig.links`)
 
 #### 主要服务链接
+
 - `mirrorService.purchase`: 镜像服务购买链接
 - `mirrorService.query`: 镜像服务订单查询链接
 
 #### Plus代充链接
+
 - `plusRecharge.main`: Plus代充主页链接
 
 #### 导航链接
+
 - `navigation.home`: 首页链接
 - `navigation.mirror`: 镜像服务页面链接
 - `navigation.blog`: 博客/教程链接
 - `navigation.customerSupport`: 客服支持链接
 
 #### 外部服务链接
+
 - `external.chatgptStatus`: ChatGPT状态页面链接
 
 ### 2. 按钮文案配置 (`siteConfig.buttons`)
@@ -63,15 +67,18 @@ import { siteConfig } from '~/config/site';
 ## 已应用配置化的页面
 
 ### 1. 首页 (`src/pages/index.astro`)
+
 - Plus代充相关按钮链接
 - 镜像服务跳转链接
 
 ### 2. 镜像服务页 (`src/pages/chatgpt-mirror.astro`)
+
 - 购买按钮链接和文案
 - 订单查询按钮链接和文案
 - Plus代充跳转链接和文案
 
 ### 3. 导航菜单 (`src/navigation.ts`)
+
 - 主导航链接
 - 页脚链接
 
@@ -80,6 +87,7 @@ import { siteConfig } from '~/config/site';
 配置文件已为未来功能预留了扩展空间：
 
 ### 价格配置 (`siteConfig.pricing`)
+
 ```typescript
 pricing: {
   mirror: {
@@ -94,6 +102,7 @@ pricing: {
 ```
 
 ### 联系信息配置 (`siteConfig.contact`)
+
 ```typescript
 contact: {
   qq: '2316149029',
@@ -101,6 +110,7 @@ contact: {
 ```
 
 ### 网站基本信息配置 (`siteConfig.site`)
+
 ```typescript
 site: {
   name: 'ChatGPT 一站式服务',

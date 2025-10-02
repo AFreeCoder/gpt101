@@ -10,21 +10,16 @@ interface Props {
   bg?: string;
 }
 
-const {
-  id,
-  isDark = false,
-  classes = {},
-  bg = await Astro.slots.render('bg'),
-} = Astro.props;
+const { id, isDark = false, classes = {}, bg = await Astro.slots.render('bg') } = Astro.props;
 
 // 工具数据
 const tools = [
   { name: 'ChatGPT状态检测', icon: '🔍', href: 'https://status.openai.com/' },
-//  { name: '提示词生成器', icon: '💡', href: 'https://promptperfect.jinaai.cn/' },
-//  { name: '翻墙工具推荐', icon: '🌐', href: '/tools/vpn-guide' },
-//  { name: 'AI工具导航站', icon: '🚀', href: 'https://ai-bot.cn/' },
-//  { name: '格式转换助手', icon: '🔄', href: 'https://convertio.co/' },
-//  { name: '更多工具', icon: '⭐', href: '/tools' },
+  //  { name: '提示词生成器', icon: '💡', href: 'https://promptperfect.jinaai.cn/' },
+  //  { name: '翻墙工具推荐', icon: '🌐', href: '/tools/vpn-guide' },
+  //  { name: 'AI工具导航站', icon: '🚀', href: 'https://ai-bot.cn/' },
+  //  { name: '格式转换助手', icon: '🔄', href: 'https://convertio.co/' },
+  //  { name: '更多工具', icon: '⭐', href: '/tools' },
 ];
 
 // 教程数据
@@ -33,73 +28,63 @@ const tutorials = [
     title: 'ChatGPT Plus 充值教程',
     icon: '📖',
     href: '/how-to-upgrade-gpt-plus',
-    description: '用微信就能直接升级 ChatGPT Plus，全程不到 3 分钟'
-  }
+    description: '用微信就能直接升级 ChatGPT Plus，全程不到 3 分钟',
+  },
 ];
 ---
 
 <WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-6xl ${classes?.container ?? ''}`} bg={bg}>
   <div class="text-center mb-16">
-    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-      实用工具 & 精选教程
-    </h2>
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">实用工具 & 精选教程</h2>
   </div>
 
   <div class="grid lg:grid-cols-2 gap-8">
     <!-- 工具集合卡片 -->
     <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-      <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        🔧 ChatGPT实用工具集合
-      </h3>
+      <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">🔧 ChatGPT实用工具集合</h3>
 
       <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        {tools.map((tool) => (
-          <a
-            href={tool.href}
-            target={tool.href.startsWith('http') ? '_blank' : '_self'}
-            class="bg-gray-50 rounded-lg p-3 border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 text-center group"
-          >
-            <div class="text-lg mb-1 group-hover:scale-110 transition-transform duration-300">
-              {tool.icon}
-            </div>
-            <div class="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
-              {tool.name}
-            </div>
-          </a>
-        ))}
+        {
+          tools.map((tool) => (
+            <a
+              href={tool.href}
+              target={tool.href.startsWith('http') ? '_blank' : '_self'}
+              class="bg-gray-50 rounded-lg p-3 border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 text-center group"
+            >
+              <div class="text-lg mb-1 group-hover:scale-110 transition-transform duration-300">{tool.icon}</div>
+              <div class="text-xs font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                {tool.name}
+              </div>
+            </a>
+          ))
+        }
       </div>
     </div>
 
     <!-- 教程文档卡片 -->
     <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-      <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        📚 精选教程文档
-      </h3>
+      <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">📚 精选教程文档</h3>
 
       <div class="space-y-4">
-        {tutorials.map((tutorial) => (
-          <a
-            href={tutorial.href}
-            class="block bg-gray-50 rounded-lg p-4 border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 group"
-          >
-            <div class="flex items-start gap-3">
-              <div class="text-xl group-hover:scale-110 transition-transform duration-300">
-                {tutorial.icon}
+        {
+          tutorials.map((tutorial) => (
+            <a
+              href={tutorial.href}
+              class="block bg-gray-50 rounded-lg p-4 border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-all duration-300 group"
+            >
+              <div class="flex items-start gap-3">
+                <div class="text-xl group-hover:scale-110 transition-transform duration-300">{tutorial.icon}</div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-gray-800 group-hover:text-blue-600 transition-colors mb-1 text-sm">
+                    {tutorial.title}
+                  </h4>
+                  <p class="text-xs text-gray-600">{tutorial.description}</p>
+                </div>
+                <div class="text-gray-400 group-hover:text-blue-500 transition-colors">→</div>
               </div>
-              <div class="flex-1">
-                <h4 class="font-bold text-gray-800 group-hover:text-blue-600 transition-colors mb-1 text-sm">
-                  {tutorial.title}
-                </h4>
-                <p class="text-xs text-gray-600">
-                  {tutorial.description}
-                </p>
-              </div>
-              <div class="text-gray-400 group-hover:text-blue-500 transition-colors">
-                →
-              </div>
-            </div>
-          </a>
-        ))}
+            </a>
+          ))
+        }
       </div>
 
       <div class="mt-6 text-center">

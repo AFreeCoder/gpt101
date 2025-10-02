@@ -8,38 +8,32 @@ interface Props {
   bg?: string;
 }
 
-const {
-  id,
-  isDark = false,
-  classes = {},
-  bg = await Astro.slots.render('bg'),
-} = Astro.props;
+const { id, isDark = false, classes = {}, bg = await Astro.slots.render('bg') } = Astro.props;
 ---
 
 <WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-6xl ${classes?.container ?? ''}`} bg={bg}>
   <div class="text-center mb-12">
-    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-      专业客服支持
-    </h2>
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">专业客服支持</h2>
     <p class="text-lg text-gray-600">遇到问题？我们随时为您提供帮助</p>
   </div>
 
   <!-- 4卡片网格 -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
     <!-- 充值失败全额退款 -->
-    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300">
+    <div
+      class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300"
+    >
       <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <span class="text-green-600 text-3xl">✓</span>
       </div>
       <h3 class="text-lg font-bold text-gray-800 mb-3">充值失败全额退款</h3>
-      <p class="text-sm text-gray-600 leading-relaxed">
-        充值失败 100% 全额退款，请放心使用我们的服务。
-      </p>
+      <p class="text-sm text-gray-600 leading-relaxed">充值失败 100% 全额退款，请放心使用我们的服务。</p>
     </div>
 
     <!-- 支持企业服务 -->
-    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300">
+    <div
+      class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300"
+    >
       <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <span class="text-blue-600 text-3xl">💳</span>
       </div>
@@ -50,18 +44,20 @@ const {
     </div>
 
     <!-- 响应迅速 -->
-    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300">
+    <div
+      class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300"
+    >
       <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <span class="text-orange-600 text-3xl">⚡</span>
       </div>
       <h3 class="text-lg font-bold text-gray-800 mb-3">响应迅速</h3>
-      <p class="text-sm text-gray-600 leading-relaxed">
-        24/7全天自动充值，专业团队快速响应。
-      </p>
+      <p class="text-sm text-gray-600 leading-relaxed">24/7全天自动充值，专业团队快速响应。</p>
     </div>
 
     <!-- 客服联系方式 -->
-    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300">
+    <div
+      class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow duration-300"
+    >
       <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <span class="text-purple-600 text-3xl">💬</span>
       </div>
@@ -75,23 +71,23 @@ const {
         一键复制
       </button>
     </div>
-
   </div>
 </WidgetWrapper>
 
 <script>
   // 复制功能
-  (window as unknown as { copyToClipboard: (text: string) => void }).copyToClipboard = function(text: string) {
+  (window as unknown as { copyToClipboard: (text: string) => void }).copyToClipboard = function (text: string) {
     navigator.clipboard.writeText(text).then(() => {
       showToast('已复制到剪贴板');
     });
-  }
+  };
 
   // Toast通知
   function showToast(message: string) {
     const toast = document.createElement('div');
     toast.textContent = message;
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+    toast.className =
+      'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
     document.body.appendChild(toast);
 
     setTimeout(() => {
