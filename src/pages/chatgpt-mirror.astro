@@ -47,9 +47,20 @@ const metadata = {
         <!-- 三个按钮 -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
           <a href={siteConfig.mirrorPage.links.purchase} target="_blank"
-             class="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg">
+             class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md">
             {siteConfig.mirrorPage.buttons.purchase}
           </a>
+          <div class="relative group">
+            <a href={siteConfig.mirrorPage.links.useNow} target="_blank"
+               class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg block">
+              {siteConfig.mirrorPage.buttons.useNow}
+            </a>
+            <!-- Tooltip -->
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
+              如首次进入或会员到期，需先购买卡密
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </div>
           <a href={siteConfig.mirrorPage.links.query}
              class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300">
             {siteConfig.mirrorPage.buttons.query}
@@ -71,7 +82,7 @@ const metadata = {
         </div>
 
         <!-- 代充服务横幅 -->
-        <div class="mt-12 max-w-5xl mx-auto">
+        <div class="mt-8 sm:mt-10 max-w-5xl mx-auto">
           <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-xl p-4">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
               <!-- 左侧文案 -->
@@ -104,9 +115,16 @@ const metadata = {
 
       <!-- 打字机效果JavaScript -->
       <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        let typewriterTimer: ReturnType<typeof setTimeout> | null = null;
+
+        const handlePageLoad = () => {
           const typewriterElement = document.getElementById('typewriter');
-          if (!typewriterElement) return;
+          if (!typewriterElement) {
+            return;
+          }
+
+          cleanupTypewriter();
+          typewriterElement.textContent = '';
 
           const texts = [
             '国内网络直接访问',
@@ -120,17 +138,16 @@ const metadata = {
           let isDeleting = false;
 
           function typeWriter() {
-            if (!typewriterElement) return;
             const currentText = texts[currentTextIndex];
 
             if (isDeleting) {
-              typewriterElement.textContent = currentText.substring(0, currentCharIndex - 1);
-              currentCharIndex--;
+              currentCharIndex = Math.max(currentCharIndex - 1, 0);
+              typewriterElement.textContent = currentText.substring(0, currentCharIndex);
 
               if (currentCharIndex === 0) {
                 isDeleting = false;
                 currentTextIndex = (currentTextIndex + 1) % texts.length;
-                setTimeout(typeWriter, 500); // 停顿500ms
+                typewriterTimer = setTimeout(typeWriter, 500); // 停顿500ms
                 return;
               }
             } else {
@@ -138,7 +155,7 @@ const metadata = {
               currentCharIndex++;
 
               if (currentCharIndex === currentText.length) {
-                setTimeout(() => {
+                typewriterTimer = setTimeout(() => {
                   isDeleting = true;
                   typeWriter();
                 }, 2000); // 完整显示2秒
@@ -146,11 +163,33 @@ const metadata = {
               }
             }
 
-            setTimeout(typeWriter, isDeleting ? 50 : 100);
+            typewriterTimer = setTimeout(typeWriter, isDeleting ? 50 : 100);
           }
 
           typeWriter();
-        });
+        };
+
+        function cleanupTypewriter() {
+          if (typewriterTimer) {
+            clearTimeout(typewriterTimer);
+            typewriterTimer = null;
+          }
+        }
+
+        const onBeforeSwap = () => {
+          cleanupTypewriter();
+          document.removeEventListener('astro:page-load', handlePageLoad);
+          document.removeEventListener('astro:before-swap', onBeforeSwap);
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', handlePageLoad, { once: true });
+        } else {
+          handlePageLoad();
+        }
+
+        document.addEventListener('astro:page-load', handlePageLoad);
+        document.addEventListener('astro:before-swap', onBeforeSwap);
       </script>
     </Fragment>
   </Hero>

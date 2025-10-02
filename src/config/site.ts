@@ -19,14 +19,16 @@ export const siteConfig = {
   // 镜像服务页配置
   mirrorPage: {
     links: {
-      purchase: 'https://sa.dtyuedan.cn//links/9BBA2C1F',           // 立即购买
+      purchase: 'https://yk.dtyuedan.cn//liebiao/B6A99FB56CE7A1B7',           // 立即购买
       query: 'https://yk.dtyuedan.cn/orderquery',                                          // 订单查询
       plusRecharge: '/',                                            // Plus代充
+      useNow: 'https://gpt.dtyuedan.cn',                            // 立刻使用
     },
     buttons: {
-      purchase: '立即购买',
+      purchase: '卡密购买',
       query: '订单查询',
       plusRecharge: 'Plus代充',
+      useNow: '立刻使用',
     },
   },
 
