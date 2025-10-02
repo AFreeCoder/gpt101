@@ -1,6 +1,7 @@
 ---
 import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
 import Button from '~/components/ui/Button.astro';
+import { siteConfig } from '~/config/site';
 
 interface Props {
   id?: string;
@@ -29,10 +30,10 @@ const tools = [
 // 教程数据
 const tutorials = [
   {
-    title: '2025 国内最新微信升级 ChatGPT Plus教程',
+    title: 'ChatGPT Plus 充值教程',
     icon: '📖',
     href: '/how-to-upgrade-gpt-plus',
-    description: '用微信3分钟升级ChatGPT Plus会员'
+    description: '用微信就能直接升级 ChatGPT Plus，全程不到 3 分钟'
   }
 ];
 ---
@@ -104,7 +105,7 @@ const tutorials = [
       <div class="mt-6 text-center">
         <Button
           variant="secondary"
-          href="/blog"
+          href={siteConfig.navigation.links.blog}
           class="inline-flex items-center gap-2 text-sm"
         >
           📚 查看更多教程 →

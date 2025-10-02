@@ -112,6 +112,7 @@ const metadata = {
           let isDeleting = false;
 
           function typeWriter() {
+            if (!typewriterElement) return;
             const currentText = texts[currentTextIndex];
 
             if (isDeleting) {

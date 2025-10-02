@@ -13,7 +13,7 @@ export const headerData = {
     },
     {
       text: '教程',
-      href: getBlogPermalink(),
+      href: getPermalink(siteConfig.navigation.links.blog),
     },
     {
       text: '客服支持',

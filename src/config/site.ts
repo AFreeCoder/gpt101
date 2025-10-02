@@ -37,7 +37,7 @@ export const siteConfig = {
     links: {
       home: '/',
       mirror: '/chatgpt-mirror',
-      blog: '/blog',
+      blog: '/tutorials',
       customerSupport: '/#customer-support',
     },
     buttons: {
