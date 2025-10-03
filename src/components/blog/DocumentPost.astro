@@ -1,0 +1,230 @@
+---
+import { Icon } from 'astro-icon/components';
+import Image from '~/components/common/Image.astro';
+import PostTags from '~/components/blog/Tags.astro';
+import SocialShare from '~/components/common/SocialShare.astro';
+import { getPermalink } from '~/utils/permalinks';
+import { getFormattedDate } from '~/utils/utils';
+import type { Post } from '~/types';
+
+export interface Props {
+  post: Post;
+  url: string | URL;
+}
+
+const { post, url } = Astro.props;
+
+// Generate table of contents from headings
+const headingRegex = /^(#{1,6})\s+(.+)$/gm;
+const content = post.content || '';
+const headings: Array<{ level: number; text: string; slug: string }> = [];
+
+let match: RegExpExecArray | null;
+while ((match = headingRegex.exec(content)) !== null) {
+  const level = match[1].length;
+  const text = match[2].trim();
+  const slug = text
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fff\s-]/g, '')
+    .replace(/\s+/g, '-');
+  headings.push({ level, text, slug });
+}
+---
+
+<section class="py-8 sm:py-16 lg:py-20 mx-auto">
+  <article class="flex max-w-7xl mx-auto gap-8">
+    <!-- Left Sidebar - Table of Contents -->
+    <aside class="hidden lg:block w-64 flex-shrink-0">
+      <div class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Icon name="tabler:list" class="w-5 h-5" />
+            目录
+          </h3>
+          <nav class="space-y-2">
+            {headings.map((heading) => (
+              <a
+                href={`#${heading.slug}`}
+                class={`
+                  block text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors
+                  ${heading.level === 1 ? 'font-semibold text-gray-900 dark:text-white' : ''}
+                  ${heading.level === 2 ? 'font-medium text-gray-700 dark:text-gray-300 pl-4' : ''}
+                  ${heading.level === 3 ? 'text-gray-600 dark:text-gray-400 pl-8' : ''}
+                  ${heading.level >= 4 ? 'text-gray-500 dark:text-gray-500 pl-12' : ''}
+                `}
+              >
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 min-w-0">
+      <!-- Header -->
+      <header class="mb-8">
+        <div class="flex justify-between flex-col sm:flex-row mb-4 sm:items-center">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            <Icon name="tabler:clock" class="w-4 h-4 inline-block -mt-0.5" />
+            <time datetime={String(post.publishDate)} class="inline-block">
+              {getFormattedDate(post.publishDate)}
+            </time>
+            {post.author && (
+              <>
+                {' '}· <Icon name="tabler:user" class="w-4 h-4 inline-block -mt-0.5" />
+                <span class="inline-block">{post.author}</span>
+              </>
+            )}
+            {post.category && (
+              <>
+                {' '}·{' '}
+                <a class="hover:underline inline-block" href={getPermalink(post.category.slug, 'category')}>
+                  {post.category.title}
+                </a>
+              </>
+            )}
+            {post.readingTime && (
+              <>
+                &nbsp;· <span>{post.readingTime}</span> min read
+              </>
+            )}
+          </p>
+        </div>
+
+        <h1 class="text-4xl md:text-5xl font-bold leading-tight tracking-tight font-heading text-gray-900 dark:text-white mb-4">
+          {post.title}
+        </h1>
+
+        {post.excerpt && (
+          <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+            {post.excerpt}
+          </p>
+        )}
+
+        {post.image && (
+          <Image
+            src={post.image}
+            class="w-full max-w-4xl mx-auto rounded-lg shadow-lg mb-8"
+            widths={[400, 900]}
+            sizes="(max-width: 900px) 400px, 900px"
+            alt={post?.excerpt || ''}
+            width={900}
+            height={506}
+            loading="eager"
+            decoding="async"
+          />
+        )}
+      </header>
+
+      <!-- Mobile TOC Button -->
+      <div class="lg:hidden mb-6">
+        <button
+          id="mobile-toc-toggle"
+          class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          <Icon name="tabler:list" class="w-4 h-4" />
+          目录
+          <Icon name="tabler:chevron-down" class="w-4 h-4 transition-transform" id="mobile-toc-icon" />
+        </button>
+        <div
+          id="mobile-toc"
+          class="hidden mt-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm"
+        >
+          <nav class="space-y-2">
+            {headings.map((heading) => (
+              <a
+                href={`#${heading.slug}`}
+                class={`
+                  block text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors mobile-toc-link
+                  ${heading.level === 1 ? 'font-semibold text-gray-900 dark:text-white' : ''}
+                  ${heading.level === 2 ? 'font-medium text-gray-700 dark:text-gray-300 pl-4' : ''}
+                  ${heading.level === 3 ? 'text-gray-600 dark:text-gray-400 pl-8' : ''}
+                  ${heading.level >= 4 ? 'text-gray-500 dark:text-gray-500 pl-12' : ''}
+                `}
+              >
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-heading prose-headings:leading-tight prose-headings:tracking-tight prose-headings:font-bold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-lg prose-img:shadow-lg prose-headings:scroll-mt-24">
+        <slot />
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-between flex-col sm:flex-row gap-6">
+        <PostTags tags={post.tags} class="flex-1" />
+        <SocialShare url={url} text={post.title} class="text-gray-500 dark:text-gray-400" />
+      </div>
+    </div>
+  </article>
+</section>
+
+<script>
+  // Mobile TOC Toggle
+  function initMobileTOC() {
+    const toggleButton = document.getElementById('mobile-toc-toggle');
+    const toc = document.getElementById('mobile-toc');
+    const icon = document.getElementById('mobile-toc-icon');
+
+    if (!toggleButton || !toc || !icon) return;
+
+    toggleButton.addEventListener('click', () => {
+      const isHidden = toc.classList.contains('hidden');
+
+      if (isHidden) {
+        toc.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        toc.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    // Auto close mobile TOC when clicking links
+    const mobileLinks = document.querySelectorAll('.mobile-toc-link');
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        toc.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      });
+    });
+  }
+
+  // Smooth scrolling for anchor links
+  function initSmoothScrolling() {
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href')?.substring(1);
+        if (!targetId) return;
+
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    initMobileTOC();
+    initSmoothScrolling();
+  });
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+    initMobileTOC();
+    initSmoothScrolling();
+  });
+</script>
