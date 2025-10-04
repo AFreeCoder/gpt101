@@ -16,7 +16,36 @@ const metadata = {
 
 <Layout metadata={metadata}>
   <!-- Hero Widget ******************* -->
-  <Hero compact>
+  <Hero compact
+    tagline={`
+      <div class="w-full mb-6 not-prose">
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-xl p-4">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 text-center sm:text-left">
+              <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="flex flex-col sm:flex-row items-center gap-2">
+                <span class="text-gray-700 font-medium">需要使用 APP、对话记忆、Codex？</span>
+                <span class="text-gray-600 font-medium">选择官方Plus代充（充你的号）</span>
+                <span class="text-blue-600 font-semibold">→ 享受Plus官方原汁原味功能</span>
+              </div>
+            </div>
+            <div class="flex-shrink-0">
+              <a href="/" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md">
+                <span>Plus代充服务</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    `}
+  >
     <Fragment slot="title">
       <!-- 大标题 -->
       <h1 class="text-8xl md:text-8xl font-bold mb-6">
@@ -97,41 +126,6 @@ const metadata = {
           </div>
         </div>
 
-        <!-- 代充服务横幅 -->
-        <div class="mt-8 sm:mt-10 max-w-5xl mx-auto">
-          <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-xl p-4">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <!-- 左侧文案 -->
-              <div class="flex items-center gap-3 text-center sm:text-left">
-                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clip-rule="evenodd"></path>
-                  </svg>
-                </div>
-                <div class="flex flex-col sm:flex-row items-center gap-2">
-                  <span class="text-gray-700 font-medium">需要官方Plus原汁原味体验？</span>
-                  <span class="text-gray-600 font-medium">选择官方Plus代充（充你的号）</span>
-                  <span class="text-blue-600 font-semibold">→ 享受Plus官方功能</span>
-                </div>
-              </div>
-              <!-- 右侧按钮 -->
-              <div class="flex-shrink-0">
-                <a
-                  href={siteConfig.mirrorPage.links.plusRecharge}
-                  class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md"
-                >
-                  <span>{siteConfig.mirrorPage.buttons.plusRecharge}</span>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- 打字机效果JavaScript -->
