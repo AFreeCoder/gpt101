@@ -3,7 +3,7 @@ export const siteConfig = {
   // 首页配置
   homepage: {
     links: {
-      cardPurchase: 'https://sc.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 卡密购买
+      cardPurchase: 'https://qf.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 卡密购买
       // cardPurchase: '/chatgpt-plus-maintenance', // 卡密购买
       immediateUpgrade: 'https://gptplus.biz/recharge', // 立即升级 - 维护页面
       orderQuery: 'https://sc.dtyuedan.cn/order', // 卡密订单查询
@@ -20,7 +20,7 @@ export const siteConfig = {
   // 镜像服务页配置
   mirrorPage: {
     links: {
-      purchase: 'https://sc.dtyuedan.cn/shop/F2OLER91/3fptbk', // 立即购买
+      purchase: 'https://qf.dtyuedan.cn/shop/F2OLER91/3fptbk', // 立即购买
       query: 'https://sc.dtyuedan.cn/order', // 订单查询
       plusRecharge: '/', // Plus代充
       useNow: 'https://chatshare.biz', // 立刻使用
