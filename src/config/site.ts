@@ -75,6 +75,20 @@ export const siteConfig = {
     description: '专业可靠的ChatGPT服务提供商',
     domain: 'gpt101.org', // 预留域名配置
   },
+
+  // 公告栏配置
+  announcements: [
+    {
+      id: 1,
+      text: '通知：受 OpenAI 定价调整和银行限额影响，全网代充近期价格变动都较大，后续成本下降后，价格会逐步下降，请关注本站公告～',
+      link: '', // 可选：点击公告跳转的链接
+    },
+    {
+      id: 2,
+      text: '通知：如果遇到代充缺货，又着急充，可联系客服！',
+      link: '/#customer-support',
+    },
+  ],
 } as const;
 
 // 类型定义（确保类型安全）

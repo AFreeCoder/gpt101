@@ -1,0 +1,213 @@
+---
+import { Icon } from 'astro-icon/components';
+import { siteConfig } from '~/config/site';
+
+const announcements = siteConfig.announcements;
+const hasMultipleAnnouncements = announcements.length > 1;
+---
+
+{announcements.length > 0 && (
+  <div class="announcement-banner bg-blue-500 dark:bg-blue-600 text-white py-3.5 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex items-center justify-between gap-4">
+        {/* 左侧图标 - 圆圈中间一个 i */}
+        <div class="flex-shrink-0">
+          <Icon name="tabler:info-circle" class="w-6 h-6" />
+        </div>
+
+        {/* 中间公告内容区域 */}
+        <div class="flex-1 overflow-hidden">
+          <div class="announcement-carousel relative">
+            <div
+              class="announcement-track flex transition-transform duration-500 ease-in-out"
+              data-total={announcements.length}
+            >
+              {announcements.map((announcement) => (
+                <div
+                  class="announcement-item flex-shrink-0 w-full text-center"
+                  data-id={announcement.id}
+                >
+                  {announcement.link ? (
+                    <a
+                      href={announcement.link}
+                      class="hover:text-blue-100 transition-colors font-bold text-base"
+                    >
+                      {announcement.text}
+                    </a>
+                  ) : (
+                    <span class="font-bold text-base">{announcement.text}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 右侧导航按钮（仅在有多条公告时显示） */}
+        {hasMultipleAnnouncements && (
+          <div class="flex-shrink-0 flex items-center gap-2">
+            <button
+              class="announcement-prev p-1.5 hover:bg-blue-600 rounded transition-colors"
+              aria-label="上一条公告"
+            >
+              <Icon name="tabler:chevron-left" class="w-4 h-4" />
+            </button>
+            <div class="announcement-indicators flex gap-1.5">
+              {announcements.map((_, index) => (
+                <button
+                  class="announcement-indicator w-2 h-2 rounded-full bg-blue-200 hover:bg-white transition-all duration-300"
+                  data-index={index}
+                  aria-label={`跳转到公告 ${index + 1}`}
+                />
+              ))}
+            </div>
+            <button
+              class="announcement-next p-1.5 hover:bg-blue-600 rounded transition-colors"
+              aria-label="下一条公告"
+            >
+              <Icon name="tabler:chevron-right" class="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
+{hasMultipleAnnouncements && (
+  <script>
+    class AnnouncementCarousel {
+      private track: HTMLElement | null = null;
+      private prevBtn: HTMLElement | null = null;
+      private nextBtn: HTMLElement | null = null;
+      private indicators: NodeListOf<HTMLElement> | null = null;
+      private currentIndex = 0;
+      private totalAnnouncements = 0;
+      private autoPlayInterval: ReturnType<typeof setInterval> | null = null;
+
+      constructor() {
+        this.init();
+      }
+
+      init() {
+        this.track = document.querySelector('.announcement-track');
+        this.prevBtn = document.querySelector('.announcement-prev');
+        this.nextBtn = document.querySelector('.announcement-next');
+        this.indicators = document.querySelectorAll('.announcement-indicator');
+
+        if (!this.track) return;
+
+        this.totalAnnouncements = parseInt(this.track.dataset.total || '0');
+
+        if (this.totalAnnouncements <= 1) return;
+
+        this.setupEventListeners();
+        this.updateIndicators();
+        this.startAutoPlay();
+      }
+
+      setupEventListeners() {
+        this.prevBtn?.addEventListener('click', () => {
+          this.goToPrevious();
+          this.resetAutoPlay();
+        });
+
+        this.nextBtn?.addEventListener('click', () => {
+          this.goToNext();
+          this.resetAutoPlay();
+        });
+
+        this.indicators?.forEach((indicator, index) => {
+          indicator.addEventListener('click', () => {
+            this.goToIndex(index);
+            this.resetAutoPlay();
+          });
+        });
+      }
+
+      goToNext() {
+        this.currentIndex = (this.currentIndex + 1) % this.totalAnnouncements;
+        this.updateCarousel();
+      }
+
+      goToPrevious() {
+        this.currentIndex = (this.currentIndex - 1 + this.totalAnnouncements) % this.totalAnnouncements;
+        this.updateCarousel();
+      }
+
+      goToIndex(index: number) {
+        this.currentIndex = index;
+        this.updateCarousel();
+      }
+
+      updateCarousel() {
+        if (!this.track) return;
+
+        const offset = -this.currentIndex * 100;
+        this.track.style.transform = `translateX(${offset}%)`;
+        this.updateIndicators();
+      }
+
+      updateIndicators() {
+        this.indicators?.forEach((indicator, index) => {
+          if (index === this.currentIndex) {
+            indicator.classList.remove('bg-blue-200', 'w-2');
+            indicator.classList.add('bg-white', 'w-6');
+          } else {
+            indicator.classList.remove('bg-white', 'w-6');
+            indicator.classList.add('bg-blue-200', 'w-2');
+          }
+        });
+      }
+
+      startAutoPlay() {
+        this.autoPlayInterval = setInterval(() => {
+          this.goToNext();
+        }, 5000); // 每5秒自动切换
+      }
+
+      stopAutoPlay() {
+        if (this.autoPlayInterval) {
+          clearInterval(this.autoPlayInterval);
+          this.autoPlayInterval = null;
+        }
+      }
+
+      resetAutoPlay() {
+        this.stopAutoPlay();
+        this.startAutoPlay();
+      }
+
+      destroy() {
+        this.stopAutoPlay();
+      }
+    }
+
+    // 初始化轮播
+    let carousel: AnnouncementCarousel | null = null;
+
+    const initCarousel = () => {
+      if (carousel) {
+        carousel.destroy();
+      }
+      carousel = new AnnouncementCarousel();
+    };
+
+    // 页面加载时初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initCarousel);
+    } else {
+      initCarousel();
+    }
+
+    // 支持 Astro View Transitions
+    document.addEventListener('astro:page-load', initCarousel);
+
+    document.addEventListener('astro:before-swap', () => {
+      if (carousel) {
+        carousel.destroy();
+        carousel = null;
+      }
+    });
+  </script>
+)}
