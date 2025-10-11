@@ -3,10 +3,10 @@ export const siteConfig = {
   // 首页配置
   homepage: {
     links: {
-      cardPurchase: 'https://qf.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 卡密购买
+      cardPurchase: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 卡密购买
       // cardPurchase: '/chatgpt-plus-maintenance', // 卡密购买
       immediateUpgrade: 'https://gptplus.biz/recharge', // 立即升级 - 维护页面
-      orderQuery: 'https://qf.dtyuedan.cn/order', // 卡密订单查询
+      orderQuery: 'https://fe.dtyuedan.cn/order', // 卡密订单查询
       mirrorExperience: '/chatgpt-mirror', // 镜像服务体验
     },
     buttons: {
@@ -20,9 +20,9 @@ export const siteConfig = {
   // 镜像服务页配置
   mirrorPage: {
     links: {
-      purchase: 'https://qf.dtyuedan.cn/shop/F2OLER91/3fptbk', // 立即购买
+      purchase: 'https://fe.dtyuedan.cn/shop/F2OLER91/3fptbk', // 立即购买
       // purchase: '/chatgpt-plus-maintenance', // 卡密购买
-      query: 'https://qf.dtyuedan.cn/order', // 订单查询
+      query: 'https://fe.dtyuedan.cn/order', // 订单查询
       plusRecharge: '/', // Plus代充
       useNow: 'https://chatshare.biz', // 立刻使用
     },

@@ -42,20 +42,22 @@ while ((match = headingRegex.exec(content)) !== null) {
             目录
           </h3>
           <nav class="space-y-2">
-            {headings.map((heading) => (
-              <a
-                href={`#${heading.slug}`}
-                class={`
+            {
+              headings.map((heading) => (
+                <a
+                  href={`#${heading.slug}`}
+                  class={`
                   block text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors
                   ${heading.level === 1 ? 'font-semibold text-gray-900 dark:text-white' : ''}
                   ${heading.level === 2 ? 'font-medium text-gray-700 dark:text-gray-300 pl-4' : ''}
                   ${heading.level === 3 ? 'text-gray-600 dark:text-gray-400 pl-8' : ''}
                   ${heading.level >= 4 ? 'text-gray-500 dark:text-gray-500 pl-12' : ''}
                 `}
-              >
-                {heading.text}
-              </a>
-            ))}
+                >
+                  {heading.text}
+                </a>
+              ))
+            }
           </nav>
         </div>
       </div>
@@ -71,51 +73,63 @@ while ((match = headingRegex.exec(content)) !== null) {
             <time datetime={String(post.publishDate)} class="inline-block">
               {getFormattedDate(post.publishDate)}
             </time>
-            {post.author && (
-              <>
-                {' '}· <Icon name="tabler:user" class="w-4 h-4 inline-block -mt-0.5" />
-                <span class="inline-block">{post.author}</span>
-              </>
-            )}
-            {post.category && (
-              <>
-                {' '}·{' '}
-                <a class="hover:underline inline-block" href={getPermalink(post.category.slug, 'category')}>
-                  {post.category.title}
-                </a>
-              </>
-            )}
-            {post.readingTime && (
-              <>
-                &nbsp;· <span>{post.readingTime}</span> min read
-              </>
-            )}
+            {
+              post.author && (
+                <>
+                  {' '}
+                  · <Icon name="tabler:user" class="w-4 h-4 inline-block -mt-0.5" />
+                  <span class="inline-block">{post.author}</span>
+                </>
+              )
+            }
+            {
+              post.category && (
+                <>
+                  {' '}
+                  ·{' '}
+                  <a class="hover:underline inline-block" href={getPermalink(post.category.slug, 'category')}>
+                    {post.category.title}
+                  </a>
+                </>
+              )
+            }
+            {
+              post.readingTime && (
+                <>
+                  &nbsp;· <span>{post.readingTime}</span> min read
+                </>
+              )
+            }
           </p>
         </div>
 
-        <h1 class="text-4xl md:text-5xl font-bold leading-tight tracking-tight font-heading text-gray-900 dark:text-white mb-4">
+        <h1
+          class="text-4xl md:text-5xl font-bold leading-tight tracking-tight font-heading text-gray-900 dark:text-white mb-4"
+        >
           {post.title}
         </h1>
 
-        {post.excerpt && (
-          <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-            {post.excerpt}
-          </p>
-        )}
+        {
+          post.excerpt && (
+            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">{post.excerpt}</p>
+          )
+        }
 
-        {post.image && (
-          <Image
-            src={post.image}
-            class="w-full max-w-4xl mx-auto rounded-lg shadow-lg mb-8"
-            widths={[400, 900]}
-            sizes="(max-width: 900px) 400px, 900px"
-            alt={post?.excerpt || ''}
-            width={900}
-            height={506}
-            loading="eager"
-            decoding="async"
-          />
-        )}
+        {
+          post.image && (
+            <Image
+              src={post.image}
+              class="w-full max-w-4xl mx-auto rounded-lg shadow-lg mb-8"
+              widths={[400, 900]}
+              sizes="(max-width: 900px) 400px, 900px"
+              alt={post?.excerpt || ''}
+              width={900}
+              height={506}
+              loading="eager"
+              decoding="async"
+            />
+          )
+        }
       </header>
 
       <!-- Mobile TOC Button -->
@@ -133,31 +147,37 @@ while ((match = headingRegex.exec(content)) !== null) {
           class="hidden mt-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm"
         >
           <nav class="space-y-2">
-            {headings.map((heading) => (
-              <a
-                href={`#${heading.slug}`}
-                class={`
+            {
+              headings.map((heading) => (
+                <a
+                  href={`#${heading.slug}`}
+                  class={`
                   block text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors mobile-toc-link
                   ${heading.level === 1 ? 'font-semibold text-gray-900 dark:text-white' : ''}
                   ${heading.level === 2 ? 'font-medium text-gray-700 dark:text-gray-300 pl-4' : ''}
                   ${heading.level === 3 ? 'text-gray-600 dark:text-gray-400 pl-8' : ''}
                   ${heading.level >= 4 ? 'text-gray-500 dark:text-gray-500 pl-12' : ''}
                 `}
-              >
-                {heading.text}
-              </a>
-            ))}
+                >
+                  {heading.text}
+                </a>
+              ))
+            }
           </nav>
         </div>
       </div>
 
       <!-- Content -->
-      <div class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-heading prose-headings:leading-tight prose-headings:tracking-tight prose-headings:font-bold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-lg prose-img:shadow-lg prose-headings:scroll-mt-24">
+      <div
+        class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-heading prose-headings:leading-tight prose-headings:tracking-tight prose-headings:font-bold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-lg prose-img:shadow-lg prose-headings:scroll-mt-24"
+      >
         <slot />
       </div>
 
       <!-- Footer -->
-      <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-between flex-col sm:flex-row gap-6">
+      <div
+        class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-between flex-col sm:flex-row gap-6"
+      >
         <PostTags tags={post.tags} class="flex-1" />
         <SocialShare url={url} text={post.title} class="text-gray-500 dark:text-gray-400" />
       </div>
@@ -188,7 +208,7 @@ while ((match = headingRegex.exec(content)) !== null) {
 
     // Auto close mobile TOC when clicking links
     const mobileLinks = document.querySelectorAll('.mobile-toc-link');
-    mobileLinks.forEach(link => {
+    mobileLinks.forEach((link) => {
       link.addEventListener('click', () => {
         toc.classList.add('hidden');
         icon.style.transform = 'rotate(0deg)';
@@ -199,7 +219,7 @@ while ((match = headingRegex.exec(content)) !== null) {
   // Smooth scrolling for anchor links
   function initSmoothScrolling() {
     const links = document.querySelectorAll('a[href^="#"]');
-    links.forEach(link => {
+    links.forEach((link) => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const targetId = link.getAttribute('href')?.substring(1);
@@ -209,7 +229,7 @@ while ((match = headingRegex.exec(content)) !== null) {
         if (targetElement) {
           targetElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'start',
           });
         }
       });

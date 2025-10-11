@@ -75,17 +75,19 @@ const hasMultipleAnnouncements = announcements.length > 1;
 )}
 
 {hasMultipleAnnouncements && (
-  <script>
-    class AnnouncementCarousel {
-      private track: HTMLElement | null = null;
-      private prevBtn: HTMLElement | null = null;
-      private nextBtn: HTMLElement | null = null;
-      private indicators: NodeListOf<HTMLElement> | null = null;
-      private currentIndex = 0;
-      private totalAnnouncements = 0;
-      private autoPlayInterval: ReturnType<typeof setInterval> | null = null;
+  <script is:inline>
+    let carousel = null;
 
+    class AnnouncementCarousel {
       constructor() {
+        this.track = null;
+        this.prevBtn = null;
+        this.nextBtn = null;
+        this.indicators = null;
+        this.currentIndex = 0;
+        this.totalAnnouncements = 0;
+        this.autoPlayInterval = null;
+
         this.init();
       }
 
@@ -135,7 +137,7 @@ const hasMultipleAnnouncements = announcements.length > 1;
         this.updateCarousel();
       }
 
-      goToIndex(index: number) {
+      goToIndex(index) {
         this.currentIndex = index;
         this.updateCarousel();
       }
@@ -163,7 +165,7 @@ const hasMultipleAnnouncements = announcements.length > 1;
       startAutoPlay() {
         this.autoPlayInterval = setInterval(() => {
           this.goToNext();
-        }, 5000); // 每5秒自动切换
+        }, 5000);
       }
 
       stopAutoPlay() {
@@ -183,9 +185,6 @@ const hasMultipleAnnouncements = announcements.length > 1;
       }
     }
 
-    // 初始化轮播
-    let carousel: AnnouncementCarousel | null = null;
-
     const initCarousel = () => {
       if (carousel) {
         carousel.destroy();
@@ -193,14 +192,12 @@ const hasMultipleAnnouncements = announcements.length > 1;
       carousel = new AnnouncementCarousel();
     };
 
-    // 页面加载时初始化
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initCarousel);
     } else {
       initCarousel();
     }
 
-    // 支持 Astro View Transitions
     document.addEventListener('astro:page-load', initCarousel);
 
     document.addEventListener('astro:before-swap', () => {
