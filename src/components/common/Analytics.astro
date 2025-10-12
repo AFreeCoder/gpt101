@@ -1,13 +1,20 @@
 ---
 import { GoogleAnalytics } from '@astrolib/analytics';
 import { ANALYTICS } from 'astrowind:config';
+import { siteConfig } from '~/config/site';
+import BaiduAnalytics from './BaiduAnalytics.astro';
+
+// 优先使用 site.ts 中的配置，如果未配置则使用 config.yaml 中的配置
+const googleId = siteConfig.analytics.google.enabled
+  ? siteConfig.analytics.google.id
+  : ANALYTICS?.vendors?.googleAnalytics?.id;
+
+const baiduId = siteConfig.analytics.baidu.enabled ? siteConfig.analytics.baidu.id : null;
 ---
 
-{
-  ANALYTICS?.vendors?.googleAnalytics?.id ? (
-    <GoogleAnalytics
-      id={String(ANALYTICS.vendors.googleAnalytics.id)}
-      partytown={ANALYTICS?.vendors?.googleAnalytics?.partytown}
-    />
-  ) : null
+<!-- 谷歌统计 -->{
+  googleId ? <GoogleAnalytics id={String(googleId)} partytown={ANALYTICS?.vendors?.googleAnalytics?.partytown} /> : null
 }
+
+<!-- 百度统计 -->
+{baiduId && <BaiduAnalytics id={baiduId} />}

@@ -1,0 +1,30 @@
+---
+/**
+ * 百度统计组件
+ * 用于在网站中集成百度统计代码
+ */
+
+interface Props {
+  id: string; // 百度统计站点ID
+}
+
+const { id } = Astro.props;
+---
+
+{
+  id && (
+    <script
+      is:inline
+      define:vars={{ id }}
+      set:html={`
+      window._hmt = window._hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?" + id;
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    `}
+    />
+  )
+}
