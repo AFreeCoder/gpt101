@@ -96,12 +96,12 @@ export const siteConfig = {
     // 谷歌统计 (Google Analytics 4)
     google: {
       id: 'G-KPY9887M4F', // 格式: G-XXXXXXXXXX 或 GA-XXXXXXXXXX
-      enabled: false, // 启用/禁用谷歌统计
+      enabled: true, // 启用/禁用谷歌统计
     },
     // 百度统计
     baidu: {
       id: '35999906c23d844610453823877173a8', // 百度统计站点ID
-      enabled: false, // 启用/禁用百度统计
+      enabled: true, // 启用/禁用百度统计
     },
   },
 } as const;

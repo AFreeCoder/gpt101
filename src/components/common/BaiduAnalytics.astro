@@ -9,22 +9,17 @@ interface Props {
 }
 
 const { id } = Astro.props;
+
+// 生成百度统计代码
+const baiduScript = `
+  window._hmt = window._hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?${id}";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+`;
 ---
 
-{
-  id && (
-    <script
-      is:inline
-      define:vars={{ id }}
-      set:html={`
-      window._hmt = window._hmt || [];
-      (function() {
-        var hm = document.createElement("script");
-        hm.src = "https://hm.baidu.com/hm.js?" + id;
-        var s = document.getElementsByTagName("script")[0];
-        s.parentNode.insertBefore(hm, s);
-      })();
-    `}
-    />
-  )
-}
+{id && <script is:inline set:html={baiduScript} />}
