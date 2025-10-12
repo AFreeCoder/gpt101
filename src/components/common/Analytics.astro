@@ -12,9 +12,7 @@ const googleId = siteConfig.analytics.google.enabled
 const baiduId = siteConfig.analytics.baidu.enabled ? siteConfig.analytics.baidu.id : null;
 ---
 
-<!-- 谷歌统计 -->{
-  googleId ? <GoogleAnalytics id={String(googleId)} partytown={ANALYTICS?.vendors?.googleAnalytics?.partytown} /> : null
-}
+<!-- 谷歌统计 -->{googleId ? <GoogleAnalytics id={String(googleId)} partytown={false} /> : null}
 
 <!-- 百度统计 -->
 {baiduId && <BaiduAnalytics id={baiduId} />}
