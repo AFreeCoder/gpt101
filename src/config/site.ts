@@ -19,28 +19,28 @@ export const siteConfig = {
     purchaseChannels: [
       {
         id: 1,
-        label: '商品 - 【推荐1】',
+        label: '【推荐1】ChatGPT官网会员自动充值',
         url: 'https://gptplus.biz/recharge',
         color: 'from-blue-500 to-blue-500',
         description: '',
       },
       {
         id: 2,
-        label: '商品 - 【推荐2】',
+        label: '【推荐2】ChatGPT官网会员自动充值',
         url: 'https://gpt.plus-app.site/',
         color: 'from-blue-500 to-blue-500',
         description: '',
       },
       {
         id: 3,
-        label: '商品 - 【推荐3】',
+        label: '【推荐3】ChatGPT官网会员自动充值',
         url: 'https://gptoline.com/',
         color: 'from-blue-500 to-blue-500',
         description: '',
       },
       {
         id: 4,
-        label: '商品 - 【备用】',
+        label: '【备用】ChatGPT官网会员自动充值',
         url: '',
         color: 'from-blue-500 to-blue-500',
         description: '该渠道为备用渠道，购买完后请联系客服QQ:2316149029',
