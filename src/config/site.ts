@@ -58,7 +58,7 @@ export const siteConfig = {
       useNow: 'https://chatshare.biz', // 立刻使用
     },
     buttons: {
-      purchase: '卡密购买',
+      purchase: '购买',
       query: '订单查询',
       plusRecharge: 'Plus代充',
       useNow: '立刻使用',
