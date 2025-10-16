@@ -6,6 +6,7 @@ import ServiceDetails from '~/components/widgets/ServiceDetails.astro';
 import ToolsAndTutorials from '~/components/widgets/ToolsAndTutorials.astro';
 import CustomerSupport from '~/components/widgets/CustomerSupport.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
+import PurchaseChannelModal from '~/components/widgets/PurchaseChannelModal.astro';
 
 import { siteConfig } from '~/config/site';
 
@@ -86,13 +87,13 @@ const metadata = {
             {siteConfig.homepage.buttons.cardPurchase}
           </a>
           <div class="relative group">
-            <a
-              href={siteConfig.homepage.links.immediateUpgrade}
-              target="_blank"
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg block"
+            <button
+              type="button"
+              data-open-channel-modal
+              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg"
             >
               {siteConfig.homepage.buttons.immediateUpgrade}
-            </a>
+            </button>
             <!-- Tooltip -->
             <div
               class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50"
@@ -270,4 +271,7 @@ const metadata = {
       <div class="absolute inset-0 bg-white dark:bg-transparent"></div>
     </Fragment>
   </CustomerSupport>
+
+  <!-- Purchase Channel Modal ******************* -->
+  <PurchaseChannelModal />
 </Layout>

@@ -15,6 +15,36 @@ export const siteConfig = {
       orderQuery: '卡密订单查询',
       mirrorExperience: '立刻体验',
     },
+    // 购买渠道配置 - 用于"立即升级"弹窗
+    purchaseChannels: [
+      {
+        id: 1,
+        label: '渠道 - 推荐1',
+        url: 'https://gptplus.biz/recharge',
+        color: 'from-blue-500 to-blue-500',
+      },
+      {
+        id: 2,
+        label: '渠道 - 推荐2',
+        url: 'https://gpt.plus-app.site/',
+        color: 'from-blue-500 to-blue-500',
+        description: '',
+      },
+      {
+        id: 3,
+        label: '渠道 - 推荐3',
+        url: 'https://gptoline.com/',
+        color: 'from-blue-500 to-blue-500',
+        description: '',
+      },
+      {
+        id: 4,
+        label: '渠道 - 备用',
+        url: '',
+        color: 'from-blue-500 to-blue-500',
+        description: '该渠道为备用渠道，购买完后请联系客服QQ:2316149029',
+      },
+    ],
   },
 
   // 镜像服务页配置
