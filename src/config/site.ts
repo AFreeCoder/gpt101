@@ -38,13 +38,13 @@ export const siteConfig = {
         color: 'from-blue-500 to-blue-500',
         description: '',
       },
-      {
-        id: 4,
-        label: '【推荐4】ChatGPT官网会员自动充值',
-        url: 'https://gpt.plus-app.site/',
-        color: 'from-blue-500 to-blue-500',
-        description: '',
-      },
+      // {
+      //   id: 4,
+      //   label: '【推荐4】ChatGPT官网会员自动充值',
+      //   url: 'https://gpt.plus-app.site/',
+      //   color: 'from-blue-500 to-blue-500',
+      //   description: '',
+      // },
       {
         id: 5,
         label: '【备用】ChatGPT官网会员自动充值',
