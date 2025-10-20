@@ -24,13 +24,13 @@ export const siteConfig = {
         color: 'from-blue-500 to-blue-500',
         description: '',
       },
-      // {
-      //   id: 2,
-      //   label: '【推荐2】ChatGPT官网会员自动充值',
-      //   url: 'https://www.987ai.vip/recharge',
-      //   color: 'from-blue-500 to-blue-500',
-      //   description: '',
-      // },
+      {
+        id: 2,
+        label: '【推荐2】ChatGPT官网会员自动充值',
+        url: 'https://gptplus.biz/recharge',
+        color: 'from-blue-500 to-blue-500',
+        description: '',
+      },
       // {
       //   id: 3,
       //   label: '【推荐3】ChatGPT官网会员自动充值',
