@@ -26,8 +26,8 @@ export const siteConfig = {
       },
       {
         id: 2,
-        label: '【推荐2】ChatGPT官网会员自动充值',
-        url: 'https://gptplus.biz/recharge',
+        label: '【推荐4】ChatGPT官网会员自动充值',
+        url: 'https://www.987ai.vip/recharge',
         color: 'from-blue-500 to-blue-500',
         description: '',
       },
