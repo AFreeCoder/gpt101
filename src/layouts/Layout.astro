@@ -11,6 +11,7 @@ import Metadata from '~/components/common/Metadata.astro';
 import SiteVerification from '~/components/common/SiteVerification.astro';
 import Analytics from '~/components/common/Analytics.astro';
 import BasicScripts from '~/components/common/BasicScripts.astro';
+import StructuredData from '~/components/common/StructuredData.astro';
 
 // Comment the line below to disable View Transitions
 import { ClientRouter } from 'astro:transitions';
@@ -19,9 +20,10 @@ import type { MetaData as MetaDataType } from '~/types';
 
 export interface Props {
   metadata?: MetaDataType;
+  structuredDataType?: 'product' | 'faq' | 'all';
 }
 
-const { metadata = {} } = Astro.props;
+const { metadata = {}, structuredDataType } = Astro.props;
 const { language, textDirection } = I18N;
 ---
 
@@ -30,11 +32,50 @@ const { language, textDirection } = I18N;
   <head>
     <CommonMeta />
     <Favicons />
+    <script is:inline>
+      (function () {
+        if (!('fetch' in window) || window.__assetFetchCachePatched) return;
+
+        window.__assetFetchCachePatched = true;
+
+        const originalFetch = window.fetch.bind(window);
+        const cache = new Map();
+        const targets = new Set(['/favicon.png', '/qq-qrcode.png']);
+
+        const resolveTarget = (input) => {
+          try {
+            const url = typeof input === 'string' ? new URL(input, window.location.href) : new URL(input.url, window.location.href);
+            return targets.has(url.pathname) ? url.pathname : null;
+          } catch (error) {
+            return null;
+          }
+        };
+
+        window.fetch = async function patchedFetch(input, init) {
+          const key = resolveTarget(input);
+
+          if (key && cache.has(key)) {
+            return cache.get(key).clone();
+          }
+
+          const response = await originalFetch(input, init);
+
+          if (key && response.ok) {
+            cache.set(key, response.clone());
+          }
+
+          return response;
+        };
+      })();
+    </script>
     <CustomStyles />
     <ApplyColorMode />
     <Metadata {...metadata} />
     <SiteVerification />
     <Analytics />
+
+    <!-- Structured Data (Schema.org JSON-LD) -->
+    {structuredDataType && <StructuredData type={structuredDataType} />}
 
     <!-- Comment the line below to disable View Transitions -->
     <ClientRouter fallback="swap" />

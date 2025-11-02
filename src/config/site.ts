@@ -103,9 +103,28 @@ export const siteConfig = {
     },
   },
 
-  // 联系信息配置（预留扩展）
+  // 联系信息配置
   contact: {
     qq: '2316149029',
+    // 客服卡片配置
+    customerService: {
+      title: '在线客服',
+      subtitle: '有任何请联系客服',
+      qrCode: {
+        path: '/qq-qrcode.png', // QQ二维码图片路径（相对于public目录）
+        label: '扫码添加客服QQ',
+      },
+      qqNumber: {
+        label: '客服QQ号',
+      },
+      serviceTime: {
+        title: '在线时间：9:00 ~ 23:00',
+        description: '非在线时间联系客服，请耐心等待，上线后第一时间响应。',
+      },
+      toast: {
+        successMessage: '已复制到剪贴板',
+      },
+    },
   },
 
   // 网站基本信息配置（预留扩展）

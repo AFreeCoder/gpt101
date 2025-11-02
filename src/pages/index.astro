@@ -18,7 +18,7 @@ const metadata = {
 };
 ---
 
-<Layout metadata={metadata}>
+<Layout metadata={metadata} structuredDataType="all">
   <!-- Hero Widget ******************* -->
   <Hero
     compact
@@ -52,12 +52,12 @@ const metadata = {
     `}
   >
     <Fragment slot="title">
-      <!-- 大标题 -->
-      <h1 class="text-8xl md:text-8xl font-bold mb-6">
+      <!-- 大标题 - Hero组件会自动包裹h1标签，这里只需要定义样式和内容 -->
+      <div class="text-8xl md:text-8xl font-bold mb-6">
         <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> ChatGPT Plus </span>
         <br />
         <span class="text-gray-800">充值服务</span>
-      </h1>
+      </div>
     </Fragment>
 
     <Fragment slot="content">
@@ -227,14 +227,14 @@ const metadata = {
   <FAQs
     id="faqs"
     title="常见问题"
-    subtitle="关于ChatGPT Plus充值代充和镜像服务的常见问题解答"
+    subtitle="关于ChatGPT Plus充值代充服务的常见问题解答"
     tagline="FAQ"
     classes={{ container: 'max-w-6xl' }}
     items={[
       {
-        title: 'Q: ChatGPT Plus充值服务安全吗？会不会影响我的账户？',
+        title: 'Q: ChatGPT Plus 充值服务安全吗？会不会影响我的账户？',
         description:
-          '我们的ChatGPT Plus充值服务采用iOS正规代充技术，通过苹果官方订阅渠道直接向ChatGPT账户充值，不留后门，完全安全。使用正规Apple账户充值通道，全自动化充值技术，确保ChatGPT Plus充值过程中账户安全和服务稳定，已稳定运行2年。',
+          '我们的ChatGPT Plus 充值服务采用iOS正规代充技术，通过苹果官方订阅渠道直接向ChatGPT账户充值，完全安全。使用正规Apple账户充值通道，全自动化充值技术，确保ChatGPT Plus充值过程中账户安全和服务稳定，已稳定运行2年。',
       },
       {
         title: 'Q: ChatGPT Plus充值失败怎么办？',
