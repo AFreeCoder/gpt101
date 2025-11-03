@@ -6,7 +6,6 @@ import ServiceDetails from '~/components/widgets/ServiceDetails.astro';
 import ToolsAndTutorials from '~/components/widgets/ToolsAndTutorials.astro';
 import CustomerSupport from '~/components/widgets/CustomerSupport.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
-import PurchaseChannelModal from '~/components/widgets/PurchaseChannelModal.astro';
 
 import { siteConfig } from '~/config/site';
 
@@ -62,53 +61,56 @@ const metadata = {
 
     <Fragment slot="content">
       <div class="text-center max-w-4xl mx-auto">
-        <!-- 打字机效果核心特点 -->
+        <!-- 核心卖点展示 - 简洁版 -->
         <div class="mb-8">
-          <div
-            id="typewriter"
-            class="text-2xl md:text-3xl font-semibold text-purple-600 min-h-[3rem] flex items-center justify-center"
-          >
-            <!-- 打字机内容将通过JavaScript动态插入 -->
+          <div class="flex flex-wrap items-center justify-center gap-6 md:gap-8 max-w-3xl mx-auto text-gray-600">
+            <!-- 卖点1: 无需海外卡 -->
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-sm md:text-base font-medium">无需海外卡</span>
+            </div>
+
+            <!-- 卖点2: 国内支付 -->
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-sm md:text-base font-medium">国内支付</span>
+            </div>
+
+            <!-- 卖点3: 1分钟充值 -->
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-sm md:text-base font-medium">1分钟充值</span>
+            </div>
+
+            <!-- 卖点4: 失败退款 -->
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="text-sm md:text-base font-medium">失败退款</span>
+            </div>
           </div>
         </div>
 
-        <!-- 副标题 -->
-        <p class="text-lg text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-          专业 ChatGPT Plus 充值服务，无需海外信用卡，正规充值渠道，1分钟即可完成充值。<br />
-          让每个人都能轻松订阅 ChatGPT Plus。
-        </p>
-
-        <!-- 三个按钮 -->
+        <!-- 两个按钮 -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
           <a
             href={siteConfig.homepage.links.cardPurchase}
             target="_blank"
-            class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md"
+            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
           >
-            {siteConfig.homepage.buttons.cardPurchase}
+            立即购买升级
           </a>
-          <div class="relative group">
-            <button
-              type="button"
-              data-open-channel-modal
-              class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg"
-            >
-              {siteConfig.homepage.buttons.immediateUpgrade}
-            </button>
-            <!-- Tooltip -->
-            <div
-              class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50"
-            >
-              升级前请先购买卡密
-              <div
-                class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"
-              >
-              </div>
-            </div>
-          </div>
           <a
             href={siteConfig.homepage.links.orderQuery}
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300"
+            target="_blank"
+            class="bg-white hover:bg-gray-50 text-gray-700 px-10 py-4 rounded-xl font-semibold text-lg transition-all duration-300 border-2 border-gray-200 hover:border-gray-300"
           >
             {siteConfig.homepage.buttons.orderQuery}
           </a>
@@ -132,80 +134,6 @@ const metadata = {
         </div>
       </div>
 
-      <!-- 打字机效果JavaScript -->
-      <script>
-        let typewriterTimer: ReturnType<typeof setTimeout> | null = null;
-
-        const handlePageLoad = () => {
-          const typewriterElement = document.getElementById('typewriter');
-          if (!typewriterElement) {
-            return;
-          }
-
-          cleanupTypewriter();
-          typewriterElement.textContent = '';
-
-          const texts = ['无需海外信用卡', '正规充值渠道', '1分钟完成充值', '不成功100%退款'];
-
-          let currentTextIndex = 0;
-          let currentCharIndex = 0;
-          let isDeleting = false;
-
-          function typeWriter() {
-            if (!typewriterElement) return;
-            const currentText = texts[currentTextIndex];
-
-            if (isDeleting) {
-              currentCharIndex = Math.max(currentCharIndex - 1, 0);
-              typewriterElement.textContent = currentText.substring(0, currentCharIndex);
-
-              if (currentCharIndex === 0) {
-                isDeleting = false;
-                currentTextIndex = (currentTextIndex + 1) % texts.length;
-                typewriterTimer = setTimeout(typeWriter, 500); // 停顿500ms
-                return;
-              }
-            } else {
-              typewriterElement.textContent = currentText.substring(0, currentCharIndex + 1);
-              currentCharIndex++;
-
-              if (currentCharIndex === currentText.length) {
-                typewriterTimer = setTimeout(() => {
-                  isDeleting = true;
-                  typeWriter();
-                }, 2000); // 完整显示2秒
-                return;
-              }
-            }
-
-            typewriterTimer = setTimeout(typeWriter, isDeleting ? 50 : 100);
-          }
-
-          typeWriter();
-        };
-
-        function cleanupTypewriter() {
-          if (typewriterTimer) {
-            clearTimeout(typewriterTimer);
-            typewriterTimer = null;
-          }
-        }
-
-        const onBeforeSwap = () => {
-          cleanupTypewriter();
-          document.removeEventListener('astro:page-load', handlePageLoad);
-          document.removeEventListener('astro:before-swap', onBeforeSwap);
-        };
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', handlePageLoad, { once: true });
-        } else {
-          handlePageLoad();
-        }
-
-        document.addEventListener('astro:page-load', handlePageLoad);
-        document.addEventListener('astro:before-swap', onBeforeSwap);
-      </script>
     </Fragment>
   </Hero>
 
@@ -232,32 +160,39 @@ const metadata = {
     classes={{ container: 'max-w-6xl' }}
     items={[
       {
-        title: 'Q: ChatGPT Plus 充值服务安全吗？会不会影响我的账户？',
+        title: 'Q: 没有海外信用卡可以充值吗？',
         description:
-          '我们的ChatGPT Plus 充值服务采用iOS正规代充技术，通过苹果官方订阅渠道直接向ChatGPT账户充值，完全安全。使用正规Apple账户充值通道，全自动化充值技术，确保ChatGPT Plus充值过程中账户安全和服务稳定，已稳定运行2年。',
+          '完全可以！我们的服务专为国内用户设计，无需任何海外信用卡，使用支付宝或微信支付即可完成充值。采用正规iOS充值渠道，通过苹果官方订阅系统完成充值，安全便捷。',
       },
       {
-        title: 'Q: ChatGPT Plus充值失败怎么办？',
-        description: '如果遇到ChatGPT Plus充值失败的情况，我们承诺100%当天退款。请立即联系客服QQ：2316149029，我们会第一时间为您处理ChatGPT Plus充值问题或办理退款。',
-      },
-      {
-        title: 'Q: ChatGPT Plus充值价格为什么和官方不一致？',
+        title: 'Q: 充值过程需要提供账号密码吗？',
         description:
-          '受ChatGPT在不同地区的价格策略、汇率以及渠道成本影响，ChatGPT Plus充值价格偶尔会有波动，请以最新充值价格为准。我们的ChatGPT Plus充值服务完全正规，通过苹果官方通道完成订阅，充值后享受与官方相同的ChatGPT Plus全部功能和权限。',
+          '不需要！整个充值流程无需提供ChatGPT账号密码，完全保护您的账户安全和隐私。您只需使用我们提供的充值卡密，按照简单步骤操作即可完成充值，全程不涉及账号密码信息。',
       },
       {
-        title: 'Q: ChatGPT Plus充值需要多长时间？',
+        title: 'Q: 充值需要多长时间？会很复杂吗？',
         description:
-          '我们提供24/7自动处理的ChatGPT Plus充值服务。购买卡密后，整个ChatGPT Plus充值流程通常在1-3分钟内完成。极少数情况下可能需要10-20分钟，这是目前市面上最快的ChatGPT Plus充值方式之一。',
+          '非常快速简单！购买卡密后，按照教程操作通常在1分钟内即可完成充值。我们提供详细的图文教程，即使是第一次操作也能轻松完成。24/7自动处理，随时购买随时充值。',
       },
       {
-        title: 'Q: ChatGPT Plus充值支持哪些支付方式？',
-        description: '我们的ChatGPT Plus充值服务支持微信支付和支付宝支付，方便快捷。购买流程简单，支付完成后即可获得卡密，然后按照指引在1分钟内完成ChatGPT Plus充值流程，无需海外信用卡。',
+        title: 'Q: 如果充值失败会怎么样？',
+        description:
+          '请放心！如果遇到充值失败的情况，我们承诺100%当天退款，无需复杂流程。同时，我们已稳定运营2年，充值成功率极高。如有任何问题，联系客服QQ：2316149029，我们会第一时间处理。',
+      },
+      {
+        title: 'Q: 充值后会不会被封号？如果封号怎么办？',
+        description:
+          '我们采用正规Apple官方充值渠道，与直接在ChatGPT官网订阅完全一致，不存在违规操作，正常使用不会被封号。万一因为充值问题导致封号（极少发生），我们提供封号退款保障，保护您的权益。',
+      },
+      {
+        title: 'Q: 可以开发票吗？',
+        description:
+          '可以开具发票。如需发票，请在购买后联系客服QQ：2316149029，提供相关开票信息（公司名称、税号等），我们会为您办理发票开具事宜。',
       },
       {
         title: 'Q: 如何选择ChatGPT Plus充值还是镜像服务？',
         description:
-          '深度使用ChatGPT且有网络条件的用户建议选择ChatGPT Plus充值服务，享受完整的ChatGPT Plus功能；无网络条件或中度使用ChatGPT的用户可选择镜像服务，性价比更高，页面和功能与ChatGPT Plus完全一致，国内可直连使用。',
+          '深度使用ChatGPT且有网络条件的用户建议选择ChatGPT Plus充值服务，享受完整的官方功能；无网络条件或中度使用ChatGPT的用户可选择镜像服务，性价比更高，国内可直连使用，功能体验与官网一致。',
       },
     ]}
   >
@@ -272,7 +207,4 @@ const metadata = {
       <div class="absolute inset-0 bg-white dark:bg-transparent"></div>
     </Fragment>
   </CustomerSupport>
-
-  <!-- Purchase Channel Modal ******************* -->
-  <PurchaseChannelModal />
 </Layout>

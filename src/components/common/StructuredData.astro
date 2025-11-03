@@ -76,42 +76,50 @@ const faqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'ChatGPT Plus充值服务安全吗？会不会影响我的账户？',
+      name: '没有海外信用卡可以充值吗？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '我们的ChatGPT Plus充值服务采用iOS正规代充技术，通过苹果官方订阅渠道直接向ChatGPT账户充值，不留后门，完全安全。使用正规Apple账户充值通道，全自动化充值技术，确保ChatGPT Plus充值过程中账户安全和服务稳定，已稳定运行2年。',
+        text: '完全可以！我们的服务专为国内用户设计，无需任何海外信用卡，使用支付宝或微信支付即可完成充值。采用正规iOS充值渠道，通过苹果官方订阅系统完成充值，安全便捷。',
       },
     },
     {
       '@type': 'Question',
-      name: 'ChatGPT Plus充值失败怎么办？',
+      name: '充值过程需要提供账号密码吗？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '如果遇到ChatGPT Plus充值失败的情况，我们承诺100%当天退款。请立即联系客服QQ：2316149029，我们会第一时间为您处理ChatGPT Plus充值问题或办理退款。',
+        text: '不需要！整个充值流程无需提供ChatGPT账号密码，完全保护您的账户安全和隐私。您只需使用我们提供的充值卡密，按照简单步骤操作即可完成充值，全程不涉及账号密码信息。',
       },
     },
     {
       '@type': 'Question',
-      name: 'ChatGPT Plus充值价格为什么和官方不一致？',
+      name: '充值需要多长时间？会很复杂吗？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '受ChatGPT在不同地区的价格策略、汇率以及渠道成本影响，ChatGPT Plus充值价格偶尔会有波动，请以最新充值价格为准。我们的ChatGPT Plus充值服务完全正规，通过苹果官方通道完成订阅，充值后享受与官方相同的ChatGPT Plus全部功能和权限。',
+        text: '非常快速简单！购买卡密后，按照教程操作通常在1分钟内即可完成充值。我们提供详细的图文教程，即使是第一次操作也能轻松完成。24/7自动处理，随时购买随时充值。',
       },
     },
     {
       '@type': 'Question',
-      name: 'ChatGPT Plus充值需要多长时间？',
+      name: '如果充值失败会怎么样？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '我们提供24/7自动处理的ChatGPT Plus充值服务。购买卡密后，整个ChatGPT Plus充值流程通常在1-3分钟内完成。极少数情况下可能需要10-20分钟，这是目前市面上最快的ChatGPT Plus充值方式之一。',
+        text: '请放心！如果遇到充值失败的情况，我们承诺100%当天退款，无需复杂流程。同时，我们已稳定运营2年，充值成功率极高。如有任何问题，联系客服QQ：2316149029，我们会第一时间处理。',
       },
     },
     {
       '@type': 'Question',
-      name: 'ChatGPT Plus充值支持哪些支付方式？',
+      name: '充值后会不会被封号？如果封号怎么办？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '我们的ChatGPT Plus充值服务支持微信支付和支付宝支付，方便快捷。购买流程简单，支付完成后即可获得卡密，然后按照指引在1分钟内完成ChatGPT Plus充值流程，无需海外信用卡。',
+        text: '我们采用正规Apple官方充值渠道，与直接在ChatGPT官网订阅完全一致，不存在违规操作，正常使用不会被封号。万一因为充值问题导致封号（极少发生），我们提供封号退款保障，保护您的权益。',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '可以开发票吗？',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '可以开具发票。如需发票，请在购买后联系客服QQ：2316149029，提供相关开票信息（公司名称、税号等），我们会为您办理发票开具事宜。',
       },
     },
     {
@@ -119,7 +127,7 @@ const faqSchema = {
       name: '如何选择ChatGPT Plus充值还是镜像服务？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '深度使用ChatGPT且有网络条件的用户建议选择ChatGPT Plus充值服务，享受完整的ChatGPT Plus功能；无网络条件或中度使用ChatGPT的用户可选择镜像服务，性价比更高，页面和功能与ChatGPT Plus完全一致，国内可直连使用。',
+        text: '深度使用ChatGPT且有网络条件的用户建议选择ChatGPT Plus充值服务，享受完整的官方功能；无网络条件或中度使用ChatGPT的用户可选择镜像服务，性价比更高，国内可直连使用，功能体验与官网一致。',
       },
     },
   ],
@@ -143,7 +151,7 @@ const websiteSchema = {
 };
 
 // 根据type参数决定输出哪些schema
-const schemas = [];
+const schemas: Array<Record<string, unknown>> = [];
 if (type === 'product' || type === 'all') {
   schemas.push(productSchema);
 }
@@ -157,6 +165,6 @@ if (type === 'all') {
 
 {
   schemas.map((schema) => (
-    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
   ))
 }
