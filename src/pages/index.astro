@@ -6,6 +6,7 @@ import ServiceDetails from '~/components/widgets/ServiceDetails.astro';
 import ToolsAndTutorials from '~/components/widgets/ToolsAndTutorials.astro';
 import CustomerSupport from '~/components/widgets/CustomerSupport.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
+import PurchaseChannelModal from '~/components/widgets/PurchaseChannelModal.astro';
 
 import { siteConfig } from '~/config/site';
 
@@ -17,7 +18,7 @@ const metadata = {
 };
 ---
 
-<Layout metadata={metadata} structuredDataType="all">
+<Layout metadata={metadata}>
   <!-- Hero Widget ******************* -->
   <Hero
     compact
@@ -51,69 +52,106 @@ const metadata = {
     `}
   >
     <Fragment slot="title">
-      <!-- 大标题 - Hero组件会自动包裹h1标签，这里只需要定义样式和内容 -->
-      <div class="text-8xl md:text-8xl font-bold mb-6">
+      <!-- 大标题 - Hero组件会自动包裹h1标签 -->
+      <span class="text-8xl md:text-8xl font-bold mb-6 inline-block">
         <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> ChatGPT Plus </span>
         <br />
         <span class="text-gray-800">充值服务</span>
-      </div>
+      </span>
     </Fragment>
 
     <Fragment slot="content">
       <div class="text-center max-w-4xl mx-auto">
-        <!-- 核心卖点展示 - 简洁版 -->
+        <!-- 打字机效果核心特点 -->
         <div class="mb-8">
-          <div class="flex flex-wrap items-center justify-center gap-6 md:gap-8 max-w-3xl mx-auto text-gray-600">
-            <!-- 卖点1: 无需海外卡 -->
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span class="text-sm md:text-base font-medium">无需海外卡</span>
-            </div>
-
-            <!-- 卖点2: 国内支付 -->
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span class="text-sm md:text-base font-medium">国内支付</span>
-            </div>
-
-            <!-- 卖点3: 1分钟充值 -->
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span class="text-sm md:text-base font-medium">1分钟充值</span>
-            </div>
-
-            <!-- 卖点4: 失败退款 -->
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span class="text-sm md:text-base font-medium">失败退款</span>
-            </div>
+          <div
+            id="typewriter"
+            class="text-2xl md:text-3xl font-semibold text-purple-600 min-h-[3rem] flex items-center justify-center"
+          >
+            <!-- 打字机内容将通过JavaScript动态插入 -->
           </div>
         </div>
 
-        <!-- 两个按钮 -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
+        <!-- 核心卖点展示 -->
+        <div class="mb-8">
+          <div class="flex flex-wrap items-center justify-center gap-6 md:gap-8 max-w-3xl mx-auto text-gray-600">
+            {
+              siteConfig.homepage.features.map((feature) => (
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="text-sm md:text-base font-medium">{feature.text}</span>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- 两个主按钮 -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+          <!-- 主按钮1: 卡密购买 -->
           <a
             href={siteConfig.homepage.links.cardPurchase}
             target="_blank"
-            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+            class="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
           >
-            立即购买升级
+            {siteConfig.homepage.buttons.cardPurchase}
           </a>
-          <a
-            href={siteConfig.homepage.links.orderQuery}
-            target="_blank"
-            class="bg-white hover:bg-gray-50 text-gray-700 px-10 py-4 rounded-xl font-semibold text-lg transition-all duration-300 border-2 border-gray-200 hover:border-gray-300"
-          >
-            {siteConfig.homepage.buttons.orderQuery}
-          </a>
+
+          <!-- 次主按钮2: 立即升级 -->
+          <div class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 p-[2px] rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+            <button
+              type="button"
+              data-open-channel-modal
+              class="group w-full bg-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 px-8 py-3 rounded-[10px] font-bold transition-all duration-300"
+            >
+              <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:text-white transition-colors">
+                {siteConfig.homepage.buttons.immediateUpgrade}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 引导提示框 - 整合引导文案和订单查询 -->
+        <div class="max-w-2xl mx-auto mb-4">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg px-6 py-4 text-center">
+            <!-- 主提示文案 -->
+            <div class="text-gray-700 mb-3">
+              <span class="inline-flex items-center justify-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="font-medium">
+                  已完成购买？点击上方 <span class="text-blue-600 font-semibold">「{siteConfig.homepage.buttons.immediateUpgrade}」</span>
+                </span>
+              </span>
+            </div>
+
+            <!-- 辅助链接 -->
+            <div class="flex items-center justify-center gap-3 text-sm">
+              <a
+                href={siteConfig.homepage.links.orderQuery}
+                target="_blank"
+                class="text-blue-600 hover:text-blue-700 font-medium hover:underline inline-flex items-center gap-1"
+              >
+                {siteConfig.homepage.buttons.orderQuery}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+              <span class="text-gray-400">|</span>
+              <a
+                href={siteConfig.navigation.links.blog}
+                class="text-blue-600 hover:text-blue-700 font-medium hover:underline inline-flex items-center gap-1"
+              >
+                使用教程
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
         </div>
 
         <!-- 服务保障 -->
@@ -134,6 +172,80 @@ const metadata = {
         </div>
       </div>
 
+      <!-- 打字机效果JavaScript -->
+      <script>
+        let typewriterTimer: ReturnType<typeof setTimeout> | null = null;
+
+        const handlePageLoad = () => {
+          const typewriterElement = document.getElementById('typewriter');
+          if (!typewriterElement) {
+            return;
+          }
+
+          cleanupTypewriter();
+          typewriterElement.textContent = '';
+
+          const texts = ['无需海外信用卡', '正规充值渠道', '1分钟完成充值', '不成功100%退款'];
+
+          let currentTextIndex = 0;
+          let currentCharIndex = 0;
+          let isDeleting = false;
+
+          function typeWriter() {
+            if (!typewriterElement) return;
+            const currentText = texts[currentTextIndex];
+
+            if (isDeleting) {
+              currentCharIndex = Math.max(currentCharIndex - 1, 0);
+              typewriterElement.textContent = currentText.substring(0, currentCharIndex);
+
+              if (currentCharIndex === 0) {
+                isDeleting = false;
+                currentTextIndex = (currentTextIndex + 1) % texts.length;
+                typewriterTimer = setTimeout(typeWriter, 500); // 停顿500ms
+                return;
+              }
+            } else {
+              typewriterElement.textContent = currentText.substring(0, currentCharIndex + 1);
+              currentCharIndex++;
+
+              if (currentCharIndex === currentText.length) {
+                typewriterTimer = setTimeout(() => {
+                  isDeleting = true;
+                  typeWriter();
+                }, 2000); // 完整显示2秒
+                return;
+              }
+            }
+
+            typewriterTimer = setTimeout(typeWriter, isDeleting ? 50 : 100);
+          }
+
+          typeWriter();
+        };
+
+        function cleanupTypewriter() {
+          if (typewriterTimer) {
+            clearTimeout(typewriterTimer);
+            typewriterTimer = null;
+          }
+        }
+
+        const onBeforeSwap = () => {
+          cleanupTypewriter();
+          document.removeEventListener('astro:page-load', handlePageLoad);
+          document.removeEventListener('astro:before-swap', onBeforeSwap);
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', handlePageLoad);
+        } else {
+          handlePageLoad();
+        }
+
+        document.addEventListener('astro:page-load', handlePageLoad);
+        document.addEventListener('astro:before-swap', onBeforeSwap);
+      </script>
     </Fragment>
   </Hero>
 
@@ -207,4 +319,7 @@ const metadata = {
       <div class="absolute inset-0 bg-white dark:bg-transparent"></div>
     </Fragment>
   </CustomerSupport>
+
+  <!-- Purchase Channel Modal ******************* -->
+  <PurchaseChannelModal />
 </Layout>

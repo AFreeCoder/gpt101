@@ -10,20 +10,27 @@ export const siteConfig = {
       mirrorExperience: '/chatgpt-mirror', // 镜像服务体验
     },
     buttons: {
-      cardPurchase: '卡密购买',
+      cardPurchase: '购买',
       immediateUpgrade: '立即升级',
       orderQuery: '订单查询',
       mirrorExperience: '立刻体验',
     },
+    // 核心卖点配置
+    features: [
+      { text: '无需海外卡', icon: 'check' },
+      { text: '国内支付', icon: 'check' },
+      { text: '1分钟充值', icon: 'check' },
+      { text: '失败退款', icon: 'check' },
+    ],
     // 购买渠道配置 - 用于"立即升级"弹窗
     purchaseChannels: [
-      // {
-      //   id: 1,
-      //   label: '【自动1】ChatGPT官网会员自动充值',
-      //   url: 'https://gptplus.biz/recharge',
-      //   color: 'from-blue-500 to-blue-500',
-      //   description: '',
-      // },
+      {
+        id: 1,
+        label: '【自动1】ChatGPT官网会员自动充值',
+        url: 'https://www.987ai.vip/recharge',
+        color: 'from-blue-500 to-blue-500',
+        description: '',
+      },
       {
         id: 2,
         label: '【自动4】ChatGPT官网会员自动充值',
@@ -47,7 +54,7 @@ export const siteConfig = {
       // },
       {
         id: 5,
-        label: '【手工】ChatGPT官网会员手工充值',
+        label: '【备用】ChatGPT官网会员手工充值',
         url: '',
         color: 'from-blue-500 to-blue-500',
         description: '该渠道为手工渠道，购买完后请联系客服QQ:2316149029',
