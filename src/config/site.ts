@@ -8,6 +8,7 @@ export const siteConfig = {
       orderQuery: 'https://fe.dtyuedan.cn/order', // 卡密订单查询
       mirrorExperience: '/chatgpt-mirror', // 镜像服务体验
       tutorial: '/how-to-upgrade-gpt-plus', // 使用教程
+      survey: 'https://f.kdocs.cn/g/Y2b8l5Fu/', // 问卷调查（需要替换为实际链接）
     },
     buttons: {
       cardPurchase: '购买',
@@ -15,6 +16,7 @@ export const siteConfig = {
       orderQuery: '订单查询',
       mirrorExperience: '立刻体验',
       tutorial: '使用教程',
+      survey: '填写问卷领5元优惠',
     },
     // 核心卖点配置
     features: [

@@ -76,23 +76,14 @@ const metadata = {
         <div class="mb-8">
           <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3 max-w-3xl mx-auto">
             {
-              siteConfig.homepage.features.map((feature, index) => {
-                const colors = [
-                  { bg: 'bg-green-50', border: 'border-green-200', icon: 'text-green-600' },
-                  { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600' },
-                  { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-600' },
-                  { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'text-orange-600' },
-                ];
-                const color = colors[index % colors.length];
-                return (
-                  <div class={`flex items-center gap-1.5 px-2.5 py-1 ${color.bg} rounded border ${color.border}`}>
-                    <svg class={`w-3 h-3 ${color.icon} flex-shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span class="text-xs font-medium text-gray-700">{feature.text}</span>
-                  </div>
-                );
-              })
+              siteConfig.homepage.features.map((feature) => (
+                <div class="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded border border-green-200">
+                  <svg class="w-3 h-3 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="text-xs font-medium text-gray-700">{feature.text}</span>
+                </div>
+              ))
             }
           </div>
         </div>
@@ -138,7 +129,7 @@ const metadata = {
             </div>
 
             <!-- 辅助链接 -->
-            <div class="flex items-center justify-center gap-3 text-sm">
+            <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3 text-sm">
               <a
                 href={siteConfig.homepage.links.orderQuery}
                 target="_blank"
@@ -159,26 +150,21 @@ const metadata = {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
               </a>
+              <span class="text-gray-400">|</span>
+              <a
+                href={siteConfig.homepage.links.survey}
+                target="_blank"
+                class="text-orange-600 hover:text-orange-700 font-medium hover:underline inline-flex items-center gap-1"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                {siteConfig.homepage.buttons.survey}
+              </a>
             </div>
           </div>
         </div>
 
-        <!-- 服务保障 -->
-        <div class="text-center mt-8">
-          <div
-            class="inline-flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-6 py-4 shadow-sm"
-          >
-            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clip-rule="evenodd"></path>
-              </svg>
-            </div>
-            <p class="text-green-800 font-semibold">服务保障：请放心购买，充值失败 100% 当天退款</p>
-          </div>
-        </div>
       </div>
 
       <!-- 打字机效果JavaScript -->
