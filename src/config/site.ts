@@ -5,22 +5,26 @@ export const siteConfig = {
     links: {
       cardPurchase: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 卡密购买
       // cardPurchase: '/chatgpt-plus-maintenance', // 卡密购买
-      immediateUpgrade: 'https://gptplus.biz/recharge', // 立即升级 - 维护页面
       orderQuery: 'https://fe.dtyuedan.cn/order', // 卡密订单查询
       mirrorExperience: '/chatgpt-mirror', // 镜像服务体验
+      tutorial: '/how-to-upgrade-gpt-plus', // 使用教程
     },
     buttons: {
       cardPurchase: '购买',
       immediateUpgrade: '立即升级',
       orderQuery: '订单查询',
       mirrorExperience: '立刻体验',
+      tutorial: '使用教程',
     },
     // 核心卖点配置
     features: [
       { text: '无需海外卡', icon: 'check' },
       { text: '国内支付', icon: 'check' },
       { text: '1分钟充值', icon: 'check' },
+      { text: '支持发票', icon: 'check' },
+      { text: '技术支持', icon: 'check' },
       { text: '失败退款', icon: 'check' },
+      { text: '封号退款', icon: 'check' },
     ],
     // 购买渠道配置 - 用于"立即升级"弹窗
     purchaseChannels: [
