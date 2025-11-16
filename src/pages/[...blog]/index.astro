@@ -3,9 +3,11 @@ import type { InferGetStaticPropsType, GetStaticPaths } from 'astro';
 
 import merge from 'lodash.merge';
 import type { ImageMetadata } from 'astro';
+import { SITE } from 'astrowind:config';
 import Layout from '~/layouts/PageLayout.astro';
 import SinglePost from '~/components/blog/SinglePost.astro';
 import ToBlogLink from '~/components/blog/ToBlogLink.astro';
+import { siteConfig } from '~/config/site';
 
 import { getCanonical, getPermalink } from '~/utils/permalinks';
 import { getStaticPathsBlogPost, blogPostRobots } from '~/utils/blog';
@@ -43,6 +45,109 @@ const metadata = merge(
   },
   { ...(post?.metadata ? { ...post.metadata, canonical: post.metadata?.canonical || url } : {}) }
 ) as MetaData;
+
+const tutorialsCanonical = getCanonical(getPermalink(siteConfig.navigation.links.blog));
+
+const breadcrumbList = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: '首页',
+      item: SITE?.site,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: '教程中心',
+      item: tutorialsCanonical,
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: post.title,
+      item: url,
+    },
+  ],
+};
+
+const faqEntities =
+  post.faqs && post.faqs.length
+    ? post.faqs.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      }))
+    : [
+        {
+          '@type': 'Question',
+          name: '充值或镜像服务失败会怎么样？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: '本站承诺充值失败100%退款，并在教程内提供了订单查询与客服联系方式，遇到问题可立即处理。',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '没有海外卡也能完成教程中的步骤吗？',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: '可以。本教程介绍的方案全部支持国内支付（微信/支付宝），无需海外信用卡，并由官方渠道完成充值。',
+          },
+        },
+      ];
+
+const faqStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqEntities,
+};
+
+const howToStructuredData =
+  (post.howTo && post.howTo.steps?.length) || post.category?.slug === 'plus'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: post.title,
+        description:
+          post.excerpt ||
+          '通过 ChatGPT 一站式服务完成 Plus 代充，包含购买卡密、验证信息以及完成升级的完整步骤。',
+        totalTime: post.howTo?.totalTime || 'PT2M',
+        step:
+          post.howTo?.steps?.map((step) => ({
+            '@type': 'HowToStep',
+            name: step.title || '步骤',
+            text: step.description,
+          })) ||
+          [
+            {
+              '@type': 'HowToStep',
+              name: '购买卡密',
+              text: '在教程推荐的渠道中选择 Plus 套餐，使用微信/支付宝完成支付并获取卡密。',
+            },
+            {
+              '@type': 'HowToStep',
+              name: '选择充值渠道',
+              text: '根据所购商品，在充值系统中选择对应的推荐通道（如推荐1或镜像备用入口）。',
+            },
+            {
+              '@type': 'HowToStep',
+              name: '验证卡密',
+              text: '在系统中输入卡密并验证，按照提示登录 ChatGPT 账号并粘贴密钥。',
+            },
+            {
+              '@type': 'HowToStep',
+              name: '完成充值',
+              text: '核对账号信息，提交订单，1-2分钟内完成升级；如失败可直接联系客服退款。',
+            },
+          ],
+      }
+    : null;
 ---
 
 <Layout metadata={metadata}>
@@ -51,4 +156,45 @@ const metadata = merge(
   </SinglePost>
   <ToBlogLink />
   <RelatedPosts post={post} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbList)}></script>
+  <script type="application/ld+json" set:html={JSON.stringify(faqStructuredData)}></script>
+  {howToStructuredData && <script type="application/ld+json" set:html={JSON.stringify(howToStructuredData)}></script>}
+  <script>
+    (() => {
+      const sendAnalyticsEvent = (action, label) => {
+        if (typeof window === 'undefined') return;
+        const payload = {
+          event_category: 'tutorials',
+          event_label: label || '',
+        };
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', action, payload);
+        } else if (Array.isArray(window.dataLayer)) {
+          window.dataLayer.push({ event: action, ...payload });
+        }
+      };
+
+      const bindAnalytics = () => {
+        document.querySelectorAll('[data-ga-event]').forEach((element) => {
+          if (element.getAttribute('data-ga-bound') === 'true') {
+            return;
+          }
+          element.setAttribute('data-ga-bound', 'true');
+          element.addEventListener('click', () => {
+            const action = element.getAttribute('data-ga-event') || 'tutorial_post_click';
+            const label = element.getAttribute('data-ga-label') || '';
+            sendAnalyticsEvent(action, label);
+          });
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindAnalytics, { once: true });
+      } else {
+        bindAnalytics();
+      }
+
+      document.addEventListener('astro:page-load', bindAnalytics);
+    })();
+  </script>
 </Layout>

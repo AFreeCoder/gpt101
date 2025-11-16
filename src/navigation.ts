@@ -12,7 +12,7 @@ export const headerData = {
       href: getPermalink(siteConfig.navigation.links.mirror),
     },
     {
-      text: '教程',
+      text: '教程中心',
       href: getPermalink(siteConfig.navigation.links.blog),
     },
     {
@@ -42,8 +42,9 @@ export const footerData = {
     {
       title: '教程',
       links: [
-        { text: 'ChatGPT使用指南', href: getBlogPermalink() },
-        { text: 'Plus会员教程', href: getBlogPermalink() },
+        { text: 'ChatGPT Plus 充值教程', href: getPermalink('/how-to-upgrade-gpt-plus') },
+        { text: '镜像服务使用指南', href: getPermalink('/chatgpt-mirror-guide') },
+        { text: '充值避坑指南', href: getPermalink('/2025-latest-7-way-to-upgrade-chatgpt-plus') },
         { text: '更多教程', href: getBlogPermalink() },
       ],
     },

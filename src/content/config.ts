@@ -62,6 +62,27 @@ const postCollection = defineCollection({
     author: z.string().optional(),
 
     metadata: metadataDefinition(),
+
+    faqs: z
+      .array(
+        z.object({
+          question: z.string(),
+          answer: z.string(),
+        })
+      )
+      .optional(),
+
+    howTo: z
+      .object({
+        totalTime: z.string().optional(),
+        steps: z.array(
+          z.object({
+            title: z.string().optional(),
+            description: z.string(),
+          })
+        ),
+      })
+      .optional(),
   }),
 });
 

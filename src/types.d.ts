@@ -36,6 +36,19 @@ export interface Post {
   /**  */
   draft?: boolean;
 
+  faqs?: Array<{
+    question: string;
+    answer: string;
+  }>;
+
+  howTo?: {
+    totalTime?: string;
+    steps: Array<{
+      title?: string;
+      description: string;
+    }>;
+  };
+
   /**  */
   Content?: AstroComponentFactory;
   content?: string;

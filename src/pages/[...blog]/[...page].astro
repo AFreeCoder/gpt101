@@ -1,13 +1,16 @@
 ---
 import type { InferGetStaticPropsType, GetStaticPaths } from 'astro';
 
+import { SITE } from 'astrowind:config';
+
 import Layout from '~/layouts/PageLayout.astro';
 import BlogList from '~/components/blog/List.astro';
-import Headline from '~/components/blog/Headline.astro';
 import Pagination from '~/components/blog/Pagination.astro';
-// import PostTags from "~/components/blog/Tags.astro";
+import { siteConfig } from '~/config/site';
 
-import { blogListRobots, getStaticPathsBlogList } from '~/utils/blog';
+import { blogListRobots, getStaticPathsBlogList, fetchPosts } from '~/utils/blog';
+import { getCanonical, getPermalink } from '~/utils/permalinks';
+import type { Post } from '~/types';
 
 export const prerender = true;
 
@@ -19,12 +22,79 @@ type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const { page } = Astro.props as Props;
 const currentPage = page.currentPage ?? 1;
+const allPosts = await fetchPosts();
 
-// const allCategories = await findCategories();
-// const allTags = await findTags();
+type TutorialCategory = {
+  slug: string;
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+  keywords: readonly string[];
+};
+
+const tutorialCategories: TutorialCategory[] = [
+  {
+    slug: 'plus',
+    title: 'Plus 代充教程',
+    description: '购买卡密、验证账号、发票等最常见问题都在这里。',
+    href: '/how-to-upgrade-gpt-plus',
+    icon: '⚡',
+    keywords: ['Plus', '充值', '卡密'],
+  },
+  {
+    slug: 'mirror',
+    title: '镜像服务体验',
+    description: '国内直连镜像使用步骤、套餐说明、常见限制说明。',
+    href: '/chatgpt-mirror-guide',
+    icon: '🪞',
+    keywords: ['镜像', 'Mirror'],
+  },
+  {
+    slug: 'payment',
+    title: '支付与避坑',
+    description: '支付方式、退款机制、封号处理等经验分享。',
+    href: '/2025-latest-7-way-to-upgrade-chatgpt-plus',
+    icon: '🛡️',
+    keywords: ['避坑', 'ChatGPT充值'],
+  },
+] as const;
+
+const normalizeMatch = (value: string) => value.toLowerCase();
+
+const matchByCategorySlug = (post: Post, slug: string) => {
+  if (!post.category || !post.category.slug) {
+    return false;
+  }
+  return normalizeMatch(post.category.slug) === normalizeMatch(slug);
+};
+
+const categoriesWithStats = tutorialCategories.map((category) => {
+  const belongsToCategory = (post: Post) => {
+    if (matchByCategorySlug(post, category.slug)) {
+      return true;
+    }
+    const tags = post.tags || [];
+    return tags.some((tag) =>
+      category.keywords.some((keyword) => normalizeMatch(tag.title || '').includes(normalizeMatch(keyword)))
+    );
+  };
+
+  const count = allPosts.filter(belongsToCategory).length;
+  const featuredPost = allPosts.find(belongsToCategory);
+
+  return {
+    ...category,
+    count,
+    featuredTitle: featuredPost?.title,
+    featuredUrl: featuredPost ? getPermalink(featuredPost.permalink, 'post') : category.href,
+  };
+});
+
+const featuredPosts = allPosts.slice(0, 2);
 
 const metadata = {
-  title: `Blog${currentPage > 1 ? ` — Page ${currentPage}` : ''}`,
+  title: `教程中心${currentPage > 1 ? ` ｜ 第 ${currentPage} 页` : ''}`,
   robots: {
     index: blogListRobots?.index && currentPage === 1,
     follow: blogListRobots?.follow,
@@ -33,16 +103,215 @@ const metadata = {
     type: 'blog',
   },
 };
+
+const tutorialsPath = siteConfig.navigation.links.blog;
+const tutorialsCanonical = getCanonical(getPermalink(tutorialsPath));
+const currentPath = page.url?.current || tutorialsPath;
+const currentCanonical = getCanonical(getPermalink(currentPath));
+
+const breadcrumbList = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: '首页',
+      item: SITE?.site,
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: '教程中心',
+      item: tutorialsCanonical,
+    },
+    ...(currentPage > 1
+      ? [
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: `教程中心第${currentPage}页`,
+            item: currentCanonical,
+          },
+        ]
+      : []),
+  ],
+};
+
+const faqStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '没有海外信用卡也能升级 ChatGPT Plus 吗？',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '可以。教程中心提供的所有 Plus 代充方案都支持微信/支付宝支付，通过苹果官方通道完成充值，无需海外信用卡。',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '充值或镜像体验失败会怎么办？',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '本站承诺充值失败100%退款，镜像服务也提供随时客服支持；如订单异常，可以通过订单查询入口或直接联系客服 QQ 2316149029 处理。',
+      },
+    },
+  ],
+};
 ---
 
 <Layout metadata={metadata}>
-  <section class="px-6 sm:px-6 py-12 sm:py-16 lg:py-20 mx-auto max-w-4xl">
-    <Headline subtitle=""> 相关教程 </Headline>
-    <BlogList posts={page.data} />
-    <Pagination prevUrl={page.url.prev} nextUrl={page.url.next} />
-    <!--
-      <PostTags tags={allCategories} class="mb-2" title="Search by Categories:" isCategory />
-      <PostTags tags={allTags}  title="Search by Tags:" />
-    -->
+  <section class="relative overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50">
+    <div class="mx-auto max-w-5xl px-6 py-16">
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">教程中心</p>
+      <h1 class="mt-4 text-4xl font-bold leading-tight text-gray-900 sm:text-5xl">
+        ChatGPT Plus 代充 & 镜像服务使用指南
+      </h1>
+      <p class="mt-4 text-lg text-gray-600 sm:text-xl">
+        收录最常见的充值步骤、镜像体验、支付避坑、售后保障等高意图教程，帮助你1分钟完成升级、0门槛使用 GPT-5。
+      </p>
+      <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <a
+          class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-green-500 to-blue-500 px-5 py-3 text-base font-semibold text-white shadow-md transition hover:shadow-lg"
+          href={siteConfig.homepage.links.cardPurchase}
+          target="_blank"
+          rel="noopener"
+          data-ga-event="tutorials_hero_cta"
+          data-ga-label="hero_plus_purchase"
+        >
+          立即购买 Plus
+        </a>
+        <a
+          class="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-5 py-3 text-base font-semibold text-gray-700 transition hover:border-gray-300 hover:text-primary"
+          href={siteConfig.homepage.links.mirrorExperience}
+          data-ga-event="tutorials_hero_cta"
+          data-ga-label="hero_mirror_experience"
+        >
+          镜像服务体验
+        </a>
+      </div>
+    </div>
   </section>
+
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <div class="grid gap-6 md:grid-cols-3">
+      {
+        categoriesWithStats.map((category) => (
+          <a
+            href={category.featuredUrl}
+            class="group relative rounded-3xl border border-gray-100 bg-white/90 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+          >
+            <div class="text-3xl">{category.icon}</div>
+            <h3 class="mt-4 text-xl font-bold text-gray-900">{category.title}</h3>
+            <p class="mt-2 text-sm text-gray-500">{category.description}</p>
+            <div class="mt-4 flex items-center justify-between text-sm text-gray-600">
+              <span>相关文章 {category.count}</span>
+              <span class="inline-flex items-center gap-1 text-primary">
+                查看
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    featuredPosts.length > 0 && (
+      <section class="mx-auto max-w-5xl px-6 pb-4">
+        <div class="mb-6 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">精选推荐</p>
+            <h2 class="mt-2 text-3xl font-bold text-gray-900">热门教程</h2>
+          </div>
+          <a href="/tutorials" class="text-sm font-semibold text-primary hover:underline">查看全部</a>
+        </div>
+        <div class="grid gap-6 md:grid-cols-2">
+          {
+            featuredPosts.map((post) => (
+              <div class="rounded-3xl border border-gray-100 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                <p class="text-sm text-gray-500">
+                  {post.publishDate.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </p>
+                <a href={getPermalink(post.permalink, 'post')} class="mt-2 block text-2xl font-bold text-gray-900">
+                  {post.title}
+                </a>
+                {post.excerpt && <p class="mt-2 text-sm text-gray-600">{post.excerpt}</p>}
+                <a
+                  href={getPermalink(post.permalink, 'post')}
+                  class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+                >
+                  阅读教程
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </a>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+    )
+  }
+
+  <section class="mx-auto max-w-4xl px-6 py-12">
+    <div class="mb-8 text-center">
+      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">全部教程</p>
+      <h2 class="mt-2 text-3xl font-bold text-gray-900">持续更新的充值与使用指南</h2>
+    </div>
+    <BlogList posts={page.data} />
+    <div class="mt-10">
+      <Pagination prevUrl={page.url.prev} nextUrl={page.url.next} />
+    </div>
+  </section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbList)}></script>
+  <script type="application/ld+json" set:html={JSON.stringify(faqStructuredData)}></script>
+  <script>
+    (() => {
+      const sendAnalyticsEvent = (action, label) => {
+        if (typeof window === 'undefined') return;
+        const payload = {
+          event_category: 'tutorials',
+          event_label: label || '',
+        };
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', action, payload);
+        } else if (Array.isArray(window.dataLayer)) {
+          window.dataLayer.push({ event: action, ...payload });
+        }
+      };
+
+      const bindAnalytics = () => {
+        document.querySelectorAll('[data-ga-event]').forEach((element) => {
+          if (element.getAttribute('data-ga-bound') === 'true') {
+            return;
+          }
+          element.setAttribute('data-ga-bound', 'true');
+          element.addEventListener('click', () => {
+            const action = element.getAttribute('data-ga-event') || 'tutorials_click';
+            const label = element.getAttribute('data-ga-label') || '';
+            sendAnalyticsEvent(action, label);
+          });
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindAnalytics, { once: true });
+      } else {
+        bindAnalytics();
+      }
+
+      document.addEventListener('astro:page-load', bindAnalytics);
+    })();
+  </script>
 </Layout>
