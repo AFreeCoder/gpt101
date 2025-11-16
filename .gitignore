@@ -11,6 +11,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# doc
+seo/
+
 
 # environment variables
 .env
@@ -22,5 +25,3 @@ pnpm-debug.log*
 pnpm-lock.yaml
 
 .astro
-
-seo/
