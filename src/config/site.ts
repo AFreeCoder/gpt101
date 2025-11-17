@@ -135,7 +135,7 @@ export const siteConfig = {
     qq: '2316149029',
     // 客服卡片配置
     customerService: {
-      title: '在线客服',
+      title: '在线QQ客服',
       subtitle: '有任何请联系客服',
       qrCode: {
         path: '/qq-qrcode.png', // QQ二维码图片路径（相对于public目录）
@@ -146,7 +146,6 @@ export const siteConfig = {
       },
       serviceTime: {
         title: '在线时间：9:00 ~ 23:00',
-        description: '非在线时间联系客服，请耐心等待，上线后第一时间响应。',
       },
       toast: {
         successMessage: '已复制到剪贴板',

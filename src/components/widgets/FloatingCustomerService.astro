@@ -16,7 +16,6 @@ const {
   title: cardTitle,
   subtitle: cardSubtitle,
   qrCode,
-  qqNumber: qqConfig,
   serviceTime,
   toast,
 } = customerService;
@@ -49,22 +48,22 @@ const {
     ></span>
   </button>
 
-  <!-- 客服卡片（点击后展开） -->
+  <!-- 客服卡片（点击后展开） - 紧凑版 -->
   <div
     id="customer-service-card"
     data-cs-panel
-    class="absolute bottom-20 right-0 w-80 bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-300"
+    class="absolute bottom-20 right-0 w-64 bg-white rounded-xl shadow-2xl overflow-hidden transition-all duration-300"
     role="dialog"
     aria-modal="true"
     aria-hidden="true"
     aria-labelledby="customer-service-title"
   >
-    <!-- 卡片头部 -->
-    <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 text-white">
+    <!-- 卡片头部 - 精简 -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 text-white">
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -73,7 +72,7 @@ const {
             </svg>
           </div>
           <div>
-            <h3 id="customer-service-title" class="font-semibold text-lg">{cardTitle}</h3>
+            <h3 id="customer-service-title" class="font-semibold text-base">{cardTitle}</h3>
             <p class="text-xs text-white/80">{cardSubtitle}</p>
           </div>
         </div>
@@ -83,45 +82,44 @@ const {
           aria-label="关闭"
           data-cs-close
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
       </div>
     </div>
 
-    <!-- 卡片内容 -->
-    <div class="p-6 space-y-5">
-      <!-- QQ二维码 - 中间区域 -->
+    <!-- 卡片内容 - 紧凑布局 -->
+    <div class="p-4 space-y-3">
+      <!-- QQ二维码 - 缩小 -->
       <div class="text-center">
-        <p class="text-sm text-gray-600 mb-3 font-medium">{qrCode.label}</p>
+        <p class="text-xs text-gray-600 mb-2 font-medium">{qrCode.label}</p>
         <div class="flex justify-center">
           <img
             src={qrCode.path}
             alt={qrCode.label}
-            width="192"
-            height="192"
+            width="128"
+            height="128"
             loading="lazy"
             decoding="async"
-            class="w-48 h-48 rounded-xl border-2 border-gray-200 shadow-sm"
+            class="w-32 h-32 rounded-lg border border-gray-200"
           />
         </div>
       </div>
 
-      <!-- QQ号 - 下方区域 -->
+      <!-- QQ号 - 紧凑，无重复标签 -->
       <div class="text-center">
-        <p class="text-sm text-gray-600 mb-2">{qqConfig.label}</p>
-        <div class="flex items-center justify-center gap-3">
-          <div class="bg-gray-50 border border-gray-200 rounded-lg px-5 py-3">
-            <p class="text-xl font-bold text-gray-900 select-all tracking-wide" data-cs-qq>{qqNumber}</p>
+        <div class="flex items-center justify-center gap-2">
+          <div class="bg-gray-50 border border-gray-200 rounded px-2.5 py-1.5">
+            <p class="text-sm font-bold text-gray-900 select-all" data-cs-qq>{qqNumber}</p>
           </div>
           <button
             type="button"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-sm"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded transition-colors duration-200 flex items-center gap-1"
             aria-label="复制QQ号"
             data-cs-copy
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -129,15 +127,15 @@ const {
                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
               ></path>
             </svg>
-            <span class="text-sm font-medium">复制</span>
+            <span class="text-xs font-medium">复制</span>
           </button>
         </div>
       </div>
 
-      <!-- 服务时间 - 底部区域 -->
-      <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-lg p-4">
-        <div class="flex items-center justify-center gap-2 text-blue-800">
-          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- 服务时间 - 精简 -->
+      <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-lg p-2.5">
+        <div class="flex items-center justify-center gap-1.5 text-blue-800">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -145,11 +143,8 @@ const {
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             ></path>
           </svg>
-          <p class="text-sm font-semibold">{serviceTime.title}</p>
+          <p class="text-xs font-semibold">{serviceTime.title}</p>
         </div>
-        <p class="text-xs text-blue-700 text-center mt-2">
-          {serviceTime.description}
-        </p>
       </div>
     </div>
   </div>
@@ -399,6 +394,29 @@ const {
 
       hideToast();
 
+      // 首次自动展开逻辑
+      const AUTO_OPEN_KEY = 'cs-auto-opened';
+      let autoOpenTimer = null;
+      let autoCloseTimer = null;
+
+      const hasAutoOpened = localStorage.getItem(AUTO_OPEN_KEY);
+
+      if (!hasAutoOpened) {
+        // 3秒后自动打开
+        autoOpenTimer = window.setTimeout(() => {
+          openPanel();
+          localStorage.setItem(AUTO_OPEN_KEY, 'true');
+
+          // 打开后8秒自动关闭
+          autoCloseTimer = window.setTimeout(() => {
+            closePanel();
+            autoCloseTimer = null;
+          }, 8000);
+
+          autoOpenTimer = null;
+        }, 3000);
+      }
+
       teardown = () => {
         closePanel();
         disposers.forEach((dispose) => dispose());
@@ -406,6 +424,16 @@ const {
         if (toastTimer) {
           clearTimeout(toastTimer);
           toastTimer = null;
+        }
+
+        if (autoOpenTimer) {
+          clearTimeout(autoOpenTimer);
+          autoOpenTimer = null;
+        }
+
+        if (autoCloseTimer) {
+          clearTimeout(autoCloseTimer);
+          autoCloseTimer = null;
         }
 
         hideToast();
