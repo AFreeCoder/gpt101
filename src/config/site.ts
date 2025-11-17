@@ -2,6 +2,14 @@
 export const siteConfig = {
   // 首页配置
   homepage: {
+    // Hero Section 文案
+    hero: {
+      title: {
+        gradient: '一站式 ChatGPT', // 渐变色部分
+        normal: '充值服务', // 普通色部分
+      },
+      subtitle: 'Plus / Pro / Team 全支持，微信支付宝秒到账，无需信用卡',
+    },
     links: {
       cardPurchase: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 卡密购买
       // cardPurchase: '/chatgpt-plus-maintenance', // 卡密购买
@@ -18,15 +26,14 @@ export const siteConfig = {
       tutorial: '使用教程',
       survey: '填写问卷领5元优惠',
     },
-    // 核心卖点配置
+    // 核心卖点配置（避免与副标题重复）
     features: [
-      { text: '无需海外卡', icon: 'check' },
-      { text: '国内支付', icon: 'check' },
-      { text: '1分钟充值', icon: 'check' },
-      { text: '支持发票', icon: 'check' },
-      { text: '技术支持', icon: 'check' },
+      { text: '无需海外信用卡', icon: 'check' },
+      { text: '微信/支付宝', icon: 'check' },
+      { text: '1分钟到账', icon: 'check' },
+      { text: '正规渠道', icon: 'check' },
+      { text: '支持开票', icon: 'check' },
       { text: '失败退款', icon: 'check' },
-      { text: '封号退款', icon: 'check' },
     ],
     // 购买渠道配置 - 用于"立即升级"弹窗
     purchaseChannels: [
@@ -38,7 +45,7 @@ export const siteConfig = {
         description: '',
       },
       {
-        id: 2,
+        id: 4,
         label: '【推荐4】ChatGPT官网会员自动充值',
         url: 'https://www.987ai.vip/recharge',
         color: 'from-blue-500 to-blue-500',
