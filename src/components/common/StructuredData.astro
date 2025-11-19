@@ -9,7 +9,20 @@ export interface Props {
 }
 
 const { type = 'all' } = Astro.props;
-const siteUrl = Astro.site?.toString() || 'https://gpt101.org';
+const siteUrl = (Astro.site?.toString() || 'https://gpt101.org').replace(/\/$/, ''); // 移除尾部斜杠
+
+// Organization Schema - 组织信息（用于搜索结果显示 logo）
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'ChatGPT 一站式服务',
+  url: siteUrl,
+  logo: `${siteUrl}/favicon.png`,
+  description: '专业的ChatGPT Plus代充和镜像服务提供商',
+  sameAs: [
+    // 可以添加社交媒体链接
+  ],
+};
 
 // Product Schema - ChatGPT Plus充值服务
 const productSchema = {
@@ -18,7 +31,7 @@ const productSchema = {
   name: 'ChatGPT Plus 充值服务',
   description:
     'ChatGPT Plus代充服务 - 无需海外信用卡，正规iOS充值渠道，1分钟完成充值，失败100%退款。支持GPT-5 全部模型、GPTs商店、DALL-E 3等全功能，24/7自动处理，微信支付宝支付便捷安全',
-  image: `${siteUrl}_astro/default.CZ816Hke_2bosb5.jpg`,
+  image: `${siteUrl}/_astro/default.CZ816Hke_2bosb5.jpg`,
   brand: {
     '@type': 'Brand',
     name: 'ChatGPT 一站式服务',
@@ -152,6 +165,9 @@ const websiteSchema = {
 
 // 根据type参数决定输出哪些schema
 const schemas: Array<Record<string, unknown>> = [];
+// Organization schema 始终输出（用于搜索结果 logo）
+schemas.push(organizationSchema);
+
 if (type === 'product' || type === 'all') {
   schemas.push(productSchema);
 }
