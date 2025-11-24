@@ -37,20 +37,20 @@ export const siteConfig = {
     ],
     // 购买渠道配置 - 用于"立即升级"弹窗
     purchaseChannels: [
-      {
-        id: 1,
-        label: '【推荐1】ChatGPT官网会员自助充值(充你的号)',
-        url: 'https://www.987ai.vip/recharge',
-        color: 'from-blue-500 to-blue-500',
-        description: '',
-      },
-      {
-        id: 4,
-        label: '【推荐4】ChatGPT官网会员自助充值(充你的号)',
-        url: 'https://www.987ai.vip/recharge',
-        color: 'from-blue-500 to-blue-500',
-        description: '',
-      },
+      // {
+      //   id: 1,
+      //   label: '【推荐1】ChatGPT官网会员自助充值(充你的号)',
+      //   url: 'https://www.987ai.vip/recharge',
+      //   color: 'from-blue-500 to-blue-500',
+      //   description: '',
+      // },
+      // {
+      //   id: 4,
+      //   label: '【推荐4】ChatGPT官网会员自助充值(充你的号)',
+      //   url: 'https://www.987ai.vip/recharge',
+      //   color: 'from-blue-500 to-blue-500',
+      //   description: '',
+      // },
       // {
       //   id: 3,
       //   label: '【推荐3】ChatGPT官网会员自动充值',
