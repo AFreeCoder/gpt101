@@ -211,7 +211,7 @@ const faqStructuredData = {
               <span class="inline-flex items-center gap-1 text-primary">
                 查看
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </span>
             </div>
@@ -229,35 +229,35 @@ const faqStructuredData = {
             <p class="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">精选推荐</p>
             <h2 class="mt-2 text-3xl font-bold text-gray-900">热门教程</h2>
           </div>
-          <a href="/tutorials" class="text-sm font-semibold text-primary hover:underline">查看全部</a>
+          <a href="/tutorials" class="text-sm font-semibold text-primary hover:underline">
+            查看全部
+          </a>
         </div>
         <div class="grid gap-6 md:grid-cols-2">
-          {
-            featuredPosts.map((post) => (
-              <div class="rounded-3xl border border-gray-100 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                <p class="text-sm text-gray-500">
-                  {post.publishDate.toLocaleDateString('zh-CN', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </p>
-                <a href={getPermalink(post.permalink, 'post')} class="mt-2 block text-2xl font-bold text-gray-900">
-                  {post.title}
-                </a>
-                {post.excerpt && <p class="mt-2 text-sm text-gray-600">{post.excerpt}</p>}
-                <a
-                  href={getPermalink(post.permalink, 'post')}
-                  class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
-                >
-                  阅读教程
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </a>
-              </div>
-            ))
-          }
+          {featuredPosts.map((post) => (
+            <div class="rounded-3xl border border-gray-100 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+              <p class="text-sm text-gray-500">
+                {post.publishDate.toLocaleDateString('zh-CN', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </p>
+              <a href={getPermalink(post.permalink, 'post')} class="mt-2 block text-2xl font-bold text-gray-900">
+                {post.title}
+              </a>
+              {post.excerpt && <p class="mt-2 text-sm text-gray-600">{post.excerpt}</p>}
+              <a
+                href={getPermalink(post.permalink, 'post')}
+                class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+              >
+                阅读教程
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          ))}
         </div>
       </section>
     )
@@ -274,20 +274,24 @@ const faqStructuredData = {
     </div>
   </section>
 
-  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbList)}></script>
-  <script type="application/ld+json" set:html={JSON.stringify(faqStructuredData)}></script>
-  <script>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbList)} />
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(faqStructuredData)} />
+  <script is:inline>
     (() => {
       const sendAnalyticsEvent = (action, label) => {
         if (typeof window === 'undefined') return;
+        const win =
+          /** @type {typeof window & { gtag?: (...args: unknown[]) => void; dataLayer?: Array<Record<string, unknown>>; }} */ (
+            window
+          );
         const payload = {
           event_category: 'tutorials',
           event_label: label || '',
         };
-        if (typeof window.gtag === 'function') {
-          window.gtag('event', action, payload);
-        } else if (Array.isArray(window.dataLayer)) {
-          window.dataLayer.push({ event: action, ...payload });
+        if (typeof win.gtag === 'function') {
+          win.gtag('event', action, payload);
+        } else if (Array.isArray(win.dataLayer)) {
+          win.dataLayer.push({ event: action, ...payload });
         }
       };
 

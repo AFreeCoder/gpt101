@@ -56,7 +56,10 @@ const hasUpdate = Boolean(updateDate && updateDate.valueOf() !== publishDate.val
           }
           {
             post.category && (
-              <a class="inline-flex items-center gap-1 hover:text-primary" href={getPermalink(post.category.slug, 'category')}>
+              <a
+                class="inline-flex items-center gap-1 hover:text-primary"
+                href={getPermalink(post.category.slug, 'category')}
+              >
                 <Icon name="tabler:category-2" class="w-4 h-4" />
                 <span>{post.category.title}</span>
               </a>
@@ -80,9 +83,7 @@ const hasUpdate = Boolean(updateDate && updateDate.valueOf() !== publishDate.val
       </h1>
       {
         post.excerpt && (
-          <p class="max-w-3xl mx-auto mt-4 mb-8 px-4 sm:px-6 text-xl text-muted dark:text-slate-300">
-            {post.excerpt}
-          </p>
+          <p class="max-w-3xl mx-auto mt-4 mb-8 px-4 sm:px-6 text-xl text-muted dark:text-slate-300">{post.excerpt}</p>
         )
       }
 
@@ -147,5 +148,4 @@ const hasUpdate = Boolean(updateDate && updateDate.valueOf() !== publishDate.val
       </div>
     </div>
   </div>
-
 </section>

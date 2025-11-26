@@ -44,9 +44,12 @@ const { language, textDirection } = I18N;
 
         const resolveTarget = (input) => {
           try {
-            const url = typeof input === 'string' ? new URL(input, window.location.href) : new URL(input.url, window.location.href);
+            const url =
+              typeof input === 'string'
+                ? new URL(input, window.location.href)
+                : new URL(input.url, window.location.href);
             return targets.has(url.pathname) ? url.pathname : null;
-          } catch (error) {
+          } catch {
             return null;
           }
         };

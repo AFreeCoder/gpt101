@@ -115,37 +115,34 @@ const howToStructuredData =
         '@type': 'HowTo',
         name: post.title,
         description:
-          post.excerpt ||
-          '通过 ChatGPT 一站式服务完成 Plus 代充，包含购买卡密、验证信息以及完成升级的完整步骤。',
+          post.excerpt || '通过 ChatGPT 一站式服务完成 Plus 代充，包含购买卡密、验证信息以及完成升级的完整步骤。',
         totalTime: post.howTo?.totalTime || 'PT2M',
-        step:
-          post.howTo?.steps?.map((step) => ({
+        step: post.howTo?.steps?.map((step) => ({
+          '@type': 'HowToStep',
+          name: step.title || '步骤',
+          text: step.description,
+        })) || [
+          {
             '@type': 'HowToStep',
-            name: step.title || '步骤',
-            text: step.description,
-          })) ||
-          [
-            {
-              '@type': 'HowToStep',
-              name: '购买卡密',
-              text: '在教程推荐的渠道中选择 Plus 套餐，使用微信/支付宝完成支付并获取卡密。',
-            },
-            {
-              '@type': 'HowToStep',
-              name: '选择充值渠道',
-              text: '根据所购商品，在充值系统中选择对应的推荐通道（如推荐1或镜像备用入口）。',
-            },
-            {
-              '@type': 'HowToStep',
-              name: '验证卡密',
-              text: '在系统中输入卡密并验证，按照提示登录 ChatGPT 账号并粘贴密钥。',
-            },
-            {
-              '@type': 'HowToStep',
-              name: '完成充值',
-              text: '核对账号信息，提交订单，1-2分钟内完成升级；如失败可直接联系客服退款。',
-            },
-          ],
+            name: '购买卡密',
+            text: '在教程推荐的渠道中选择 Plus 套餐，使用微信/支付宝完成支付并获取卡密。',
+          },
+          {
+            '@type': 'HowToStep',
+            name: '选择充值渠道',
+            text: '根据所购商品，在充值系统中选择对应的推荐通道（如推荐1或镜像备用入口）。',
+          },
+          {
+            '@type': 'HowToStep',
+            name: '验证卡密',
+            text: '在系统中输入卡密并验证，按照提示登录 ChatGPT 账号并粘贴密钥。',
+          },
+          {
+            '@type': 'HowToStep',
+            name: '完成充值',
+            text: '核对账号信息，提交订单，1-2分钟内完成升级；如失败可直接联系客服退款。',
+          },
+        ],
       }
     : null;
 ---
@@ -156,21 +153,29 @@ const howToStructuredData =
   </SinglePost>
   <ToBlogLink />
   <RelatedPosts post={post} />
-  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbList)}></script>
-  <script type="application/ld+json" set:html={JSON.stringify(faqStructuredData)}></script>
-  {howToStructuredData && <script type="application/ld+json" set:html={JSON.stringify(howToStructuredData)}></script>}
-  <script>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbList)} />
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(faqStructuredData)} />
+  {
+    howToStructuredData && (
+      <script type="application/ld+json" is:inline set:html={JSON.stringify(howToStructuredData)} />
+    )
+  }
+  <script is:inline>
     (() => {
       const sendAnalyticsEvent = (action, label) => {
         if (typeof window === 'undefined') return;
+        const win =
+          /** @type {typeof window & { gtag?: (...args: unknown[]) => void; dataLayer?: Array<Record<string, unknown>>; }} */ (
+            window
+          );
         const payload = {
           event_category: 'tutorials',
           event_label: label || '',
         };
-        if (typeof window.gtag === 'function') {
-          window.gtag('event', action, payload);
-        } else if (Array.isArray(window.dataLayer)) {
-          window.dataLayer.push({ event: action, ...payload });
+        if (typeof win.gtag === 'function') {
+          win.gtag('event', action, payload);
+        } else if (Array.isArray(win.dataLayer)) {
+          win.dataLayer.push({ event: action, ...payload });
         }
       };
 

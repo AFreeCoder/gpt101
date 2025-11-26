@@ -1,4 +1,11 @@
-import { fetchPosts, blogPostsPerPage, isBlogEnabled, isBlogListRouteEnabled, isBlogCategoryRouteEnabled, isBlogTagRouteEnabled } from '~/utils/blog';
+import {
+  fetchPosts,
+  blogPostsPerPage,
+  isBlogEnabled,
+  isBlogListRouteEnabled,
+  isBlogCategoryRouteEnabled,
+  isBlogTagRouteEnabled,
+} from '~/utils/blog';
 import { BLOG_BASE, CATEGORY_BASE, TAG_BASE, getCanonical, getPermalink, trimSlash } from '~/utils/permalinks';
 
 type SitemapEntry = {
@@ -6,9 +13,7 @@ type SitemapEntry = {
   lastmod?: string;
 };
 
-const staticPageFiles = Object.keys(
-  import.meta.glob('../pages/**/*.{astro,md,mdx}', { eager: false })
-);
+const staticPageFiles = Object.keys(import.meta.glob('../pages/**/*.{astro,md,mdx}', { eager: false }));
 
 const joinSegments = (...segments: Array<string | number | undefined>) =>
   segments
@@ -34,26 +39,17 @@ const normalizeStaticRoute = (filePath: string): string | null => {
 };
 
 const collectStaticRoutes = (): string[] =>
-  Array.from(
-    new Set(
-      staticPageFiles
-        .map(normalizeStaticRoute)
-        .filter((route): route is string => Boolean(route))
-    )
-  );
+  Array.from(new Set(staticPageFiles.map(normalizeStaticRoute).filter((route): route is string => Boolean(route))));
 
 const toLastmod = (dates: Date[]): string | undefined => {
   if (!dates.length) return undefined;
-  const latest = dates.reduce(
-    (latestDate, current) => (current > latestDate ? current : latestDate),
-    dates[0]
-  );
+  const latest = dates.reduce((latestDate, current) => (current > latestDate ? current : latestDate), dates[0]);
   return latest.toISOString();
 };
 
 const addEntry = (entries: Map<string, SitemapEntry>, path: string, lastModified?: Date | Date[]) => {
   if (!path) return;
-  const canonical = getCanonical(path);
+  const canonical = String(getCanonical(path));
   const lastmodDate = Array.isArray(lastModified) ? toLastmod(lastModified) : lastModified?.toISOString();
 
   const existing = entries.get(canonical);
@@ -84,10 +80,7 @@ const collectSitemapEntries = async (): Promise<SitemapEntry[]> => {
     if (isBlogListRouteEnabled && BLOG_BASE) {
       const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
       for (let page = 1; page <= totalPages; page++) {
-        const path =
-          page === 1
-            ? getPermalink(BLOG_BASE, 'blog')
-            : getPermalink(joinSegments(BLOG_BASE, page));
+        const path = page === 1 ? getPermalink(BLOG_BASE, 'blog') : getPermalink(joinSegments(BLOG_BASE, page));
         addEntry(entries, path, latestPostDate);
       }
     }
@@ -107,9 +100,7 @@ const collectSitemapEntries = async (): Promise<SitemapEntry[]> => {
         const totalPages = Math.max(1, Math.ceil(dates.length / pageSize));
         for (let page = 1; page <= totalPages; page++) {
           const path =
-            page === 1
-              ? getPermalink(slug, 'category')
-              : getPermalink(joinSegments(CATEGORY_BASE, slug, page));
+            page === 1 ? getPermalink(slug, 'category') : getPermalink(joinSegments(CATEGORY_BASE, slug, page));
           addEntry(entries, path, dates);
         }
       });
@@ -130,10 +121,7 @@ const collectSitemapEntries = async (): Promise<SitemapEntry[]> => {
       tagPosts.forEach((dates, slug) => {
         const totalPages = Math.max(1, Math.ceil(dates.length / pageSize));
         for (let page = 1; page <= totalPages; page++) {
-          const path =
-            page === 1
-              ? getPermalink(slug, 'tag')
-              : getPermalink(joinSegments(TAG_BASE, slug, page));
+          const path = page === 1 ? getPermalink(slug, 'tag') : getPermalink(joinSegments(TAG_BASE, slug, page));
           addEntry(entries, path, dates);
         }
       });

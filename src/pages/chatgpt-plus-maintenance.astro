@@ -129,18 +129,13 @@ const metadata = {
         showToast('QQ号已复制到剪贴板');
       })
       .catch(() => {
-        // 降级方案
-        const textArea = document.createElement('textarea');
-        textArea.value = qqId;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-          document.execCommand('copy');
-          showToast('QQ号已复制到剪贴板');
-        } catch {
+        // 降级方案：使用 prompt 提示手动复制
+        const userInput = window.prompt('复制客服QQ号', qqId);
+        if (userInput !== null) {
+          showToast('请手动复制 QQ 号');
+        } else {
           showToast('复制失败，请手动复制');
         }
-        document.body.removeChild(textArea);
       });
   };
 

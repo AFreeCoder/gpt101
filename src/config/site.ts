@@ -167,7 +167,7 @@ export const siteConfig = {
     //   text: '通知：受礼品卡限额影响，成本大涨，近期价格有较大波动，实在抱歉，后续成本下降后，价格会逐步下降，请关注本站公告～',
     //   link: '', // 可选：点击公告跳转的链接
     // },
-  ],
+  ] as Array<{ id: number | string; text: string; link?: string }>,
 
   // 统计分析配置
   analytics: {

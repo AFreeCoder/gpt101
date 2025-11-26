@@ -12,13 +12,7 @@ import { siteConfig } from '~/config/site';
 
 // 从配置文件获取客服信息
 const { qq: qqNumber, customerService } = siteConfig.contact;
-const {
-  title: cardTitle,
-  subtitle: cardSubtitle,
-  qrCode,
-  serviceTime,
-  toast,
-} = customerService;
+const { title: cardTitle, subtitle: cardSubtitle, qrCode, serviceTime, toast } = customerService;
 ---
 
 <!-- 悬浮客服按钮 -->
@@ -43,9 +37,7 @@ const {
     </svg>
 
     <!-- 小红点提示（可选） -->
-    <span
-      class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"
-    ></span>
+    <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
   </button>
 
   <!-- 客服卡片（点击后展开） - 紧凑版 -->
@@ -76,12 +68,7 @@ const {
             <p class="text-xs text-white/80">{cardSubtitle}</p>
           </div>
         </div>
-        <button
-          type="button"
-          class="text-white/80 hover:text-white transition-colors"
-          aria-label="关闭"
-          data-cs-close
-        >
+        <button type="button" class="text-white/80 hover:text-white transition-colors" aria-label="关闭" data-cs-close>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -140,8 +127,7 @@ const {
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <p class="text-xs font-semibold">{serviceTime.title}</p>
         </div>
@@ -175,7 +161,10 @@ const {
     transform: scale(0.95);
     pointer-events: none;
     visibility: hidden;
-    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease,
+      visibility 0.3s ease;
   }
 
   .floating-customer-service[data-open='true'] [data-cs-panel] {
@@ -227,7 +216,7 @@ const {
 <script>
   (function () {
     const ROOT_SELECTOR = '[data-cs-root]';
-    let teardown = null;
+    let teardown: (() => void) | null = null;
 
     function initialize() {
       if (typeof teardown === 'function') {
@@ -259,14 +248,19 @@ const {
       panel.setAttribute('aria-hidden', 'true');
       root.setAttribute('data-open', 'false');
 
-      const disposers = [];
-      let toastTimer = null;
+      const disposers: Array<() => void> = [];
+      let toastTimer: number | null = null;
       const toastStates = {
         hidden: 'hidden',
         visible: 'visible',
       };
 
-      const addListener = (target, event, handler, options) => {
+      const addListener = (
+        target: EventTarget,
+        event: string,
+        handler: EventListenerOrEventListenerObject,
+        options?: boolean | AddEventListenerOptions
+      ) => {
         target.addEventListener(event, handler, options);
         disposers.push(() => target.removeEventListener(event, handler, options));
       };
@@ -283,7 +277,7 @@ const {
         panel.setAttribute('aria-hidden', 'true');
       };
 
-      const togglePanel = (event) => {
+      const togglePanel = (event: Event) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -294,23 +288,24 @@ const {
         }
       };
 
-      const handleClose = (event) => {
+      const handleClose = (event: Event) => {
         event.preventDefault();
         event.stopPropagation();
         closePanel();
       };
 
-      const handleDocumentClick = (event) => {
+      const handleDocumentClick = (event: Event) => {
         if (root.getAttribute('data-open') !== 'true') {
           return;
         }
 
-        if (!root.contains(event.target)) {
+        const target = event.target as Node | null;
+        if (target && !root.contains(target)) {
           closePanel();
         }
       };
 
-      const handleKeydown = (event) => {
+      const handleKeydown = (event: KeyboardEvent) => {
         if (event.key === 'Escape' && root.getAttribute('data-open') === 'true') {
           closePanel();
         }
@@ -342,24 +337,17 @@ const {
       };
 
       const fallbackCopy = () => {
-        const textarea = document.createElement('textarea');
-        textarea.value = qqValue;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-
-        try {
-          document.execCommand('copy');
-          showToast();
-        } catch (error) {
-          console.error('复制失败:', error);
+        if (typeof window.prompt === 'function') {
+          const result = window.prompt('请复制客服QQ号', qqValue);
+          if (result !== null) {
+            showToast();
+          }
+        } else {
+          console.warn('当前环境不支持剪贴板复制或提示。');
         }
-
-        document.body.removeChild(textarea);
       };
 
-      const handleCopy = (event) => {
+      const handleCopy = (event: Event) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -396,8 +384,8 @@ const {
 
       // 首次自动展开逻辑
       const AUTO_OPEN_KEY = 'cs-auto-opened';
-      let autoOpenTimer = null;
-      let autoCloseTimer = null;
+      let autoOpenTimer: number | null = null;
+      let autoCloseTimer: number | null = null;
 
       const hasAutoOpened = localStorage.getItem(AUTO_OPEN_KEY);
 

@@ -36,15 +36,6 @@ const productSchema = {
     '@type': 'Brand',
     name: 'ChatGPT 一站式服务',
   },
-  offers: {
-    '@type': 'Offer',
-    price: '150~184',
-    priceCurrency: 'CNY',
-    availability: 'https://schema.org/InStock',
-    url: siteUrl,
-    priceValidUntil: '2026-12-31',
-    itemCondition: 'https://schema.org/NewCondition',
-  },
   aggregateRating: {
     '@type': 'AggregateRating',
     ratingValue: '4.8',
@@ -179,8 +170,4 @@ if (type === 'all') {
 }
 ---
 
-{
-  schemas.map((schema) => (
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
-  ))
-}
+{schemas.map((schema) => <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />)}
