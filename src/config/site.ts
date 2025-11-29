@@ -40,9 +40,10 @@ export const siteConfig = {
       {
         id: 1,
         label: '【推荐1】ChatGPT官网会员自助充值(充你的号)',
-        url: 'https://gptget.pro/',
+        url: '/gpt-upgrade-xiaobei',
+        embedUrl: '',
         color: 'from-blue-500 to-blue-500',
-        description: '',
+        description: '站内跳转独立页面下单，若无法加载请改用其他渠道',
       },
       // {
       //   id: 4,
@@ -69,6 +70,7 @@ export const siteConfig = {
         id: 5,
         label: '【备用】ChatGPT官网会员充值(充你的号)',
         url: '',
+        embedUrl: '',
         color: 'from-blue-500 to-blue-500',
         description: '购买完后请联系客服QQ:2316149029',
       },
@@ -76,6 +78,7 @@ export const siteConfig = {
         id: 6,
         label: '【Pro充值】ChatGPT Pro 会员充值(充你的号)',
         url: '',
+        embedUrl: '',
         color: 'from-blue-500 to-blue-500',
         description: '请联系客服QQ:2316149029 充值',
       },
