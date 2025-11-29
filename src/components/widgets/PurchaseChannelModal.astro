@@ -41,7 +41,6 @@ const channels = siteConfig.homepage.purchaseChannels;
               class={`w-full py-4 px-6 rounded-xl font-semibold text-white bg-gradient-to-r ${channel.color} hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300`}
               data-channel-id={channel.id}
               data-channel-url={channel.url || ''}
-              data-channel-embed-url={channel.embedUrl || ''}
               data-channel-description={channel.description || ''}
             >
               {channel.label}
@@ -97,54 +96,17 @@ const channels = siteConfig.homepage.purchaseChannels;
   </div>
 </div>
 
-<!-- 内嵌 iframe 弹窗 -->
-<div id="channel-iframe-modal" class="hidden fixed inset-0 z-[70] overflow-y-auto bg-black bg-opacity-70">
-  <div class="flex min-h-full items-center justify-center p-4">
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">渠道下单</h3>
-        <button
-          id="close-iframe-modal-btn"
-          type="button"
-          class="text-gray-500 hover:text-gray-700 transition-colors"
-          aria-label="关闭内嵌页面"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <iframe id="channel-iframe" class="w-full h-[calc(90vh-52px)]" src="" allowfullscreen></iframe>
-    </div>
-  </div>
-</div>
-
 <script>
   function initPurchaseChannelModal() {
     const modal = document.getElementById('purchase-channel-modal');
     const infoModal = document.getElementById('channel-info-modal');
-    const iframeModal = document.getElementById('channel-iframe-modal');
     const backdrop = document.getElementById('modal-backdrop');
     const infoBackdrop = document.getElementById('info-modal-backdrop');
-    const iframeBackdrop = iframeModal;
     const closeBtn = document.getElementById('close-modal-btn');
     const closeInfoBtn = document.getElementById('close-info-modal-btn');
-    const closeIframeBtn = document.getElementById('close-iframe-modal-btn');
     const infoText = document.getElementById('channel-info-text');
-    const iframeEl = document.getElementById('channel-iframe');
 
-    if (
-      !modal ||
-      !infoModal ||
-      !backdrop ||
-      !infoBackdrop ||
-      !closeBtn ||
-      !closeInfoBtn ||
-      !infoText ||
-      !iframeModal ||
-      !closeIframeBtn ||
-      !iframeEl
-    ) {
+    if (!modal || !infoModal || !backdrop || !infoBackdrop || !closeBtn || !closeInfoBtn || !infoText) {
       return;
     }
 
@@ -171,21 +133,6 @@ const channels = siteConfig.homepage.purchaseChannels;
       infoModal.classList.add('hidden');
     };
 
-    // 打开 iframe 弹窗
-    const openIframeModal = (url: string) => {
-      if (!url) return;
-      (iframeEl as HTMLIFrameElement).src = url;
-      iframeModal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    };
-
-    // 关闭 iframe 弹窗
-    const closeIframeModal = () => {
-      iframeModal.classList.add('hidden');
-      (iframeEl as HTMLIFrameElement).src = '';
-      document.body.style.overflow = '';
-    };
-
     // 监听"立即升级"按钮点击
     const upgradeBtn = document.querySelector('[data-open-channel-modal]');
     if (upgradeBtn) {
@@ -201,12 +148,8 @@ const channels = siteConfig.homepage.purchaseChannels;
       btn.addEventListener('click', () => {
         const url = btn.getAttribute('data-channel-url');
         const description = btn.getAttribute('data-channel-description');
-        const embedUrl = btn.getAttribute('data-channel-embed-url');
 
-        if (embedUrl && embedUrl.trim() !== '') {
-          closeModal();
-          openIframeModal(embedUrl);
-        } else if (url && url.trim() !== '') {
+        if (url && url.trim() !== '') {
           // 有 URL，打开新标签页
           window.open(url, '_blank');
           closeModal();
@@ -228,20 +171,10 @@ const channels = siteConfig.homepage.purchaseChannels;
       closeInfoModal();
       closeModal();
     });
-    closeIframeBtn.addEventListener('click', closeIframeModal);
-    iframeBackdrop?.addEventListener('click', (event) => {
-      if (event.target === iframeBackdrop) {
-        closeIframeModal();
-      }
-    });
 
     // ESC 键关闭
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        if (!iframeModal.classList.contains('hidden')) {
-          closeIframeModal();
-          return;
-        }
         if (!infoModal.classList.contains('hidden')) {
           closeInfoModal();
           closeModal();

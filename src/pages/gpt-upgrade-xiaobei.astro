@@ -3,6 +3,7 @@ import Layout from '~/layouts/Layout.astro';
 import Header from '~/components/widgets/Header.astro';
 import Footer from '~/components/widgets/Footer.astro';
 import { headerData, footerData } from '~/navigation';
+import { siteConfig } from '~/config/site';
 
 const metadata = {
   title: 'ChatGPT Plus 充值 - 推荐渠道',
@@ -10,7 +11,7 @@ const metadata = {
   ignoreTitleTemplate: true,
 };
 
-const targetUrl = 'https://gptget.pro/';
+const targetUrl = siteConfig.homepage.purchaseChannels.find((c) => c.id === 1)?.embedTarget || 'https://gptget.pro/';
 ---
 
 <Layout metadata={metadata}>
