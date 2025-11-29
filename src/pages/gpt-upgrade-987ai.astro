@@ -1,0 +1,64 @@
+---
+import Layout from '~/layouts/Layout.astro';
+import Header from '~/components/widgets/Header.astro';
+import Footer from '~/components/widgets/Footer.astro';
+import { headerData, footerData } from '~/navigation';
+
+const metadata = {
+  title: 'ChatGPT Plus 充值 - 推荐渠道 987ai',
+  description: '通过内嵌页面完成 ChatGPT Plus 充值，如无法加载可在新窗口打开。',
+  ignoreTitleTemplate: true,
+};
+
+const targetUrl = 'https://www.987ai.vip/';
+---
+
+<Layout metadata={metadata}>
+  <style>
+    :global(body) {
+      background: #ffffff;
+    }
+  </style>
+  <Header {...headerData} isSticky showRssFeed={false} showToggleTheme={false} />
+  <main class="bg-white">
+    <iframe
+      id="upgrade-iframe-987ai"
+      src={targetUrl}
+      title="ChatGPT Plus 充值通道 987ai"
+      class="w-full border-0 block"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+      allowfullscreen></iframe>
+  </main>
+  <Footer {...footerData} />
+  <script is:inline>
+    (() => {
+      const iframe = document.getElementById('upgrade-iframe-987ai');
+      const header = document.getElementById('header');
+      const footer = document.querySelector('footer');
+      if (!iframe) return;
+
+      const setHeight = () => {
+        const headerH = header?.offsetHeight || 0;
+        const footerH = footer?.offsetHeight || 0;
+        const available = Math.max(window.innerHeight - headerH - footerH, 0);
+        iframe.style.height = `${Math.max(available, 900)}px`;
+      };
+
+      setHeight();
+      window.addEventListener('resize', setHeight);
+      document.addEventListener('astro:page-load', setHeight);
+
+      const resizeObserver = new MutationObserver(setHeight);
+      if (footer) {
+        resizeObserver.observe(footer, { childList: true, subtree: true });
+      }
+
+      window.addEventListener('astro:before-swap', () => {
+        window.removeEventListener('resize', setHeight);
+        document.removeEventListener('astro:page-load', setHeight);
+        resizeObserver.disconnect();
+      });
+    })();
+  </script>
+</Layout>
