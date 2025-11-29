@@ -37,13 +37,13 @@ export const siteConfig = {
     ],
     // 购买渠道配置 - 用于"立即升级"弹窗
     purchaseChannels: [
-      // {
-      //   id: 1,
-      //   label: '【推荐1】ChatGPT官网会员自助充值(充你的号)',
-      //   url: 'https://www.987ai.vip/recharge',
-      //   color: 'from-blue-500 to-blue-500',
-      //   description: '',
-      // },
+      {
+        id: 1,
+        label: '【推荐1】ChatGPT官网会员自助充值(充你的号)',
+        url: 'https://gptget.pro/',
+        color: 'from-blue-500 to-blue-500',
+        description: '',
+      },
       // {
       //   id: 4,
       //   label: '【推荐4】ChatGPT官网会员自助充值(充你的号)',
@@ -70,14 +70,14 @@ export const siteConfig = {
         label: '【备用】ChatGPT官网会员充值(充你的号)',
         url: '',
         color: 'from-blue-500 to-blue-500',
-        description: '该渠道为手工渠道，购买完后请联系客服QQ:2316149029',
+        description: '购买完后请联系客服QQ:2316149029',
       },
       {
         id: 6,
         label: '【Pro充值】ChatGPT Pro 会员充值(充你的号)',
         url: '',
         color: 'from-blue-500 to-blue-500',
-        description: 'Pro 会员充值（无需账号名密码），请联系客服QQ:2316149029 充值',
+        description: '请联系客服QQ:2316149029 充值',
       },
     ],
   },
