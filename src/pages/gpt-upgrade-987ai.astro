@@ -11,11 +11,7 @@ const metadata = {
   ignoreTitleTemplate: true,
 };
 
-const purchaseChannels = siteConfig.homepage.purchaseChannels as ReadonlyArray<{
-  id: number | string;
-  embedTarget?: string;
-}>;
-const targetUrl = purchaseChannels.find((c) => String(c.id) === '1')?.embedTarget || 'https://www.987ai.vip/';
+const targetUrl = siteConfig.homepage.links.upgrade987aiEmbed || 'https://www.987ai.vip/recharge';
 ---
 
 <Layout metadata={metadata}>

@@ -11,11 +11,7 @@ const metadata = {
   ignoreTitleTemplate: true,
 };
 
-const purchaseChannels = siteConfig.homepage.purchaseChannels as ReadonlyArray<{
-  id: number | string;
-  embedTarget?: string;
-}>;
-const targetUrl = purchaseChannels.find((c) => String(c.id) === '2')?.embedTarget || 'https://gptget.pro/';
+const targetUrl = siteConfig.homepage.links.upgradeXiaobeiEmbed || 'https://gptget.pro/';
 ---
 
 <Layout metadata={metadata}>

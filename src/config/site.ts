@@ -14,6 +14,8 @@ export const siteConfig = {
       cardPurchase: '/qf-dtyuedan-buy', // 卡密购买入口（站内跳转）
       cardPurchaseEmbed: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 站内 iframe 嵌入的实际地址
       orderQuery: 'https://fe.dtyuedan.cn/order', // 卡密订单查询
+      upgradeXiaobeiEmbed: 'https://gptget.pro/',
+      upgrade987aiEmbed: 'https://www.987ai.vip/recharge',
       mirrorExperience: '/chatgpt-mirror', // 镜像服务体验
       tutorial: '/how-to-upgrade-gpt-plus', // 使用教程
       survey: 'https://f.kdocs.cn/g/Y2b8l5Fu/', // 问卷调查（需要替换为实际链接）
