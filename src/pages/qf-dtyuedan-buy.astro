@@ -6,16 +6,14 @@ import { headerData, footerData } from '~/navigation';
 import { siteConfig } from '~/config/site';
 
 const metadata = {
-  title: 'ChatGPT Plus 充值 - 推荐渠道 987ai',
-  description: '通过内嵌页面完成 ChatGPT Plus 充值，如无法加载可在新窗口打开。',
+  title: '快捷购买 - 卡密充值通道',
+  description: '站内直达卡密购买页面，如无法加载可在新窗口打开。',
   ignoreTitleTemplate: true,
 };
 
-const purchaseChannels = siteConfig.homepage.purchaseChannels as ReadonlyArray<{
-  id: number | string;
-  embedTarget?: string;
-}>;
-const targetUrl = purchaseChannels.find((c) => String(c.id) === '4')?.embedTarget || 'https://www.987ai.vip/';
+const targetUrl =
+  (siteConfig.homepage.links as { cardPurchaseEmbed?: string }).cardPurchaseEmbed ||
+  'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj';
 ---
 
 <Layout metadata={metadata}>
@@ -27,9 +25,9 @@ const targetUrl = purchaseChannels.find((c) => String(c.id) === '4')?.embedTarge
   <Header {...headerData} isSticky showRssFeed={false} showToggleTheme={false} />
   <main class="bg-white">
     <iframe
-      id="upgrade-iframe-987ai"
+      id="upgrade-iframe-dtyuedan"
       src={targetUrl}
-      title="ChatGPT Plus 充值通道 987ai"
+      title="卡密购买通道"
       class="w-full border-0 block"
       loading="lazy"
       referrerpolicy="no-referrer"
@@ -38,7 +36,7 @@ const targetUrl = purchaseChannels.find((c) => String(c.id) === '4')?.embedTarge
   <Footer {...footerData} />
   <script is:inline>
     (() => {
-      const iframe = document.getElementById('upgrade-iframe-987ai');
+      const iframe = document.getElementById('upgrade-iframe-dtyuedan');
       const header = document.getElementById('header');
       const footer = document.querySelector('footer');
       if (!iframe) return;

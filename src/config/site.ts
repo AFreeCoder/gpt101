@@ -11,8 +11,8 @@ export const siteConfig = {
       subtitle: 'Plus / Pro / Team 全支持，微信支付宝秒到账，无需信用卡',
     },
     links: {
-      cardPurchase: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 卡密购买
-      // cardPurchase: '/chatgpt-plus-maintenance', // 卡密购买
+      cardPurchase: '/qf-dtyuedan-buy', // 卡密购买入口（站内跳转）
+      cardPurchaseEmbed: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj', // 站内 iframe 嵌入的实际地址
       orderQuery: 'https://fe.dtyuedan.cn/order', // 卡密订单查询
       mirrorExperience: '/chatgpt-mirror', // 镜像服务体验
       tutorial: '/how-to-upgrade-gpt-plus', // 使用教程
@@ -89,8 +89,8 @@ export const siteConfig = {
   // 镜像服务页配置
   mirrorPage: {
     links: {
-      purchase: 'https://fe.dtyuedan.cn/shop/F2OLER91/3fptbk', // 立即购买
-      // purchase: '/chatgpt-plus-maintenance', // 卡密购买
+      purchase: '/qf-dtyuedan-mirror-buy', // 立即购买入口（站内跳转）
+      purchaseEmbed: 'https://fe.dtyuedan.cn/shop/F2OLER91/3fptbk', // 站内 iframe 嵌入的实际地址
       query: 'https://fe.dtyuedan.cn/order', // 订单查询
       plusRecharge: '/', // Plus代充
       useNow: 'https://chatshare.biz', // 立刻使用
