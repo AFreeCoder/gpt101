@@ -111,6 +111,7 @@ export const siteConfig = {
       mirror: '/chatgpt-mirror',
       blog: '/tutorials',
       customerSupport: '/#customer-support',
+      gemini: 'https://fe.dtyuedan.cn/shop/F2OLER91/h7fdec',
     },
     buttons: {
       customerSupport: '客服支持',
