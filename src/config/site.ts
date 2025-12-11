@@ -70,6 +70,14 @@ export const siteConfig = {
       // },
       {
         id: 5,
+        label: '【推荐5】ChatGPT官网会员自助充值(充你的号)',
+        url: 'https://plus.aicheap.vip/',
+        embedTarget: '',
+        color: 'from-blue-500 to-blue-500',
+        description: '站内跳转独立页面下单，若无法加载请改用其他渠道',
+      },
+      {
+        id: 6,
         label: '【备用】ChatGPT官网会员充值(充你的号)',
         url: '',
         embedTarget: '',
@@ -77,7 +85,7 @@ export const siteConfig = {
         description: '购买完后请联系客服QQ:2316149029',
       },
       {
-        id: 6,
+        id: 7,
         label: '【Pro充值】ChatGPT Pro 会员充值(充你的号)',
         url: '',
         embedTarget: '',
