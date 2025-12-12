@@ -12,10 +12,6 @@ export const headerData = {
       href: getPermalink(siteConfig.navigation.links.mirror),
     },
     {
-      text: 'Gemini',
-      href: getPermalink(siteConfig.navigation.links.gemini),
-    },
-    {
       text: '教程中心',
       href: getPermalink(siteConfig.navigation.links.blog),
     },
