@@ -45,14 +45,14 @@ export const siteConfig = {
       //   color: 'from-blue-500 to-blue-500',
       //   description: '站内跳转独立页面下单，若无法加载请改用其他渠道',
       // },
-      // {
-      //   id: 2,
-      //   label: '【推荐2】ChatGPT官网会员自助充值(充你的号)',
-      //   url: '/gpt-upgrade-xiaobei',
-      //   embedTarget: 'https://gptget.pro/',
-      //   color: 'from-blue-500 to-blue-500',
-      //   description: '站内跳转独立页面下单，若无法加载请改用其他渠道',
-      // },
+      {
+        id: 2,
+        label: '【推荐2】ChatGPT官网会员自助充值(充你的号)',
+        url: '/gpt-upgrade-xiaobei',
+        embedTarget: 'https://gptget.pro/',
+        color: 'from-blue-500 to-blue-500',
+        description: '站内跳转独立页面下单，若无法加载请改用其他渠道',
+      },
       // {
       //   id: 3,
       //   label: '【推荐3】ChatGPT官网会员自动充值',
