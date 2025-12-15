@@ -19,6 +19,31 @@ export const siteConfig = {
       mirrorExperience: '/chatgpt-mirror', // 镜像服务体验
       tutorial: '/how-to-upgrade-gpt-plus', // 使用教程
     },
+    // Hero 区域两侧广告位
+    ads: {
+      left: {
+        title: 'Claude Pro 充值',
+        subTitle: '官方 Plus/Pro/Team',
+        description: '无需信用卡，支付宝也能充值 Claude Pro，支持 Claude Code',
+        tags: ['iOS充值技术', '安全快速', '官方正品'],
+        buttonText: '立即充值',
+        footerText: '快速充值，即刻体验',
+        url: 'https://fe.dtyuedan.cn/shop/F2OLER91/i72az7',
+        icon: 'claude', // 标识使用 Claude 图标
+        color: 'orange',
+      },
+      right: {
+        title: '全模型 API',
+        subTitle: 'OpenAI 兼容接口',
+        description: '支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro 现已上线。统一协议，极低延迟⚡，价格更优。',
+        tags: ['500+模型', 'Sora 2可用', '极低延迟⚡', '国内直连'],
+        buttonText: '立即使用',
+        footerText: '注册即送额度',
+        url: 'https://apimart.ai/register?aff=2aDl',
+        icon: 'api', // 标识使用通用 API 图标
+        color: 'blue',
+      },
+    },
     buttons: {
       cardPurchase: '购买',
       immediateUpgrade: '立即升级',
