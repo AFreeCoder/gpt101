@@ -33,12 +33,12 @@ export const siteConfig = {
         color: 'orange',
       },
       right: {
-        title: '全模型 API',
+        title: 'API 服务',
         subTitle: 'OpenAI 兼容接口',
-        description: '支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro 现已上线。统一协议，极低延迟⚡，价格更优。',
+        description: '支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro、Nano Banana 现已上线。统一协议，极低延迟⚡，价格更优。',
         tags: ['500+模型', 'Sora 2可用', '极低延迟⚡', '国内直连'],
         buttonText: '立即使用',
-        footerText: '注册即送额度',
+        footerText: '注册立享官网折扣',
         url: 'https://apimart.ai/register?aff=2aDl',
         icon: 'api', // 标识使用通用 API 图标
         color: 'blue',
