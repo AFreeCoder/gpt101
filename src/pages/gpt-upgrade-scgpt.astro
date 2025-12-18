@@ -6,15 +6,15 @@ import { headerData, footerData } from '~/navigation';
 import { siteConfig } from '~/config/site';
 
 const metadata = {
-  title: 'ChatGPT Plus 充值 - 推荐渠道',
+  title: 'ChatGPT Plus 充值 - 推荐渠道 scgpt',
   description: '通过内嵌页面完成 ChatGPT Plus 充值，如无法加载可在新窗口打开。',
   ignoreTitleTemplate: true,
 };
 
-const pagePath = '/gpt-upgrade-xiaobei';
+const pagePath = '/gpt-upgrade-scgpt';
 const targetUrl =
   siteConfig.homepage.purchaseChannels.find((channel) => channel.url === pagePath)?.embedTarget ||
-  'https://gptget.pro/';
+  'https://scgpt.top/';
 ---
 
 <Layout metadata={metadata}>
@@ -26,9 +26,9 @@ const targetUrl =
   <Header {...headerData} isSticky showRssFeed={false} showToggleTheme={false} />
   <main class="bg-white">
     <iframe
-      id="upgrade-iframe-xiaobei"
+      id="upgrade-iframe-scgpt"
       src={targetUrl}
-      title="ChatGPT Plus 充值通道"
+      title="ChatGPT Plus 充值通道 scgpt"
       class="w-full border-0 block"
       loading="lazy"
       referrerpolicy="no-referrer"
@@ -37,7 +37,7 @@ const targetUrl =
   <Footer {...footerData} />
   <script is:inline>
     (() => {
-      const iframe = document.getElementById('upgrade-iframe-xiaobei');
+      const iframe = document.getElementById('upgrade-iframe-scgpt');
       const header = document.getElementById('header');
       const footer = document.querySelector('footer');
       if (!iframe) return;

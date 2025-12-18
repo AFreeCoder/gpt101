@@ -11,7 +11,11 @@ const metadata = {
   ignoreTitleTemplate: true,
 };
 
-const targetUrl = siteConfig.homepage.links.upgrade987aiEmbed || 'https://www.987ai.vip/recharge';
+const pagePath = '/gpt-upgrade-987ai';
+const targetUrl =
+  siteConfig.homepage.purchaseChannels.find((channel) => channel.url === pagePath)?.embedTarget ||
+  siteConfig.homepage.links.upgrade987aiEmbed ||
+  'https://www.987ai.vip/recharge';
 ---
 
 <Layout metadata={metadata}>
