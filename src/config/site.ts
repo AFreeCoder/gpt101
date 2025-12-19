@@ -65,8 +65,8 @@ export const siteConfig = {
       {
         id: 1,
         label: '【推荐1】ChatGPT官网会员自助充值(充你的号)',
-        url: '/gpt-upgrade-9977ai',
-        embedTarget: 'https://9977ai.vip/',
+        url: 'https://9977ai.vip/',
+        embedTarget: '',
         color: 'from-blue-500 to-blue-500',
         description: '站内跳转独立页面下单，若无法加载请改用其他渠道',
       },
