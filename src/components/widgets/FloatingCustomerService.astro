@@ -382,29 +382,6 @@ const { title: cardTitle, subtitle: cardSubtitle, qrCode, serviceTime, toast } =
 
       hideToast();
 
-      // 首次自动展开逻辑
-      const AUTO_OPEN_KEY = 'cs-auto-opened';
-      let autoOpenTimer: number | null = null;
-      let autoCloseTimer: number | null = null;
-
-      const hasAutoOpened = localStorage.getItem(AUTO_OPEN_KEY);
-
-      if (!hasAutoOpened) {
-        // 3秒后自动打开
-        autoOpenTimer = window.setTimeout(() => {
-          openPanel();
-          localStorage.setItem(AUTO_OPEN_KEY, 'true');
-
-          // 打开后8秒自动关闭
-          autoCloseTimer = window.setTimeout(() => {
-            closePanel();
-            autoCloseTimer = null;
-          }, 8000);
-
-          autoOpenTimer = null;
-        }, 3000);
-      }
-
       teardown = () => {
         closePanel();
         disposers.forEach((dispose) => dispose());
@@ -412,16 +389,6 @@ const { title: cardTitle, subtitle: cardSubtitle, qrCode, serviceTime, toast } =
         if (toastTimer) {
           clearTimeout(toastTimer);
           toastTimer = null;
-        }
-
-        if (autoOpenTimer) {
-          clearTimeout(autoOpenTimer);
-          autoOpenTimer = null;
-        }
-
-        if (autoCloseTimer) {
-          clearTimeout(autoCloseTimer);
-          autoCloseTimer = null;
         }
 
         hideToast();
