@@ -50,7 +50,7 @@ export const footerData = {
     },
     {
       title: '联系',
-      links: [{ text: '客服QQ: 2316149029' }],
+      links: [{ text: '客服QQ: 2316149029', href: 'https://wpa.qq.com/msgrd?v=3&uin=2316149029&site=qq&menu=yes' }],
     },
   ],
   secondaryLinks: [
