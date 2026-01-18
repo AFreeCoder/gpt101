@@ -54,7 +54,7 @@ const renderCard = (ad, side) => {
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                 </span>
-                <span class="text-xs text-green-600 font-medium">在线</span>
+                <span class="text-xs text-green-700 font-medium">在线</span>
               </div>
             </div>
           </div>
@@ -71,7 +71,7 @@ const renderCard = (ad, side) => {
             ${ad.tags
               .map(
                 (tag) => `
-              <span class="px-2.5 py-1 ${lightBgClass} ${ad.color === 'orange' ? 'text-orange-600' : 'text-blue-600'} rounded-full text-xs font-medium border ${ad.color === 'orange' ? 'border-orange-200' : 'border-blue-200'}">
+              <span class="px-2.5 py-1 ${lightBgClass} ${ad.color === 'orange' ? 'text-orange-700' : 'text-blue-700'} rounded-full text-xs font-medium border ${ad.color === 'orange' ? 'border-orange-200' : 'border-blue-200'}">
                 ✓ ${tag}
               </span>
             `
@@ -86,7 +86,7 @@ const renderCard = (ad, side) => {
           </div>
 
           <!-- Footer -->
-          <div class="text-center mt-3 text-xs text-gray-400">
+          <div class="text-center mt-3 text-xs text-gray-600">
             ${ad.footerText}
           </div>
         </div>
