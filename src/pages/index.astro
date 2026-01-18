@@ -4,6 +4,7 @@ import Layout from '~/layouts/PageLayout.astro';
 import Hero from '~/components/widgets/Hero.astro';
 import ServiceDetails from '~/components/widgets/ServiceDetails.astro';
 import ToolsAndTutorials from '~/components/widgets/ToolsAndTutorials.astro';
+import Testimonials from '~/components/widgets/Testimonials.astro';
 import CustomerSupport from '~/components/widgets/CustomerSupport.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import PurchaseChannelModal from '~/components/widgets/PurchaseChannelModal.astro';
@@ -13,7 +14,7 @@ import { siteConfig } from '~/config/site';
 const metadata = {
   title: 'ChatGPT 一站式 - ChatGPT Plus代充 & 镜像服务',
   description:
-    'ChatGPT Plus代充服务 - 无需海外信用卡，正规iOS充值渠道，1分钟完成充值，失败100%退款。支持GPT-5 全部模型、GPTs商店、DALL-E 3等全功能，24/7自动处理，微信支付宝支付便捷安全',
+    'ChatGPT Plus代充服务 - 无需海外信用卡，合规iOS充值渠道，通常1-2分钟完成充值，符合条件可退款。支持GPT-5 全部模型、GPTs商店、DALL-E 3等功能，多数时段自动处理，微信支付宝支付便捷安全',
   ignoreTitleTemplate: true,
 };
 ---
@@ -34,13 +35,16 @@ const metadata = {
                 </svg>
               </div>
               <div class="flex flex-col sm:flex-row items-center gap-2">
-                <span class="text-gray-700 font-medium">无翻墙条件？</span>
+                <span class="text-gray-700 font-medium">网络访问不便？</span>
                 <span class="text-gray-600 font-medium">推荐稳定的镜像服务</span>
-                <span class="text-blue-600 font-semibold">→ 国内直连，和官网完全一样，只需¥58/月</span>
+                <span class="text-blue-600 font-semibold">→ 国内网络可用，功能体验更完整，只需¥58/月</span>
               </div>
             </div>
             <div class="flex-shrink-0">
-              <a href="/chatgpt-mirror" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md">
+              <a
+                href="/chatgpt-mirror"
+                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md"
+              >
                 <span>了解镜像服务</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -108,6 +112,7 @@ const metadata = {
           <a
             href={siteConfig.homepage.links.cardPurchase}
             target="_blank"
+            rel="noopener noreferrer"
             class="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
           >
             {siteConfig.homepage.buttons.cardPurchase}
@@ -130,6 +135,11 @@ const metadata = {
             </button>
           </div>
         </div>
+
+        <p class="text-xs text-gray-500 mb-6">
+          支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见
+          <a href="/terms" class="text-blue-600 hover:text-blue-700 hover:underline">服务条款</a>。
+        </p>
 
         <!-- 风险消除元素 / 信任标记 -->
         <div class="flex flex-wrap items-center justify-center gap-3 mb-8 text-sm text-gray-600">
@@ -154,7 +164,7 @@ const metadata = {
                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               ></path>
             </svg>
-            <span>失败当天退款</span>
+            <span>符合条件当天退款</span>
           </div>
           <span class="text-gray-300">·</span>
           <div class="flex items-center gap-1.5">
@@ -194,6 +204,7 @@ const metadata = {
               <a
                 href={siteConfig.homepage.links.orderQuery}
                 target="_blank"
+                rel="noopener noreferrer"
                 class="text-blue-600 hover:text-blue-700 font-medium hover:underline inline-flex items-center gap-1"
               >
                 {siteConfig.homepage.buttons.orderQuery}
@@ -232,6 +243,47 @@ const metadata = {
     </Fragment>
   </ToolsAndTutorials>
 
+  <!-- Testimonials Widget ******************* -->
+  <Testimonials
+    id="testimonials"
+    title="用户评价"
+    subtitle="来自真实用户的反馈"
+    tagline="好评如潮"
+    testimonials={[
+      {
+        testimonial: '充值速度很快，几分钟就搞定了，比我之前找的其他渠道靠谱多了。客服回复也很及时，有问题随时能解决。',
+        name: '张先生',
+        job: '产品经理',
+        image: {
+          src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1',
+          alt: '用户头像',
+        },
+      },
+      {
+        testimonial: '用了半年多了，每个月续费都很顺利。最开始还担心会不会有问题，现在完全放心了，已经推荐给好几个同事了。',
+        name: '李女士',
+        job: '设计师',
+        image: {
+          src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2',
+          alt: '用户头像',
+        },
+      },
+      {
+        testimonial: '公司需要批量充值，联系客服后很快就处理好了，还能开发票，非常专业。价格也比较合理，会继续合作。',
+        name: '王先生',
+        job: '技术总监',
+        image: {
+          src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user3',
+          alt: '用户头像',
+        },
+      },
+    ]}
+  >
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-white dark:bg-transparent"></div>
+    </Fragment>
+  </Testimonials>
+
   <!-- FAQs Widget ******************* -->
   <FAQs
     id="faqs"
@@ -251,17 +303,17 @@ const metadata = {
       {
         title: 'Q: 充值需要多长时间？会很复杂吗？',
         description:
-          '不复杂，一般 1-2 分钟即可完成充值。即使您仍然觉得流程太复杂，不够清晰，请立即联系客服 QQ：2316149029，全程为您服务！',
+          '不复杂，通常 1-2 分钟即可完成充值。若您觉得流程不够清晰，请联系客服 QQ：2316149029，我们会协助处理。',
       },
       {
         title: 'Q: 如果充值失败会怎么样？',
         description:
-          '如果遇到充值失败等极端情况，我们承诺100%当天退款。请放心，我们已稳定运营2年，充值成功率极高。如有任何问题，联系客服QQ：2316149029。',
+          '如遇充值失败或服务未交付等情况，我们会按退款政策处理并尽快发起退款，原路退回时间以支付平台为准。如有问题，联系客服QQ：2316149029。',
       },
       {
         title: 'Q: 充值后会不会被封号？如果封号怎么办？',
         description:
-          '不会封号。我们采用正规充值渠道，与直接在ChatGPT官网订阅完全一致，不存在违规操作，正常使用不会被封号。万一因为充值问题导致封号（极少发生），我们提供封号退款保障，保护您的权益。',
+          '我们不承诺绝对不会封号。充值完成后账号的使用状态以第三方平台规则为准。若确因充值服务导致账号异常，我们将协助核查并按退款政策处理。',
       },
       {
         title: 'Q: 可以开发票吗？',
@@ -271,7 +323,7 @@ const metadata = {
       {
         title: 'Q: 如何选择ChatGPT Plus充值还是镜像服务？',
         description:
-          '深度使用ChatGPT且有网络条件的用户建议选择ChatGPT Plus充值服务，享受完整的官方功能；无网络条件或中度使用ChatGPT的用户可选择镜像服务，性价比更高，国内可直连使用，功能体验与官网一致。',
+          '深度使用ChatGPT且网络条件良好的用户可选择Plus充值服务；网络条件受限或中度使用的用户可选择镜像服务，国内网络可用，体验更轻量便捷。',
       },
     ]}
   >

@@ -49,8 +49,11 @@ export const footerData = {
       ],
     },
     {
-      title: '联系',
-      links: [{ text: '客服QQ: 2316149029', href: 'https://wpa.qq.com/msgrd?v=3&uin=2316149029&site=qq&menu=yes' }],
+      title: '联系我们',
+      links: [
+        { text: '客服QQ: 2316149029', href: 'https://wpa.qq.com/msgrd?v=3&uin=2316149029&site=qq&menu=yes' },
+        { text: '邮箱: support@gpt101.org', href: 'mailto:support@gpt101.org' },
+      ],
     },
   ],
   secondaryLinks: [
@@ -59,6 +62,6 @@ export const footerData = {
   ],
   socialLinks: [],
   footNote: `
-    © 2025 ChatGPT 一站式服务 · 专业可靠的ChatGPT服务提供商
+    © 2025 ChatGPT 一站式服务 · 稳定运营2年+ · 客服在线时间 9:00-23:00
   `,
 };

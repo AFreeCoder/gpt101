@@ -12,22 +12,22 @@ const { id, isDark = false, classes = {}, bg = await Astro.slots.render('bg') } 
 
 // 对比数据
 const comparisonData = [
-  { feature: '网络要求', mirror: '国内直连', plus: '需科学上网', highlight: 'network' },
-  { feature: '使用限制', mirror: '无限制', plus: '3小时40次', highlight: 'limit' },
+  { feature: '网络要求', mirror: '国内网络可用', plus: '网络条件视地区/政策而定', highlight: 'network' },
+  { feature: '使用限制', mirror: '按套餐说明', plus: '以平台政策为准', highlight: 'limit' },
   { feature: '价格对比', mirror: '¥5/天，¥25/周，¥58/月', plus: '¥144/月', highlight: 'price' },
-  { feature: 'GPT5、o3、4o等', mirror: true, plus: true },
-  { feature: 'GPTs商店', mirror: true, plus: true },
-  { feature: '高级语音模式', mirror: true, plus: true },
-  { feature: ' GPT-4o 画图', mirror: true, plus: true },
-  { feature: '独享账号', mirror: true, plus: true },
-  { feature: '网页端登录', mirror: true, plus: true },
-  { feature: 'APP登录', mirror: false, plus: true, note: '仅网页端' },
+  { feature: '主流模型支持', mirror: '支持多种模型', plus: '支持多种模型' },
+  { feature: 'GPTs商店', mirror: '视套餐与网络情况', plus: '以平台政策为准' },
+  { feature: '高级语音模式', mirror: '视套餐与网络情况', plus: '以平台政策为准' },
+  { feature: 'GPT-4o 画图', mirror: '视套餐与网络情况', plus: '以平台政策为准' },
+  { feature: '账号形式', mirror: '镜像账号', plus: '平台账号' },
+  { feature: '网页端登录', mirror: '支持', plus: '支持' },
+  { feature: 'APP登录', mirror: '视套餐与网络情况', plus: '支持（以平台规则为准）' },
 ];
 ---
 
 <WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-6xl ${classes?.container ?? ''}`} bg={bg}>
   <div class="text-center mb-12">
-    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">📊 ChatGPT 镜像 VS 官网 Plus 功能对比</h2>
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">📊 ChatGPT 镜像 VS Plus 会员功能对比</h2>
     <p class="text-lg text-gray-600">功能对比一目了然，选择最适合你的方案</p>
   </div>
 
@@ -176,7 +176,7 @@ const comparisonData = [
         <span class="text-blue-600 text-lg">💡</span>
       </div>
       <p class="text-blue-800 font-medium">
-        镜像服务适合需要国内直连、中高频使用的用户；Plus会员适合需要完整移动端体验、对话记忆体验、Codex体验的用户
+        镜像服务适合网络条件受限、中高频使用的用户；Plus会员适合需要完整移动端体验、对话记忆、Codex体验的用户
       </p>
     </div>
   </div>

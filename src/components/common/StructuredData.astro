@@ -30,47 +30,12 @@ const productSchema = {
   '@type': 'Product',
   name: 'ChatGPT Plus 充值服务',
   description:
-    'ChatGPT Plus代充服务 - 无需海外信用卡，正规iOS充值渠道，1分钟完成充值，失败100%退款。支持GPT-5 全部模型、GPTs商店、DALL-E 3等全功能，24/7自动处理，微信支付宝支付便捷安全',
+    'ChatGPT Plus代充服务 - 无需海外信用卡，合规iOS充值渠道，通常1-2分钟完成充值，符合条件可退款。支持GPT-5 等模型、GPTs商店、DALL-E 3等功能，多数时段自动处理，微信支付宝支付便捷安全',
   image: `${siteUrl}/_astro/default.CZ816Hke_2bosb5.jpg`,
   brand: {
     '@type': 'Brand',
     name: 'ChatGPT 一站式服务',
   },
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    reviewCount: '258',
-    bestRating: '5',
-    worstRating: '1',
-  },
-  review: [
-    {
-      '@type': 'Review',
-      reviewRating: {
-        '@type': 'Rating',
-        ratingValue: '5',
-        bestRating: '5',
-      },
-      author: {
-        '@type': 'Person',
-        name: '@岸上的漂流瓶',
-      },
-      reviewBody: '售后很给力，充值速度很快，我会推荐给朋友！',
-    },
-    {
-      '@type': 'Review',
-      reviewRating: {
-        '@type': 'Rating',
-        ratingValue: '5',
-        bestRating: '5',
-      },
-      author: {
-        '@type': 'Person',
-        name: '@独倚高楼',
-      },
-      reviewBody: '充值很快，还帮忙解决了网络问题，售后十分给力！',
-    },
-  ],
 };
 
 // FAQPage Schema - 常见问题
@@ -83,7 +48,7 @@ const faqSchema = {
       name: '没有海外信用卡可以充值吗？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '完全可以！我们的服务专为国内用户设计，无需任何海外信用卡，使用支付宝或微信支付即可完成充值。采用正规iOS充值渠道，通过苹果官方订阅系统完成充值，安全便捷。',
+        text: '可以。我们的服务专为国内用户设计，无需海外信用卡，使用支付宝或微信支付即可完成充值。采用合规iOS充值渠道，通过平台订阅系统完成充值。',
       },
     },
     {
@@ -99,7 +64,7 @@ const faqSchema = {
       name: '充值需要多长时间？会很复杂吗？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '非常快速简单！购买卡密后，按照教程操作通常在1分钟内即可完成充值。我们提供详细的图文教程，即使是第一次操作也能轻松完成。24/7自动处理，随时购买随时充值。',
+        text: '流程简单。购买卡密后，按教程操作通常在1-2分钟内完成充值。我们提供详细图文教程，多数时段自动处理。',
       },
     },
     {
@@ -107,7 +72,7 @@ const faqSchema = {
       name: '如果充值失败会怎么样？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '请放心！如果遇到充值失败的情况，我们承诺100%当天退款，无需复杂流程。同时，我们已稳定运营2年，充值成功率极高。如有任何问题，联系客服QQ：2316149029，我们会第一时间处理。',
+        text: '如遇充值失败或服务未交付等情况，我们会按退款政策处理并尽快发起退款，原路退回时间以支付平台为准。如有问题，联系客服QQ：2316149029。',
       },
     },
     {
@@ -115,7 +80,7 @@ const faqSchema = {
       name: '充值后会不会被封号？如果封号怎么办？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '我们采用正规Apple官方充值渠道，与直接在ChatGPT官网订阅完全一致，不存在违规操作，正常使用不会被封号。万一因为充值问题导致封号（极少发生），我们提供封号退款保障，保护您的权益。',
+        text: '我们不承诺绝对不会封号。充值完成后账号使用状态以第三方平台规则为准。若确因充值服务导致账号异常，我们将协助核查并按退款政策处理。',
       },
     },
     {
@@ -131,7 +96,7 @@ const faqSchema = {
       name: '如何选择ChatGPT Plus充值还是镜像服务？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '深度使用ChatGPT且有网络条件的用户建议选择ChatGPT Plus充值服务，享受完整的官方功能；无网络条件或中度使用ChatGPT的用户可选择镜像服务，性价比更高，国内可直连使用，功能体验与官网一致。',
+        text: '深度使用且网络条件良好的用户可选择Plus充值服务；网络条件受限或中度使用的用户可选择镜像服务，国内网络可用，体验更轻量便捷。',
       },
     },
   ],

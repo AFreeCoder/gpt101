@@ -8,7 +8,7 @@ export const siteConfig = {
         gradient: '一站式 ChatGPT', // 渐变色部分
         normal: '充值服务', // 普通色部分
       },
-      subtitle: 'Plus / Pro / Team 全支持，微信支付宝秒到账，无需信用卡',
+      subtitle: 'Plus / Pro / Team 全支持，微信支付宝通常1-2分钟到账，无需信用卡',
     },
     links: {
       cardPurchase: '/qf-dtyuedan-buy', // 卡密购买入口（站内跳转）
@@ -23,9 +23,9 @@ export const siteConfig = {
     ads: {
       left: {
         title: 'Claude Pro 充值',
-        subTitle: '官方 Plus/Pro/Team',
+        subTitle: 'Plus/Pro/Team 会员服务',
         description: '无需信用卡，支付宝也能充值 Claude Pro，支持 Claude Code',
-        tags: ['iOS充值技术', '安全快速', '官方正品'],
+        tags: ['iOS充值技术', '安全快速', '合规渠道'],
         buttonText: '立即充值',
         footerText: '快速充值，即刻体验',
         url: 'https://fe.dtyuedan.cn/shop/F2OLER91/i72az7',
@@ -38,7 +38,7 @@ export const siteConfig = {
         description: '支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro、Nano Banana 现已上线。统一协议，极低延迟⚡，价格更优。',
         tags: ['500+模型', 'Sora 2可用', '极低延迟⚡', '国内直连'],
         buttonText: '立即使用',
-        footerText: '注册立享官网折扣',
+        footerText: '注册立享限时折扣',
         url: 'https://apimart.ai/register?aff=2aDl',
         icon: 'api', // 标识使用通用 API 图标
         color: 'blue',
@@ -55,16 +55,16 @@ export const siteConfig = {
     features: [
       { text: '无需海外信用卡', icon: 'check' },
       { text: '微信/支付宝', icon: 'check' },
-      { text: '1分钟到账', icon: 'check' },
-      { text: '正规渠道', icon: 'check' },
+      { text: '通常1-2分钟到账', icon: 'check' },
+      { text: '合规渠道', icon: 'check' },
       { text: '支持开票', icon: 'check' },
-      { text: '失败退款', icon: 'check' },
+      { text: '符合条件当天退款', icon: 'check' },
     ],
     // 购买渠道配置 - 用于"立即升级"弹窗
     purchaseChannels: [
       {
         id: 1,
-        label: '【推荐1】ChatGPT官网会员自助充值(充你的号)',
+        label: '【推荐1】ChatGPT会员自助充值(充你的号)',
         url: '/gpt-upgrade-987ai',
         embedTarget: 'https://www.987ai.vip/recharge',
         color: 'from-blue-500 to-blue-500',
@@ -72,7 +72,7 @@ export const siteConfig = {
       },
       {
         id: 2,
-        label: '【推荐2】ChatGPT官网会员自助充值(充你的号)',
+        label: '【推荐2】ChatGPT会员自助充值(充你的号)',
         url: 'https://9977ai.vip/',
         embedTarget: '',
         color: 'from-blue-500 to-blue-500',
@@ -80,7 +80,7 @@ export const siteConfig = {
       },
       {
         id: 3,
-        label: '【推荐3】ChatGPT官网会员自助充值(充你的号)',
+        label: '【推荐3】ChatGPT会员自助充值(充你的号)',
         url: '/gpt-upgrade-xiaobei',
         embedTarget: 'https://gptget.pro/',
         color: 'from-blue-500 to-blue-500',
@@ -88,7 +88,7 @@ export const siteConfig = {
       },
       // {
       //   id: 4,
-      //   label: '【推荐4】ChatGPT官网会员自助充值(充你的号)',
+      //   label: '【推荐4】ChatGPT会员自助充值(充你的号)',
       //   url: '/gpt-upgrade-987ai',
       //   embedTarget: 'https://www.987ai.vip/recharge',
       //   color: 'from-blue-500 to-blue-500',
@@ -96,7 +96,7 @@ export const siteConfig = {
       // },
       // {
       //   id: 5,
-      //   label: '【推荐5】ChatGPT官网会员自助充值(充你的号)',
+      //   label: '【推荐5】ChatGPT会员自助充值(充你的号)',
       //   url: '/gpt-upgrade-scgpt',
       //   embedTarget: 'https://scgpt.top/',
       //   color: 'from-blue-500 to-blue-500',
@@ -104,7 +104,7 @@ export const siteConfig = {
       // },
       {
         id: 6,
-        label: '【备用】ChatGPT官网会员充值(充你的号)',
+        label: '【备用】ChatGPT会员充值(充你的号)',
         url: '',
         embedTarget: '',
         color: 'from-blue-500 to-blue-500',
@@ -195,7 +195,7 @@ export const siteConfig = {
   // 网站基本信息配置（预留扩展）
   site: {
     name: 'ChatGPT 一站式服务',
-    description: '专业可靠的ChatGPT服务提供商',
+    description: '专业可靠的第三方AI订阅服务平台',
     domain: 'gpt101.org', // 预留域名配置
   },
 

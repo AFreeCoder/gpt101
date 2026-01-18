@@ -8,9 +8,9 @@ import CustomerSupport from '~/components/widgets/CustomerSupport.astro';
 import { siteConfig } from '~/config/site';
 
 const metadata = {
-  title: 'ChatGPT 镜像服务 - 国内直连，无需翻墙',
+  title: 'ChatGPT 镜像服务 - 国内网络可用',
   description:
-    'ChatGPT镜像服务 - 国内直连无需翻墙，支持GPT-5、GPT-4、GPTs商店、DALL-E 3画图等完整功能，体验与官方一致。天卡¥5起，月卡¥58，灵活充值无使用限制',
+    'ChatGPT镜像服务 - 国内网络可用，支持GPT-5、GPT-4、GPTs商店、DALL-E 3画图等常见功能，体验更顺畅。天卡¥5起，月卡¥58，灵活充值更便捷',
   ignoreTitleTemplate: true,
 };
 ---
@@ -31,12 +31,15 @@ const metadata = {
               </div>
               <div class="flex flex-col sm:flex-row items-center gap-2">
                 <span class="text-gray-700 font-medium">需要使用 APP、对话记忆、Codex？</span>
-                <span class="text-gray-600 font-medium">选择官方Plus代充（充你的号）</span>
-                <span class="text-blue-600 font-semibold">→ 享受Plus官方原汁原味功能</span>
+                <span class="text-gray-600 font-medium">选择Plus代充（充你的号）</span>
+                <span class="text-blue-600 font-semibold">→ 获得更完整的Plus体验</span>
               </div>
             </div>
             <div class="flex-shrink-0">
-              <a href="/" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md">
+              <a
+                href="/"
+                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-300 shadow-sm hover:shadow-md"
+              >
                 <span>Plus代充服务</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -71,8 +74,8 @@ const metadata = {
 
         <!-- 副标题 -->
         <p class="text-lg text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-          专业ChatGPT镜像服务，国内网络直连，无需科学上网工具<br />
-          支持GPT-5、GPTs商店、DALL-E 3画图等完整功能，体验与官方一致
+          专业ChatGPT镜像服务，国内网络可用，流程更简化<br />
+          支持GPT-5、GPTs商店、DALL-E 3画图等常见功能，体验更顺畅
         </p>
 
         <!-- 三个按钮 -->
@@ -80,6 +83,7 @@ const metadata = {
           <a
             href={siteConfig.mirrorPage.links.purchase}
             target="_blank"
+            rel="noopener noreferrer"
             class="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md"
           >
             {siteConfig.mirrorPage.buttons.purchase}
@@ -88,6 +92,7 @@ const metadata = {
             <a
               href={siteConfig.mirrorPage.links.useNow}
               target="_blank"
+              rel="noopener noreferrer"
               class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg block"
             >
               {siteConfig.mirrorPage.buttons.useNow}
@@ -111,6 +116,11 @@ const metadata = {
           </a>
         </div>
 
+        <p class="text-xs text-gray-500 mb-6">
+          支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见
+          <a href="/terms" class="text-blue-600 hover:text-blue-700 hover:underline">服务条款</a>。
+        </p>
+
         <!-- 服务保障 -->
         <div class="text-center mt-8">
           <div
@@ -124,7 +134,7 @@ const metadata = {
                   clip-rule="evenodd"></path>
               </svg>
             </div>
-            <p class="text-green-800 font-semibold">服务保障：支持天、周、月灵活充值，完整功能无使用限制</p>
+            <p class="text-green-800 font-semibold">服务保障：支持天、周、月灵活充值，常见功能可用，体验以实际为准</p>
           </div>
         </div>
       </div>
@@ -142,7 +152,7 @@ const metadata = {
           cleanupTypewriter();
           typewriterElement.textContent = '';
 
-          const texts = ['国内网络直接访问', '月卡仅需 58 元', '支持所有GPT模型', '无使用限制'];
+          const texts = ['国内网络可用', '月卡仅需 58 元', '支持多种GPT模型', '使用更灵活'];
 
           let currentTextIndex = 0;
           let currentCharIndex = 0;

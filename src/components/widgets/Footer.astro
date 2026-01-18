@@ -28,6 +28,14 @@ const { socialLinks = [], secondaryLinks = [], links = [], footNote = '', theme 
 
 <footer class:list={[{ dark: theme === 'dark' }, 'relative border-t border-gray-200 dark:border-slate-800 not-prose']}>
   <div class="dark:bg-dark absolute inset-0 pointer-events-none" aria-hidden="true"></div>
+  <!-- 第三方服务声明 -->
+  <div class="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+      <p class="text-xs text-amber-800 dark:text-amber-200 text-center">
+        <strong>重要声明：</strong>本站为独立第三方服务平台，非 OpenAI、Anthropic 官方授权经销商。ChatGPT、OpenAI、Claude 等为其各自所有者的注册商标。本站提供的是第三方代充值服务，与官方无任何关联。
+      </p>
+    </div>
+  </div>
   <div
     class="relative max-w-7xl mx-auto px-4 sm:px-6 dark:text-slate-300 intersect-once intersect-quarter intersect-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
   >
@@ -38,7 +46,12 @@ const { socialLinks = [], secondaryLinks = [], links = [], footNote = '', theme 
             💬 {SITE?.name}
           </a>
         </div>
-        <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">专业的ChatGPT Plus代充和镜像服务提供商</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">独立第三方AI服务平台</div>
+        <div class="text-xs text-gray-500 dark:text-gray-500 mb-4 space-y-1">
+          <p>稳定运营：2023年至今</p>
+          <p>服务时间：每日 9:00 - 23:00</p>
+          <p>运营主体：以实际开票主体为准</p>
+        </div>
         <div class="text-sm text-muted flex flex-wrap gap-1">
           {
             secondaryLinks.map(({ text, href }, index) => (
