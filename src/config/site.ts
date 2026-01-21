@@ -121,6 +121,31 @@ export const siteConfig = {
     ],
   },
 
+  // 广告转化落地页配置
+  conversionLanding: {
+    links: {
+      purchase: 'https://fe.dtyuedan.cn/shop/F2OLER91/52wtgh',
+    },
+    buttons: {
+      purchase: '立即升级',
+    },
+    reviews: {
+      images: [
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png', alt: '客户好评截图1' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png', alt: '客户好评截图2' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png', alt: '客户好评截图3' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png', alt: '客户好评截图4' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png', alt: '客户好评截图5' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png', alt: '客户好评截图6' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png', alt: '客户好评截图7' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png', alt: '客户好评截图8' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png', alt: '客户好评截图9' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png', alt: '客户好评截图10' },
+        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png', alt: '客户好评截图11' },
+      ],
+    },
+  },
+
   // 镜像服务页配置
   mirrorPage: {
     links: {
@@ -226,6 +251,7 @@ export const siteConfig = {
 // 类型定义（确保类型安全）
 export type SiteConfig = typeof siteConfig;
 export type HomepageConfig = typeof siteConfig.homepage;
+export type ConversionLandingConfig = typeof siteConfig.conversionLanding;
 export type MirrorPageConfig = typeof siteConfig.mirrorPage;
 export type NavigationConfig = typeof siteConfig.navigation;
 export type PricingConfig = typeof siteConfig.pricing;

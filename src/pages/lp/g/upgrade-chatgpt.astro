@@ -1,0 +1,468 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import Hero from '~/components/widgets/Hero.astro';
+import Steps2 from '~/components/widgets/Steps2.astro';
+import FAQs from '~/components/widgets/FAQs.astro';
+import Headline from '~/components/ui/Headline.astro';
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+
+import { siteConfig } from '~/config/site';
+
+const metadata = {
+  title: 'ChatGPT Plus 快速升级 - 广告专用落地页',
+  description:
+    'ChatGPT Plus 代充快速升级页面：无需海外信用卡，微信/支付宝可用，通常 1-2 分钟完成充值。升级步骤清晰，客户好评截图可查看。',
+  ignoreTitleTemplate: true,
+};
+
+const purchaseUrl = siteConfig.conversionLanding.links.purchase;
+const purchaseLabel = siteConfig.conversionLanding.buttons.purchase;
+const reviewImages = siteConfig.conversionLanding.reviews?.images ?? [];
+const reviewRowTop = reviewImages.filter((_, index) => index % 2 === 0);
+const reviewRowBottom = reviewImages.filter((_, index) => index % 2 === 1);
+const reviewRowTopItems = reviewRowTop.length > 0 ? reviewRowTop : reviewImages;
+const reviewRowBottomItems = reviewRowBottom.length > 0 ? reviewRowBottom : reviewImages;
+const reviewRowTopLoop = [...reviewRowTopItems, ...reviewRowTopItems];
+const reviewRowBottomLoop = [...reviewRowBottomItems, ...reviewRowBottomItems];
+const shouldAnimateReviews = reviewImages.length > 1;
+
+const upgradeSteps = [
+  {
+    title: '购买卡密',
+    description: '点击「立即升级」，选择 Plus 充值，获取卡密。',
+    icon: 'tabler:shopping-cart',
+  },
+  {
+    title: '卡密验证',
+    description: '打开自助充值系统，核验卡密。',
+    icon: 'tabler:credit-card',
+  },
+  {
+    title: '关联 ChatGPT 账号',
+    description: '输入 ChatGPT Token 信息，关联账号。',
+    icon: 'tabler:credit-card',
+  },
+  {
+    title: '1-2 分钟完成升级',
+    description: '系统自动处理，多数时段 1-2 分钟内完成升级。',
+    icon: 'tabler:circle-check',
+  },
+];
+
+const faqs = [
+  {
+    title: 'Q: 没有海外信用卡可以充值吗？',
+    description: '可以，无需信用卡，微信或支付宝即可完成充值。',
+  },
+  {
+    title: 'Q: 充值过程需要提供账号密码吗？',
+    description: '不需要，整个流程不涉及账号密码，保护账户安全。',
+  },
+  {
+    title: 'Q: 充值需要多久？',
+    description: '通常 1-2 分钟完成，繁忙时段可能略有延迟。',
+  },
+  {
+    title: 'Q: 充值失败怎么办？',
+    description: '如遇失败或未交付，按退款政策处理，支持原路退回。',
+  },
+  {
+    title: 'Q: 如何联系客服？',
+    description: '如有问题，请联系 QQ 客服：2316149029。',
+  },
+];
+---
+
+<Layout metadata={metadata} structuredDataType="faq">
+  <!-- Hero Widget ******************* -->
+  <Hero
+    compact
+    noTitleAnimation
+    showSideAds={false}
+  >
+    <Fragment slot="title">
+      <span class="text-5xl md:text-6xl font-bold mb-6 inline-block">
+        <span class="text-blue-700 sm:bg-gradient-to-r sm:from-blue-600 sm:to-purple-600 sm:bg-clip-text sm:text-transparent"
+          >ChatGPT Plus</span
+        >
+        <span class="text-gray-800"> 自助升级</span>
+      </span>
+    </Fragment>
+
+    <Fragment slot="content">
+      <div class="text-center max-w-4xl mx-auto">
+        <div class="mb-8">
+          <p class="text-lg md:text-xl font-medium text-gray-700">
+            Plus / Pro / Team 全支持，全程微信/支付宝，适合国内用户快速升级
+          </p>
+        </div>
+
+        <div class="mb-8">
+          <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3 max-w-3xl mx-auto">
+            {
+              siteConfig.homepage.features.map((feature) => (
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 border border-green-200 rounded-lg">
+                  <svg
+                    class="w-3.5 h-3.5 text-green-600 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="text-xs md:text-sm font-medium text-gray-700">{feature.text}</span>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-center mb-4">
+          <a
+            href={purchaseUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-12 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+          >
+            {purchaseLabel}
+          </a>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-4 text-sm mb-4">
+          <a
+            href="#reviews"
+            class="inline-flex items-center gap-2 font-semibold text-amber-600 underline hover:text-amber-700"
+          >
+            查看客户好评
+            <span class="flex items-center gap-0.5" aria-hidden="true">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+              </svg>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+              </svg>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+              </svg>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+              </svg>
+              <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+              </svg>
+            </span>
+          </a>
+          <span class="text-slate-300">|</span>
+          <a
+            class="text-blue-600 underline hover:text-blue-700"
+          >
+            客服 QQ：2316149029
+          </a>
+        </div>
+
+        <div class="max-w-3xl mx-auto mb-6">
+          <div class="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100">
+              <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M6.938 4.938l-.707-.707m11.536.707.707-.707M4 12h-1m18 0h-1M6.938 19.062l-.707.707m11.536-.707.707.707M12 4V3m0 18v-1" />
+                <circle cx="12" cy="12" r="9" stroke-width="2" />
+              </svg>
+            </span>
+            <span>充值有问题？访问有问题？遇到降智问题？别犹豫，点右下角客服，立刻为您解决。</span>
+          </div>
+        </div>
+
+        <div class="max-w-2xl mx-auto mb-8">
+          <div class="border-t border-dashed border-gray-300"></div>
+        </div>
+
+        <p class="text-xs text-gray-500 mb-4">
+          支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见
+          <a href="/terms" class="text-blue-600 hover:text-blue-700 hover:underline">服务条款</a>。
+        </p>
+
+        <div class="flex flex-wrap items-center justify-center gap-3 mb-2 text-sm text-gray-600">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              ></path>
+            </svg>
+            <span>无需密码</span>
+          </div>
+          <span class="text-gray-300">·</span>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span>支持退款保障</span>
+          </div>
+          <span class="text-gray-300">·</span>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>稳定运营2年+</span>
+          </div>
+        </div>
+
+      </div>
+    </Fragment>
+  </Hero>
+
+  <!-- Reviews Carousel Section ******************* -->
+  <WidgetWrapper id="reviews" containerClass="max-w-6xl pt-3 pb-8 md:pt-4 md:pb-10 lg:pt-5 lg:pb-12">
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-white dark:bg-transparent"></div>
+    </Fragment>
+    <Headline title="客户好评展示" />
+
+    <div
+      class="mt-6 review-marquee w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]"
+      data-review-marquee
+    >
+      <div class="overflow-hidden py-4">
+        <div
+          class:list={[
+            'review-row review-row--top flex w-max gap-4 py-2 px-4 sm:px-8 lg:px-12',
+            { 'review-row--animate': shouldAnimateReviews },
+          ]}
+          style="animation-duration: 34s;"
+        >
+          {
+            reviewRowTopLoop.map((image) => (
+              <a
+                class="block rounded-xl overflow-hidden bg-slate-50 border border-slate-200 hover:border-blue-300 transition-colors"
+                href={image.src}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-review-image
+                data-image-src={image.src}
+                data-image-alt={image.alt}
+                aria-label="查看好评截图"
+              >
+                <div class="aspect-[4/3] w-[240px] sm:w-[280px] lg:w-[320px]">
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    class="w-full h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </a>
+            ))
+          }
+        </div>
+        <div
+          class:list={[
+            'review-row review-row--bottom flex w-max gap-4 py-2 px-4 sm:px-8 lg:px-12',
+            { 'review-row--animate': shouldAnimateReviews },
+          ]}
+          style="animation-duration: 40s; animation-delay: -12s;"
+        >
+          {
+            reviewRowBottomLoop.map((image) => (
+              <a
+                class="block rounded-xl overflow-hidden bg-slate-50 border border-slate-200 hover:border-blue-300 transition-colors"
+                href={image.src}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-review-image
+                data-image-src={image.src}
+                data-image-alt={image.alt}
+                aria-label="查看好评截图"
+              >
+                <div class="aspect-[4/3] w-[240px] sm:w-[280px] lg:w-[320px]">
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    class="w-full h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </WidgetWrapper>
+
+  <div
+    id="review-modal"
+    class="fixed inset-0 z-50 hidden place-items-center pointer-events-none"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+  >
+    <div class="absolute inset-0 bg-black/70" data-review-modal-backdrop></div>
+    <button
+      type="button"
+      class="fixed right-4 top-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-lg hover:bg-white pointer-events-auto"
+      data-review-modal-close
+      aria-label="关闭图片预览"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <img
+      class="relative z-20 max-h-[72vh] w-auto max-w-[86vw] rounded-2xl bg-white object-contain shadow-2xl pointer-events-auto mx-auto my-auto"
+      src=""
+      alt=""
+      data-review-modal-image
+    />
+  </div>
+
+  <!-- Upgrade Steps Section ******************* -->
+  <Steps2
+    id="upgrade-steps"
+    title="升级步骤"
+    subtitle="三步完成升级，流程清晰可追踪"
+    items={upgradeSteps}
+    callToAction={{
+      text: purchaseLabel,
+      href: purchaseUrl,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    }}
+  >
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-white dark:bg-transparent"></div>
+    </Fragment>
+  </Steps2>
+
+  <!-- FAQs Section ******************* -->
+  <FAQs
+    id="faqs"
+    title="常见问题"
+    subtitle="关于 ChatGPT Plus 升级的常见问题"
+    tagline="FAQ"
+    classes={{ container: 'max-w-6xl' }}
+    items={faqs}
+  >
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-gray-50 dark:bg-transparent"></div>
+    </Fragment>
+  </FAQs>
+</Layout>
+<style is:inline>
+  @keyframes review-marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .review-row--animate {
+    animation-name: review-marquee;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  .review-marquee:hover .review-row--animate {
+    animation-play-state: paused;
+  }
+</style>
+<script is:inline>
+  let reviewPreviewCleanup = null;
+
+  const initReviewPreview = () => {
+    if (reviewPreviewCleanup) {
+      reviewPreviewCleanup();
+    }
+
+    const modal = document.getElementById('review-modal');
+    if (!modal) return;
+    const modalImg = modal.querySelector('img');
+    const closeBtn = modal.querySelector('[data-review-modal-close]');
+    const triggers = Array.from(document.querySelectorAll('[data-review-image]'));
+
+    if (!modalImg || triggers.length === 0) return;
+
+    const openModal = (src, alt) => {
+      modalImg.src = src;
+      modalImg.alt = alt || '客户好评截图';
+      modal.classList.remove('hidden');
+      modal.classList.add('grid');
+      modal.setAttribute('aria-hidden', 'false');
+    };
+
+    const closeModal = () => {
+      modal.classList.add('hidden');
+      modal.classList.remove('grid');
+      modal.setAttribute('aria-hidden', 'true');
+      modalImg.src = '';
+      modalImg.alt = '';
+    };
+
+    const onTriggerClick = (event) => {
+      event.preventDefault();
+      const target = event.currentTarget;
+      const src = target.getAttribute('data-image-src');
+      if (!src) return;
+      const alt = target.getAttribute('data-image-alt');
+      openModal(src, alt);
+    };
+
+    const onDocumentClick = (event) => {
+      if (modal.classList.contains('hidden')) return;
+      if (event.target.closest('[data-review-modal-image]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeModal();
+    };
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    };
+
+    triggers.forEach((trigger) => {
+      trigger.addEventListener('click', onTriggerClick);
+    });
+    closeBtn?.addEventListener('click', closeModal);
+    document.addEventListener('click', onDocumentClick, true);
+    document.addEventListener('keydown', onKeyDown);
+
+    reviewPreviewCleanup = () => {
+      triggers.forEach((trigger) => {
+        trigger.removeEventListener('click', onTriggerClick);
+      });
+      closeBtn?.removeEventListener('click', closeModal);
+      document.removeEventListener('click', onDocumentClick, true);
+      document.removeEventListener('keydown', onKeyDown);
+      closeModal();
+      reviewPreviewCleanup = null;
+    };
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReviewPreview);
+  } else {
+    initReviewPreview();
+  }
+
+  document.addEventListener('astro:page-load', initReviewPreview);
+  document.addEventListener('astro:before-swap', () => {
+    if (reviewPreviewCleanup) {
+      reviewPreviewCleanup();
+    }
+  });
+</script>

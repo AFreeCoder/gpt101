@@ -232,6 +232,7 @@ export interface Hero extends Omit<Headline, 'classes'>, Omit<Widget, 'isDark' |
   image?: string | unknown;
   compact?: boolean;
   noTitleAnimation?: boolean;
+  showSideAds?: boolean;
 }
 
 export interface Team extends Omit<Headline, 'classes'>, Widget {
