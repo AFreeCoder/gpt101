@@ -480,8 +480,10 @@ const faqs = [
     const selector = '[data-gtag-outbound]';
     const sendOutbound = (url, label, callback) => {
       if (typeof window.gtag !== 'function') {
-        callback?.();
-        return;
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () {
+          window.dataLayer.push(arguments);
+        };
       }
       let called = false;
       const safeCallback = () => {
@@ -490,9 +492,9 @@ const faqs = [
         callback?.();
       };
 
-      window.gtag('event', 'outbound_click', {
+      window.gtag('event', 'instant_upgrade_gpt_click', {
         event_category: 'outbound',
-        event_label: url,
+        event_label: label || url,
         value: 1,
         transport_type: 'beacon',
         event_callback: safeCallback,
