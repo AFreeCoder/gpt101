@@ -122,6 +122,7 @@ const faqs = [
             href={purchaseUrl}
             target="_blank"
             rel="noopener noreferrer"
+            data-gtag-outbound="purchase"
             class="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-12 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
           >
             {purchaseLabel}
@@ -338,6 +339,7 @@ const faqs = [
       href: purchaseUrl,
       target: '_blank',
       rel: 'noopener noreferrer',
+      'data-gtag-outbound': 'purchase',
     }}
   >
     <Fragment slot="bg">
@@ -381,6 +383,7 @@ const faqs = [
 </style>
 <script is:inline>
   let reviewPreviewCleanup = null;
+  let outboundTrackingCleanup = null;
 
   const initReviewPreview = () => {
     if (reviewPreviewCleanup) {
@@ -464,5 +467,79 @@ const faqs = [
     if (reviewPreviewCleanup) {
       reviewPreviewCleanup();
     }
+    if (outboundTrackingCleanup) {
+      outboundTrackingCleanup();
+    }
   });
+
+  const initOutboundTracking = () => {
+    if (outboundTrackingCleanup) {
+      outboundTrackingCleanup();
+    }
+
+    const selector = '[data-gtag-outbound]';
+    const sendOutbound = (url, label, callback) => {
+      if (typeof window.gtag !== 'function') {
+        callback?.();
+        return;
+      }
+      let called = false;
+      const safeCallback = () => {
+        if (called) return;
+        called = true;
+        callback?.();
+      };
+
+      window.gtag('event', 'outbound_click', {
+        event_category: 'outbound',
+        event_label: url,
+        value: 1,
+        transport_type: 'beacon',
+        event_callback: safeCallback,
+        event_timeout: 400,
+      });
+
+      setTimeout(safeCallback, 450);
+    };
+
+    const onDocumentClick = (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest(selector);
+      if (!link) return;
+
+      const url = link.getAttribute('href');
+      if (!url) return;
+
+      const label = link.getAttribute('data-gtag-label') || link.textContent?.trim() || 'outbound';
+      const linkTarget = link.getAttribute('target');
+      const isPlainLeftClick =
+        event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+
+      if (linkTarget !== '_blank' && isPlainLeftClick) {
+        event.preventDefault();
+        sendOutbound(url, label, () => {
+          window.location.href = url;
+        });
+        return;
+      }
+
+      sendOutbound(url, label);
+    };
+
+    document.addEventListener('click', onDocumentClick, true);
+
+    outboundTrackingCleanup = () => {
+      document.removeEventListener('click', onDocumentClick, true);
+      outboundTrackingCleanup = null;
+    };
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initOutboundTracking);
+  } else {
+    initOutboundTracking();
+  }
+
+  document.addEventListener('astro:page-load', initOutboundTracking);
 </script>
