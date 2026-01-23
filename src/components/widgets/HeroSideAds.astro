@@ -31,7 +31,7 @@ const renderCard = (ad, side) => {
   const iconBg = ad.color === 'orange' ? 'bg-orange-400' : 'bg-blue-500';
 
   return `
-    <div class="fixed ${isLeft ? 'left-4 lg:left-8' : 'right-4 lg:right-8'} top-1/2 -translate-y-1/2 z-40 w-[240px] transition-transform duration-300 hover:scale-105 hidden xl:block">
+    <div class="absolute ${isLeft ? 'left-4 lg:left-8' : 'right-4 lg:right-8'} top-1/2 -translate-y-1/2 z-40 w-[240px] transition-transform duration-300 hover:scale-105 hidden xl:block">
       <a 
         href="${ad.url}" 
         target="_blank" 
