@@ -75,14 +75,11 @@ const faqs = [
 
 <Layout metadata={metadata} structuredDataType="faq">
   <!-- Hero Widget ******************* -->
-  <Hero
-    compact
-    noTitleAnimation
-    showSideAds={false}
-  >
+  <Hero compact noTitleAnimation showSideAds={false}>
     <Fragment slot="title">
       <span class="text-5xl md:text-6xl font-bold mb-6 inline-block">
-        <span class="text-blue-700 sm:bg-gradient-to-r sm:from-blue-600 sm:to-purple-600 sm:bg-clip-text sm:text-transparent"
+        <span
+          class="text-blue-700 sm:bg-gradient-to-r sm:from-blue-600 sm:to-purple-600 sm:bg-clip-text sm:text-transparent"
           >ChatGPT Plus</span
         >
         <span class="text-gray-800"> 自助升级</span>
@@ -137,36 +134,49 @@ const faqs = [
             查看客户好评
             <span class="flex items-center gap-0.5" aria-hidden="true">
               <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z"
+                ></path>
               </svg>
               <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z"
+                ></path>
               </svg>
               <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z"
+                ></path>
               </svg>
               <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z"
+                ></path>
               </svg>
               <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z" />
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.17c.969 0 1.371 1.24.588 1.81l-3.374 2.452a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.374-2.451a1 1 0 00-1.176 0l-3.374 2.451c-.784.57-1.838-.197-1.539-1.118l1.286-3.966a1 1 0 00-.364-1.118L2.07 9.393c-.783-.57-.38-1.81.588-1.81h4.17a1 1 0 00.95-.69l1.287-3.966z"
+                ></path>
               </svg>
             </span>
           </a>
           <span class="text-slate-300">|</span>
-          <a
-            class="text-blue-600 underline hover:text-blue-700"
-          >
-            客服 QQ：2316149029
-          </a>
+          <a class="text-blue-600 underline hover:text-blue-700"> 客服 QQ：2316149029 </a>
         </div>
 
         <div class="max-w-3xl mx-auto mb-6">
-          <div class="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          <div
+            class="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700"
+          >
             <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100">
               <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M6.938 4.938l-.707-.707m11.536.707.707-.707M4 12h-1m18 0h-1M6.938 19.062l-.707.707m11.536-.707.707.707M12 4V3m0 18v-1" />
-                <circle cx="12" cy="12" r="9" stroke-width="2" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4m0 4h.01M6.938 4.938l-.707-.707m11.536.707.707-.707M4 12h-1m18 0h-1M6.938 19.062l-.707.707m11.536-.707.707.707M12 4V3m0 18v-1"
+                ></path>
+                <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
               </svg>
             </span>
             <span>充值有问题？访问有问题？遇到降智问题？别犹豫，点右下角客服，立刻为您解决。</span>
@@ -218,7 +228,6 @@ const faqs = [
             <span>稳定运营2年+</span>
           </div>
         </div>
-
       </div>
     </Fragment>
   </Hero>
@@ -230,10 +239,7 @@ const faqs = [
     </Fragment>
     <Headline title="客户好评展示" />
 
-    <div
-      class="mt-6 review-marquee w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]"
-      data-review-marquee
-    >
+    <div class="mt-6 review-marquee w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]" data-review-marquee>
       <div class="overflow-hidden py-4">
         <div
           class:list={[
@@ -318,7 +324,7 @@ const faqs = [
       aria-label="关闭图片预览"
     >
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
     <img
@@ -483,8 +489,8 @@ const faqs = [
     const sendOutbound = (url, label, conversionSendTo, callback) => {
       if (typeof window.gtag !== 'function') {
         window.dataLayer = window.dataLayer || [];
-        window.gtag = function () {
-          window.dataLayer.push(arguments);
+        window.gtag = (...args) => {
+          window.dataLayer.push(args);
         };
       }
       let called = false;

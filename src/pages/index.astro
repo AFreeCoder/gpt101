@@ -70,7 +70,8 @@ const shouldAnimateReviews = reviewImages.length > 1;
     <Fragment slot="title">
       <!-- 大标题 - Hero组件会自动包裹h1标签 -->
       <span class="text-5xl md:text-6xl font-bold mb-6 inline-block">
-        <span class="text-blue-700 sm:bg-gradient-to-r sm:from-blue-600 sm:to-purple-600 sm:bg-clip-text sm:text-transparent"
+        <span
+          class="text-blue-700 sm:bg-gradient-to-r sm:from-blue-600 sm:to-purple-600 sm:bg-clip-text sm:text-transparent"
           >{siteConfig.homepage.hero.title.gradient}</span
         >
         <span class="text-gray-800"> {siteConfig.homepage.hero.title.normal}</span>
@@ -270,10 +271,7 @@ const shouldAnimateReviews = reviewImages.length > 1;
     </Fragment>
     <Headline title="客户好评展示" />
 
-    <div
-      class="mt-6 review-marquee w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]"
-      data-review-marquee
-    >
+    <div class="mt-6 review-marquee w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]" data-review-marquee>
       <div class="overflow-hidden py-4">
         <div
           class:list={[
@@ -358,7 +356,7 @@ const shouldAnimateReviews = reviewImages.length > 1;
       aria-label="关闭图片预览"
     >
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
     <img

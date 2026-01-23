@@ -10,8 +10,16 @@ interface Props {
 
 const { id, isDark = false, classes = {}, bg = await Astro.slots.render('bg') } = Astro.props;
 
+type ComparisonItem = {
+  feature: string;
+  mirror: string | boolean;
+  plus: string | boolean;
+  highlight?: 'network' | 'limit' | 'price';
+  note?: string;
+};
+
 // 对比数据
-const comparisonData = [
+const comparisonData: ComparisonItem[] = [
   { feature: '网络要求', mirror: '国内网络可用', plus: '网络条件视地区/政策而定', highlight: 'network' },
   { feature: '使用限制', mirror: '按套餐说明', plus: '以平台政策为准', highlight: 'limit' },
   { feature: '价格对比', mirror: '¥5/天，¥25/周，¥58/月', plus: '¥144/月', highlight: 'price' },

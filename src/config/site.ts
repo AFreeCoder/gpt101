@@ -35,7 +35,8 @@ export const siteConfig = {
       right: {
         title: 'API 服务',
         subTitle: 'OpenAI 兼容接口',
-        description: '支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro、Nano Banana 现已上线。统一协议，极低延迟⚡，价格更优。',
+        description:
+          '支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro、Nano Banana 现已上线。统一协议，极低延迟⚡，价格更优。',
         tags: ['500+模型', 'Sora 2可用', '极低延迟⚡', '国内直连'],
         buttonText: '立即使用',
         footerText: '注册立享限时折扣',
@@ -131,17 +132,50 @@ export const siteConfig = {
     },
     reviews: {
       images: [
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png', alt: '客户好评截图1' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png', alt: '客户好评截图2' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png', alt: '客户好评截图3' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png', alt: '客户好评截图4' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png', alt: '客户好评截图5' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png', alt: '客户好评截图6' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png', alt: '客户好评截图7' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png', alt: '客户好评截图8' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png', alt: '客户好评截图9' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png', alt: '客户好评截图10' },
-        { src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png', alt: '客户好评截图11' },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png',
+          alt: '客户好评截图1',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png',
+          alt: '客户好评截图2',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png',
+          alt: '客户好评截图3',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png',
+          alt: '客户好评截图4',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png',
+          alt: '客户好评截图5',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png',
+          alt: '客户好评截图6',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png',
+          alt: '客户好评截图7',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png',
+          alt: '客户好评截图8',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png',
+          alt: '客户好评截图9',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png',
+          alt: '客户好评截图10',
+        },
+        {
+          src: 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png',
+          alt: '客户好评截图11',
+        },
       ],
     },
   },

@@ -21,9 +21,10 @@ const ApiIcon = `
 </svg>
 `;
 
-const renderCard = (ad, side) => {
+type AdConfig = (typeof ads)[keyof typeof ads];
+
+const renderCard = (ad: AdConfig, side: 'left' | 'right') => {
   const isLeft = side === 'left';
-  const colorClass = ad.color === 'orange' ? 'text-orange-500 bg-orange-500' : 'text-blue-600 bg-blue-600';
   const lightBgClass = ad.color === 'orange' ? 'bg-orange-50' : 'bg-blue-50';
   const borderClass = ad.color === 'orange' ? 'border-orange-100' : 'border-blue-100';
   const buttonGradient = ad.color === 'orange' ? 'from-orange-400 to-orange-500' : 'from-blue-500 to-blue-600';
@@ -70,7 +71,7 @@ const renderCard = (ad, side) => {
           <div class="flex flex-wrap gap-2 mb-5">
             ${ad.tags
               .map(
-                (tag) => `
+                (tag: string) => `
               <span class="px-2.5 py-1 ${lightBgClass} ${ad.color === 'orange' ? 'text-orange-700' : 'text-blue-700'} rounded-full text-xs font-medium border ${ad.color === 'orange' ? 'border-orange-200' : 'border-blue-200'}">
                 ✓ ${tag}
               </span>

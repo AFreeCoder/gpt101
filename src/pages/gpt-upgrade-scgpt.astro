@@ -11,10 +11,9 @@ const metadata = {
   ignoreTitleTemplate: true,
 };
 
-const pagePath = '/gpt-upgrade-scgpt';
+const pagePath: string = '/gpt-upgrade-scgpt';
 const targetUrl =
-  siteConfig.homepage.purchaseChannels.find((channel) => channel.url === pagePath)?.embedTarget ||
-  'https://scgpt.top/';
+  siteConfig.homepage.purchaseChannels.find((channel) => channel.url === pagePath)?.embedTarget || 'https://scgpt.top/';
 ---
 
 <Layout metadata={metadata}>
