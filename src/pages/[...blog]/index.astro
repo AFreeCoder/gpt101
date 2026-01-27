@@ -115,7 +115,7 @@ const howToStructuredData =
         '@type': 'HowTo',
         name: post.title,
         description:
-          post.excerpt || '通过 ChatGPT 一站式服务完成 Plus 代充，包含购买卡密、验证信息以及完成升级的完整步骤。',
+          post.excerpt || '通过 GPT101 完成 Plus 代充，包含购买卡密、验证信息以及完成升级的完整步骤。',
         totalTime: post.howTo?.totalTime || 'PT2M',
         step: post.howTo?.steps?.map((step) => ({
           '@type': 'HowToStep',

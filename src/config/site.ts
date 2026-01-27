@@ -5,7 +5,7 @@ export const siteConfig = {
     // Hero Section 文案
     hero: {
       title: {
-        gradient: '一站式 ChatGPT', // 渐变色部分
+        gradient: '一站式 GPT', // 渐变色部分
         normal: '充值服务', // 普通色部分
       },
       subtitle: 'Plus / Pro / Team 全支持，微信支付宝通常1-2分钟到账，无需信用卡',
@@ -253,8 +253,8 @@ export const siteConfig = {
 
   // 网站基本信息配置（预留扩展）
   site: {
-    name: 'ChatGPT 一站式服务',
-    description: '专业可靠的第三方AI订阅服务平台',
+    name: 'GPT101',
+    description: '一站式 GPT 充值服务',
     domain: 'gpt101.org', // 预留域名配置
   },
 

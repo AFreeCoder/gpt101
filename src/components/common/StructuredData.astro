@@ -15,26 +15,26 @@ const siteUrl = (Astro.site?.toString() || 'https://gpt101.org').replace(/\/$/, 
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'ChatGPT 一站式服务',
+  name: 'GPT101',
   url: siteUrl,
   logo: `${siteUrl}/favicon.png`,
-  description: '专业的ChatGPT Plus代充和镜像服务提供商',
+  description: '一站式 GPT 充值服务 - 专业的 GPT Plus 代充和镜像服务平台',
   sameAs: [
     // 可以添加社交媒体链接
   ],
 };
 
-// Product Schema - ChatGPT Plus充值服务
+// Product Schema - GPT Plus充值服务
 const productSchema = {
   '@context': 'https://schema.org',
   '@type': 'Product',
-  name: 'ChatGPT Plus 充值服务',
+  name: 'GPT Plus 充值服务',
   description:
-    'ChatGPT Plus代充服务 - 无需海外信用卡，合规iOS充值渠道，通常1-2分钟完成充值，符合条件可退款。支持GPT-5 等模型、GPTs商店、DALL-E 3等功能，多数时段自动处理，微信支付宝支付便捷安全',
+    'GPT Plus 代充服务 - 无需海外信用卡，合规iOS充值渠道，通常1-2分钟完成充值，符合条件可退款。支持 GPT-5 等模型、GPTs商店、DALL-E 3等功能，多数时段自动处理，微信支付宝支付便捷安全',
   image: `${siteUrl}/_astro/default.CZ816Hke_2bosb5.jpg`,
   brand: {
     '@type': 'Brand',
-    name: 'ChatGPT 一站式服务',
+    name: 'GPT101',
   },
 };
 
@@ -93,10 +93,10 @@ const faqSchema = {
     },
     {
       '@type': 'Question',
-      name: '如何选择ChatGPT Plus充值还是镜像服务？',
+      name: '如何选择 GPT Plus 充值还是镜像服务？',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '深度使用且网络条件良好的用户可选择Plus充值服务；网络条件受限或中度使用的用户可选择镜像服务，国内网络可用，体验更轻量便捷。',
+        text: '深度使用且网络条件良好的用户可选择 Plus 充值服务；网络条件受限或中度使用的用户可选择镜像服务，国内网络可用，体验更轻量便捷。',
       },
     },
   ],
@@ -106,17 +106,10 @@ const faqSchema = {
 const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'ChatGPT 一站式服务',
+  name: 'GPT101',
   url: siteUrl,
-  description: '专业的ChatGPT Plus代充和镜像服务提供商',
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: {
-      '@type': 'EntryPoint',
-      urlTemplate: `${siteUrl}?s={search_term_string}`,
-    },
-    'query-input': 'required name=search_term_string',
-  },
+  description: '一站式 GPT 充值服务 - 专业的 GPT Plus 代充和镜像服务平台',
+  // 移除 SearchAction 以避免生成 ?s= 格式的 URL
 };
 
 // 根据type参数决定输出哪些schema

@@ -28,8 +28,8 @@ export const footerData = {
     {
       title: '服务',
       links: [
-        { text: 'ChatGPT Plus代充', href: getPermalink(siteConfig.navigation.links.home) },
-        { text: 'ChatGPT镜像服务', href: getPermalink(siteConfig.navigation.links.mirror) },
+        { text: 'GPT Plus 代充', href: getPermalink(siteConfig.navigation.links.home) },
+        { text: 'GPT 镜像服务', href: getPermalink(siteConfig.navigation.links.mirror) },
       ],
     },
     {
@@ -42,7 +42,7 @@ export const footerData = {
     {
       title: '教程',
       links: [
-        { text: 'ChatGPT Plus 充值教程', href: getPermalink('/how-to-upgrade-gpt-plus') },
+        { text: 'GPT Plus 充值教程', href: getPermalink('/how-to-upgrade-gpt-plus') },
         { text: '镜像服务使用指南', href: getPermalink('/chatgpt-mirror-guide') },
         { text: '充值避坑指南', href: getPermalink('/2025-latest-7-way-to-upgrade-chatgpt-plus') },
         { text: '更多教程', href: getBlogPermalink() },
@@ -62,6 +62,6 @@ export const footerData = {
   ],
   socialLinks: [],
   footNote: `
-    © 2025 ChatGPT 一站式服务 · 稳定运营2年+ · 客服在线时间 9:00-23:00
+    © 2025 GPT101 · 稳定运营2年+ · 客服在线时间 9:00-23:00
   `,
 };

@@ -113,8 +113,8 @@ contact: {
 
 ```typescript
 site: {
-  name: 'ChatGPT 一站式服务',
-  description: '专业可靠的ChatGPT服务提供商',
+  name: 'GPT101',
+  description: '一站式 GPT 充值服务',
   domain: 'gpt101.org',
 }
 ```
