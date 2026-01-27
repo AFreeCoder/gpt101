@@ -65,7 +65,7 @@ export const siteConfig = {
     purchaseChannels: [
       {
         id: 1,
-        label: '【推荐1】ChatGPT会员自助充值(充你的号)',
+        label: '【推荐1】GPT会员自助充值(充你的号)',
         url: '/gpt-upgrade-987ai',
         embedTarget: 'https://www.987ai.vip/recharge',
         color: 'from-blue-500 to-blue-500',
@@ -73,7 +73,7 @@ export const siteConfig = {
       },
       {
         id: 2,
-        label: '【推荐2】ChatGPT会员自助充值(充你的号)',
+        label: '【推荐2】GPT会员自助充值(充你的号)',
         url: 'https://9977ai.vip/',
         embedTarget: '',
         color: 'from-blue-500 to-blue-500',
@@ -81,7 +81,7 @@ export const siteConfig = {
       },
       {
         id: 3,
-        label: '【推荐3】ChatGPT会员自助充值(充你的号)',
+        label: '【推荐3】GPT会员自助充值(充你的号)',
         url: '/gpt-upgrade-xiaobei',
         embedTarget: 'https://gptget.pro/',
         color: 'from-blue-500 to-blue-500',
@@ -89,7 +89,7 @@ export const siteConfig = {
       },
       // {
       //   id: 4,
-      //   label: '【推荐4】ChatGPT会员自助充值(充你的号)',
+      //   label: '【推荐4】GPT会员自助充值(充你的号)',
       //   url: '/gpt-upgrade-987ai',
       //   embedTarget: 'https://www.987ai.vip/recharge',
       //   color: 'from-blue-500 to-blue-500',
@@ -97,7 +97,7 @@ export const siteConfig = {
       // },
       // {
       //   id: 5,
-      //   label: '【推荐5】ChatGPT会员自助充值(充你的号)',
+      //   label: '【推荐5】GPT会员自助充值(充你的号)',
       //   url: '/gpt-upgrade-scgpt',
       //   embedTarget: 'https://scgpt.top/',
       //   color: 'from-blue-500 to-blue-500',
@@ -105,7 +105,7 @@ export const siteConfig = {
       // },
       {
         id: 6,
-        label: '【备用】ChatGPT会员充值(充你的号)',
+        label: '【备用】GPT会员充值(充你的号)',
         url: '',
         embedTarget: '',
         color: 'from-blue-500 to-blue-500',
@@ -113,7 +113,7 @@ export const siteConfig = {
       },
       {
         id: 7,
-        label: '【Pro充值】ChatGPT Pro 会员充值(充你的号)',
+        label: '【Pro充值】GPT Pro 会员充值(充你的号)',
         url: '',
         embedTarget: '',
         color: 'from-blue-500 to-blue-500',
