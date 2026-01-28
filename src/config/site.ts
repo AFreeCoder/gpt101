@@ -274,6 +274,11 @@ export const siteConfig = {
       id: 'G-KPY9887M4F', // 格式: G-XXXXXXXXXX 或 GA-XXXXXXXXXX
       enabled: true, // 启用/禁用谷歌统计
     },
+    // Google Ads
+    googleAds: {
+      id: 'AW-17885221737', // 格式: AW-XXXXXXXXXX
+      enabled: true, // 启用/禁用 Google Ads
+    },
     // 百度统计
     baidu: {
       id: '35999906c23d844610453823877173a8', // 百度统计站点ID

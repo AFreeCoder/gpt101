@@ -1,5 +1,4 @@
 ---
-import { GoogleAnalytics } from '@astrolib/analytics';
 import { ANALYTICS } from 'astrowind:config';
 import { siteConfig } from '~/config/site';
 import BaiduAnalytics from './BaiduAnalytics.astro';
@@ -9,10 +8,29 @@ const googleId = siteConfig.analytics.google.enabled
   ? siteConfig.analytics.google.id
   : ANALYTICS?.vendors?.googleAnalytics?.id;
 
+const googleAdsId = siteConfig.analytics.googleAds?.enabled ? siteConfig.analytics.googleAds.id : null;
+const gtagId = googleId || googleAdsId;
+
 const baiduId = siteConfig.analytics.baidu.enabled ? siteConfig.analytics.baidu.id : null;
 ---
 
-<!-- 谷歌统计 -->{googleId ? <GoogleAnalytics id={String(googleId)} partytown={false} /> : null}
+<!-- 谷歌统计 / Google Ads -->
+{
+  gtagId && (
+    <>
+      <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gtagId}`}></script>
+      <script is:inline define:vars={{ googleId, googleAdsId }}>
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = window.gtag || function gtag() {
+          window.dataLayer.push(arguments);
+        };
+        window.gtag('js', new Date());
+        if (googleId) window.gtag('config', googleId);
+        if (googleAdsId) window.gtag('config', googleAdsId);
+      </script>
+    </>
+  )
+}
 
 <!-- 百度统计 -->
 {baiduId && <BaiduAnalytics id={baiduId} />}
