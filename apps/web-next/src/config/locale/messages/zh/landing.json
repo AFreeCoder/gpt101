@@ -1,0 +1,142 @@
+{
+  "header": {
+    "id": "header",
+    "brand": {
+      "title": "GPT101",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "GPT101",
+        "width": 100,
+        "height": 100
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "首页",
+          "url": "/",
+          "icon": "Home"
+        },
+        {
+          "title": "镜像服务",
+          "url": "/chatgpt-mirror",
+          "icon": "Monitor"
+        },
+        {
+          "title": "教程",
+          "url": "/tutorials",
+          "icon": "BookOpenText"
+        },
+        {
+          "title": "客服支持",
+          "url": "/#customer-support",
+          "icon": "Headphones"
+        }
+      ]
+    },
+    "buttons": [],
+    "user_nav": {
+      "show_name": true,
+      "show_credits": true,
+      "show_sign_out": true,
+      "items": []
+    },
+    "show_sign": false,
+    "show_theme": false,
+    "show_locale": false,
+    "topbanner": {
+      "text": ""
+    }
+  },
+  "footer": {
+    "id": "footer",
+    "brand": {
+      "title": "GPT101",
+      "description": "GPT101 - 一站式 GPT 充值服务。Plus / Pro / Team 全支持，微信支付宝通常1-2分钟到账，无需信用卡。",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "GPT101",
+        "width": 100,
+        "height": 100
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "服务",
+          "children": [
+            {
+              "title": "GPT Plus 代充",
+              "url": "/",
+              "target": "_self"
+            },
+            {
+              "title": "GPT 镜像服务",
+              "url": "/chatgpt-mirror",
+              "target": "_self"
+            },
+            {
+              "title": "API 服务",
+              "url": "https://apimart.ai/register?aff=2aDl",
+              "target": "_blank"
+            }
+          ]
+        },
+        {
+          "title": "教程",
+          "children": [
+            {
+              "title": "GPT Plus 充值教程",
+              "url": "/how-to-upgrade-gpt-plus",
+              "target": "_self"
+            },
+            {
+              "title": "镜像服务使用指南",
+              "url": "/chatgpt-mirror-guide",
+              "target": "_self"
+            },
+            {
+              "title": "最新充值方式",
+              "url": "/2025-latest-7-way-to-upgrade-chatgpt-plus",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "支持",
+          "children": [
+            {
+              "title": "客服支持",
+              "url": "/#customer-support",
+              "target": "_self"
+            },
+            {
+              "title": "OpenAI 状态",
+              "url": "https://status.openai.com/",
+              "target": "_blank"
+            }
+          ]
+        }
+      ]
+    },
+    "social": {
+      "items": []
+    },
+    "agreement": {
+      "items": [
+        {
+          "title": "隐私政策",
+          "url": "/privacy-policy"
+        },
+        {
+          "title": "服务条款",
+          "url": "/terms-of-service"
+        }
+      ]
+    },
+    "show_theme": false,
+    "show_locale": false
+  }
+}

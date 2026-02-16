@@ -1,0 +1,142 @@
+{
+  "header": {
+    "id": "header",
+    "brand": {
+      "title": "GPT101",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "GPT101",
+        "width": 100,
+        "height": 100
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "Home",
+          "url": "/",
+          "icon": "Home"
+        },
+        {
+          "title": "Mirror Service",
+          "url": "/chatgpt-mirror",
+          "icon": "Monitor"
+        },
+        {
+          "title": "Tutorials",
+          "url": "/tutorials",
+          "icon": "BookOpenText"
+        },
+        {
+          "title": "Support",
+          "url": "/#customer-support",
+          "icon": "Headphones"
+        }
+      ]
+    },
+    "buttons": [],
+    "user_nav": {
+      "show_name": true,
+      "show_credits": true,
+      "show_sign_out": true,
+      "items": []
+    },
+    "show_sign": false,
+    "show_theme": false,
+    "show_locale": false,
+    "topbanner": {
+      "text": ""
+    }
+  },
+  "footer": {
+    "id": "footer",
+    "brand": {
+      "title": "GPT101",
+      "description": "GPT101 - One-stop GPT subscription service. Plus / Pro / Team supported, WeChat & Alipay payment, usually 1-2 minutes delivery.",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "GPT101",
+        "width": 100,
+        "height": 100
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "Services",
+          "children": [
+            {
+              "title": "GPT Plus Subscription",
+              "url": "/",
+              "target": "_self"
+            },
+            {
+              "title": "GPT Mirror Service",
+              "url": "/chatgpt-mirror",
+              "target": "_self"
+            },
+            {
+              "title": "API Service",
+              "url": "https://apimart.ai/register?aff=2aDl",
+              "target": "_blank"
+            }
+          ]
+        },
+        {
+          "title": "Tutorials",
+          "children": [
+            {
+              "title": "GPT Plus Guide",
+              "url": "/how-to-upgrade-gpt-plus",
+              "target": "_self"
+            },
+            {
+              "title": "Mirror Service Guide",
+              "url": "/chatgpt-mirror-guide",
+              "target": "_self"
+            },
+            {
+              "title": "Latest Upgrade Methods",
+              "url": "/2025-latest-7-way-to-upgrade-chatgpt-plus",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "Support",
+          "children": [
+            {
+              "title": "Customer Support",
+              "url": "/#customer-support",
+              "target": "_self"
+            },
+            {
+              "title": "OpenAI Status",
+              "url": "https://status.openai.com/",
+              "target": "_blank"
+            }
+          ]
+        }
+      ]
+    },
+    "social": {
+      "items": []
+    },
+    "agreement": {
+      "items": [
+        {
+          "title": "Privacy Policy",
+          "url": "/privacy-policy"
+        },
+        {
+          "title": "Terms of Service",
+          "url": "/terms-of-service"
+        }
+      ]
+    },
+    "show_theme": false,
+    "show_locale": false
+  }
+}
