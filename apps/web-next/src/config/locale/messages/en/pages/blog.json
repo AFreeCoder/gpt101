@@ -1,22 +1,22 @@
 {
   "metadata": {
-    "title": "Blog",
-    "description": "Read latest product features, solutions, and updates."
+    "title": "Tutorials",
+    "description": "Read latest GPT Plus tutorials, mirror service guides and tips."
   },
   "page": {
-    "title": "ShipAny Blog",
+    "title": "GPT101 Tutorials",
     "sections": {
       "blog": {
         "id": "blog",
-        "title": "Blog",
-        "description": "Read latest product features, solutions, and updates."
+        "title": "Tutorials",
+        "description": "Read latest GPT Plus tutorials, mirror service guides and tips."
       }
     }
   },
   "messages": {
     "all": "All",
     "no_content": "No Content",
-    "crumb": "Blog",
+    "crumb": "Tutorials",
     "toc": "Table of Contents"
   }
 }

@@ -89,17 +89,17 @@
           "children": [
             {
               "title": "GPT Plus 充值教程",
-              "url": "/how-to-upgrade-gpt-plus",
+              "url": "/tutorials/how-to-upgrade-gpt-plus",
               "target": "_self"
             },
             {
               "title": "镜像服务使用指南",
-              "url": "/chatgpt-mirror-guide",
+              "url": "/tutorials/chatgpt-mirror-guide",
               "target": "_self"
             },
             {
               "title": "最新充值方式",
-              "url": "/2025-latest-7-way-to-upgrade-chatgpt-plus",
+              "url": "/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus",
               "target": "_self"
             }
           ]

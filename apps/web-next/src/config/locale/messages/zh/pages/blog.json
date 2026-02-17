@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "title": "博客",
+    "title": "教程",
     "description": "GPT Plus 充值教程、镜像服务指南等实用教程"
   },
   "page": {
@@ -8,15 +8,15 @@
     "sections": {
       "blog": {
         "id": "blog",
-        "title": "博客",
-        "description": "阅读我们最新的产品功能、解决方案和更新内容。"
+        "title": "教程",
+        "description": "阅读我们最新的充值教程、镜像服务指南和使用技巧。"
       }
     }
   },
   "messages": {
     "all": "全部",
     "no_content": "暂无内容",
-    "crumb": "博客",
+    "crumb": "教程",
     "toc": "目录"
   }
 }

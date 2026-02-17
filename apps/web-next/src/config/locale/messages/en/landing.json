@@ -89,17 +89,17 @@
           "children": [
             {
               "title": "GPT Plus Guide",
-              "url": "/how-to-upgrade-gpt-plus",
+              "url": "/tutorials/how-to-upgrade-gpt-plus",
               "target": "_self"
             },
             {
               "title": "Mirror Service Guide",
-              "url": "/chatgpt-mirror-guide",
+              "url": "/tutorials/chatgpt-mirror-guide",
               "target": "_self"
             },
             {
               "title": "Latest Upgrade Methods",
-              "url": "/2025-latest-7-way-to-upgrade-chatgpt-plus",
+              "url": "/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus",
               "target": "_self"
             }
           ]
