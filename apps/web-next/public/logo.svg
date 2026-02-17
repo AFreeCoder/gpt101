@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 圆角正方形背景 -->
+  <rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="url(#bg-gradient)"/>
+
+  <!-- 对话气泡（偏左下） -->
+  <g transform="translate(222, 268)">
+    <!-- 气泡主体 -->
+    <rect x="-105" y="-68" width="210" height="136" rx="34" ry="34" fill="white"/>
+    <!-- 气泡尾巴 -->
+    <path d="M -52,60 L -78,102 L -20,60 Z" fill="white"/>
+
+    <!-- 三个思考中的圆点 -->
+    <circle cx="-42" cy="0" r="15" fill="url(#bg-gradient)" opacity="0.55"/>
+    <circle cx="0" cy="0" r="15" fill="url(#bg-gradient)" opacity="0.78"/>
+    <circle cx="42" cy="0" r="15" fill="url(#bg-gradient)"/>
+  </g>
+
+  <!-- 闪电符号（右上方，干净的几何闪电） -->
+  <path d="M 310,100 L 280,200 L 320,200 L 296,300 L 370,175 L 325,175 L 355,100 Z"
+        fill="white" fill-opacity="0.95"/>
+</svg>
