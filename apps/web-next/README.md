@@ -1,19 +1,16 @@
-# ShipAny Template Two
+# GPT101 Web
 
-## Getting Started
+GPT101 一站式 GPT 充值服务平台。基于 Next.js 16 构建。
 
-read [ShipAny Document](https://shipany.ai/docs/quick-start) to start your AI SaaS project.
+## 开发
 
-## Buy Templates
+```bash
+pnpm install
+pnpm dev
+```
 
-check [ShipAny Templates](https://shipany.ai/templates) to buy Business Templates.
+## 构建
 
-## Feedback
-
-submit your feedbacks on [Github Issues](https://github.com/shipanyai/shipany-template-two/issues)
-
-## LICENSE
-
-!!! Please do not publicly release ShipAny's Code. Illegal use will be prosecuted
-
-[ShipAny LICENSE](./LICENSE)
+```bash
+pnpm build
+```
