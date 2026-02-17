@@ -17,13 +17,13 @@ export function BlogDetail({ post }: { post: PostType }) {
   const crumbItems: NavItem[] = [
     {
       title: t('crumb'),
-      url: '/blog',
+      url: '/tutorials',
       icon: 'Newspaper',
       is_active: false,
     },
     {
       title: post.title || '',
-      url: `/blog/${post.slug}`,
+      url: `/tutorials/${post.slug}`,
       is_active: true,
     },
   ];

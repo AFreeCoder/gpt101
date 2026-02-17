@@ -36,7 +36,7 @@ export const pagesSource = loader({
 
 // Posts source
 export const postsSource = loader({
-  baseUrl: '/blog',
+  baseUrl: '/tutorials',
   source: posts.toFumadocsSource(),
   i18n,
   icon: iconHelper,

@@ -13,7 +13,7 @@ export const revalidate = 3600;
 
 export const generateMetadata = getMetadata({
   metadataKey: 'pages.blog.metadata',
-  canonicalUrl: '/blog',
+  canonicalUrl: '/tutorials',
 });
 
 export default async function BlogPage({
@@ -37,7 +37,7 @@ export default async function BlogPage({
     id: 'all',
     slug: 'all',
     title: t('messages.all'),
-    url: `/blog`,
+    url: `/tutorials`,
   };
 
   try {

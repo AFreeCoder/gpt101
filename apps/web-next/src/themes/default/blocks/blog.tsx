@@ -33,8 +33,8 @@ export function Blog({
       title: category.title,
       url:
         !category.slug || category.slug === 'all'
-          ? '/blog'
-          : `/blog/category/${category.slug}`,
+          ? '/tutorials'
+          : `/tutorials/category/${category.slug}`,
       is_active: currentCategory?.slug == category.slug,
     });
   });

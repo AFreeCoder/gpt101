@@ -37,8 +37,8 @@ export async function generateMetadata({
     alternates: {
       canonical:
         locale !== envConfigs.locale
-          ? `${envConfigs.app_url}/${locale}/blog/category/${slug}`
-          : `${envConfigs.app_url}/blog/category/${slug}`,
+          ? `${envConfigs.app_url}/${locale}/tutorials/category/${slug}`
+          : `${envConfigs.app_url}/tutorials/category/${slug}`,
     },
   };
 }
@@ -89,7 +89,7 @@ export default async function CategoryBlogPage({
     id: categoryData.id,
     slug: categoryData.slug,
     title: categoryData.title,
-    url: `/blog/category/${categoryData.slug}`,
+    url: `/tutorials/category/${categoryData.slug}`,
   };
 
   // build category
@@ -97,13 +97,13 @@ export default async function CategoryBlogPage({
     id: category.id,
     slug: category.slug,
     title: category.title,
-    url: `/blog/category/${category.slug}`,
+    url: `/tutorials/category/${category.slug}`,
   }));
   categories.unshift({
     id: 'all',
     slug: 'all',
     title: t('messages.all'),
-    url: `/blog`,
+    url: `/tutorials`,
   });
 
   // build posts
@@ -115,7 +115,7 @@ export default async function CategoryBlogPage({
     author_image: post.authorImage || '',
     created_at: moment(post.createdAt).format('MMM D, YYYY') || '',
     image: post.image || '',
-    url: `/blog/${post.slug}`,
+    url: `/tutorials/${post.slug}`,
   }));
 
   // build page sections

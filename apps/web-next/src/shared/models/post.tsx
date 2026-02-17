@@ -145,7 +145,7 @@ export async function getPostsCount({
 export async function getPost({
   slug,
   locale,
-  postPrefix = '/blog/',
+  postPrefix = '/tutorials/',
 }: {
   slug: string;
   locale: string;
@@ -200,7 +200,7 @@ export async function getPost({
 export async function getLocalPost({
   slug,
   locale,
-  postPrefix = '/blog/',
+  postPrefix = '/tutorials/',
 }: {
   slug: string;
   locale: string;
@@ -299,8 +299,8 @@ export async function getPostsAndCategories({
   page = 1,
   limit = 30,
   locale,
-  postPrefix = '/blog/',
-  categoryPrefix = '/blog/category/',
+  postPrefix = '/tutorials/',
+  categoryPrefix = '/tutorials/category/',
 }: {
   page?: number;
   limit?: number;
@@ -375,8 +375,8 @@ export async function getRemotePostsAndCategories({
   page = 1,
   limit = 30,
   locale,
-  postPrefix = '/blog/',
-  categoryPrefix = '/blog/category/',
+  postPrefix = '/tutorials/',
+  categoryPrefix = '/tutorials/category/',
 }: {
   page?: number;
   limit?: number;
@@ -452,8 +452,8 @@ export async function getRemotePostsAndCategories({
 // get local posts and categories
 export async function getLocalPostsAndCategories({
   locale,
-  postPrefix = '/blog/',
-  categoryPrefix = '/blog/category/',
+  postPrefix = '/tutorials/',
+  categoryPrefix = '/tutorials/category/',
   type = PostType.ARTICLE,
 }: {
   locale: string;
@@ -533,9 +533,9 @@ export async function getLocalPostsAndCategories({
 export function getPostSlug({
   url,
   locale,
-  prefix = '/blog/',
+  prefix = '/tutorials/',
 }: {
-  url: string; // post url, like: /zh/blog/what-is-xxx
+  url: string; // post url, like: /zh/tutorials/what-is-xxx
   locale: string; // locale
   prefix?: string; // post slug prefix
 }): string {

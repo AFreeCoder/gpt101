@@ -99,7 +99,7 @@ export default async function PostsPage({
               name: 'view',
               title: t('list.buttons.view'),
               icon: 'RiEyeLine',
-              url: `/blog/${item.slug}`,
+              url: `/tutorials/${item.slug}`,
               target: '_blank',
             },
           ];
