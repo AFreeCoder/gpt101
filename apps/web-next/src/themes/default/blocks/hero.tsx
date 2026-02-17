@@ -27,7 +27,7 @@ export function Hero({
     <section
       id={section.id}
       className={cn(
-        `pt-24 pb-8 md:pt-36 md:pb-8`,
+        `pt-28 pb-8 md:pt-44 md:pb-8`,
         section.className,
         className
       )}
