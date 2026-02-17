@@ -25,3 +25,6 @@ seo/
 pnpm-lock.yaml
 
 .astro
+
+# ShipAny 原始模板（仅本地参考）
+shipany-template/
