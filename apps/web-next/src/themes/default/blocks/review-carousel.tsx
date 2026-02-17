@@ -134,7 +134,7 @@ export function ReviewCarousel({ section }: { section: Section }) {
       )}
 
       {/* 轮播动画 CSS */}
-      <style jsx global>{`
+      <style>{`
         @keyframes review-marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
