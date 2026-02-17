@@ -1,0 +1,152 @@
+{
+  "page": {
+    "show_sections": [
+      "hero",
+      "comparison",
+      "details",
+      "customer-support",
+      "floating-customer-service"
+    ],
+    "sections": {
+      "hero": {
+        "id": "hero",
+        "block": "mirror-hero",
+        "title_gradient": "GPT 镜像",
+        "title_normal": "服务",
+        "typewriter_texts": ["国内网络可用", "月卡仅需 58 元", "支持多种GPT模型", "使用更灵活"],
+        "subtitle": "专业 GPT 镜像服务，国内网络可用，流程更简化\n支持GPT-5、GPTs商店、DALL-E 3画图等常见功能，体验更顺畅",
+        "plus_banner": {
+          "text": "需要使用 APP、对话记忆、Codex？",
+          "subtext": "选择Plus代充（充你的号）",
+          "highlight": "→ 获得更完整的Plus体验",
+          "url": "/",
+          "button_text": "Plus代充服务"
+        },
+        "buttons": [
+          {
+            "title": "购买",
+            "url": "/qf-dtyuedan-mirror-buy",
+            "variant": "green"
+          },
+          {
+            "title": "立刻使用",
+            "url": "https://chatshare.biz",
+            "variant": "purple",
+            "tooltip": "如首次进入或会员到期，需先购买卡密",
+            "target": "_blank"
+          },
+          {
+            "title": "订单查询",
+            "url": "https://fe.dtyuedan.cn/order",
+            "variant": "gray"
+          }
+        ],
+        "disclaimer": {
+          "text": "支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见",
+          "link": {
+            "title": "服务条款",
+            "url": "/terms-of-service"
+          }
+        },
+        "guarantee": "服务保障：支持天、周、月灵活充值，常见功能可用，体验以实际为准"
+      },
+      "comparison": {
+        "id": "comparison",
+        "block": "service-comparison",
+        "title": "GPT 镜像 VS Plus 会员功能对比",
+        "subtitle": "功能对比一目了然，选择最适合你的方案",
+        "columns": {
+          "feature": "功能",
+          "mirror": "镜像服务",
+          "plus": "Plus会员"
+        },
+        "items": [
+          { "feature": "网络要求", "mirror": "国内网络可用", "plus": "网络条件视地区/政策而定", "highlight": "network" },
+          { "feature": "使用限制", "mirror": "按套餐说明", "plus": "以平台政策为准", "highlight": "limit" },
+          { "feature": "价格对比", "mirror": "¥5/天，¥25/周，¥58/月", "plus": "¥144/月", "highlight": "price" },
+          { "feature": "主流模型支持", "mirror": "支持多种模型", "plus": "支持多种模型" },
+          { "feature": "GPTs商店", "mirror": "视套餐与网络情况", "plus": "以平台政策为准" },
+          { "feature": "高级语音模式", "mirror": "视套餐与网络情况", "plus": "以平台政策为准" },
+          { "feature": "GPT-4o 画图", "mirror": "视套餐与网络情况", "plus": "以平台政策为准" },
+          { "feature": "账号形式", "mirror": "镜像账号", "plus": "平台账号" },
+          { "feature": "网页端登录", "mirror": "支持", "plus": "支持" },
+          { "feature": "APP登录", "mirror": "视套餐与网络情况", "plus": "支持（以平台规则为准）" }
+        ],
+        "tip": "镜像服务适合网络条件受限、中高频使用的用户；Plus会员适合需要完整移动端体验、对话记忆、Codex体验的用户"
+      },
+      "details": {
+        "id": "details",
+        "block": "service-details",
+        "title": "GPT Plus 充值步骤",
+        "steps": [
+          {
+            "number": "1",
+            "title": "购买卡密",
+            "description": "选择Plus套餐，微信支付完成订单，立即获得卡密",
+            "tag": "支持微信支付",
+            "color": "blue"
+          },
+          {
+            "number": "2",
+            "title": "验证卡密",
+            "description": "根据提示，输入卡密，验证卡密有效性",
+            "tag": "安全验证",
+            "color": "purple"
+          },
+          {
+            "number": "3",
+            "title": "完成充值",
+            "description": "根据提示核对账户等信息，系统自动升级账户",
+            "tag": "即时生效",
+            "color": "green"
+          }
+        ],
+        "security": {
+          "title": "安全保障",
+          "items": [
+            { "title": "iOS合规通道", "description": "合规Apple账户充值通道", "color": "blue" },
+            { "title": "平台订阅通道", "description": "通过平台订阅通道完成充值", "color": "green" },
+            { "title": "高成功率", "description": "成熟流程与系统保障", "color": "purple" },
+            { "title": "失败退款", "description": "充值失败按政策退款", "color": "orange" }
+          ]
+        }
+      },
+      "customer-support": {
+        "id": "customer-support",
+        "block": "customer-support",
+        "title": "专业客服支持",
+        "description": "遇到问题？我们随时为您提供帮助",
+        "qq_number": "2316149029",
+        "show_contact_card": true,
+        "items": [
+          {
+            "title": "充值失败可退款",
+            "description": "充值失败按政策退款，处理进度以支付平台为准。",
+            "icon": "✓",
+            "color": "green"
+          },
+          {
+            "title": "支持企业服务",
+            "description": "支持批量采购、开具发票，消费满150元可开发票，详情咨询客服。",
+            "icon": "💳",
+            "color": "blue"
+          },
+          {
+            "title": "响应迅速",
+            "description": "多数时段自动处理，客服在线时段快速响应。",
+            "icon": "⚡",
+            "color": "orange"
+          }
+        ]
+      },
+      "floating-customer-service": {
+        "id": "floating-cs",
+        "block": "floating-customer-service",
+        "disabled": false,
+        "qq_number": "2316149029",
+        "qr_code_path": "/qq-qrcode.png",
+        "service_time": "在线时间：9:00 ~ 23:00"
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "page": {
+    "show_sections": [
+      "hero",
+      "reviews",
+      "faq",
+      "floating-customer-service"
+    ],
+    "sections": {
+      "hero": {
+        "id": "hero",
+        "block": "gpt101-hero",
+        "highlight_text": "GPT Plus",
+        "normal_text": "自助升级",
+        "description": "Plus / Pro / Team 全支持，全程微信/支付宝，适合国内用户快速升级",
+        "features": [
+          { "text": "无需海外信用卡", "icon": "check" },
+          { "text": "微信/支付宝", "icon": "check" },
+          { "text": "通常1-2分钟到账", "icon": "check" },
+          { "text": "合规渠道", "icon": "check" },
+          { "text": "支持开票", "icon": "check" },
+          { "text": "符合条件当天退款", "icon": "check" }
+        ],
+        "buttons": [
+          {
+            "title": "立即升级",
+            "url": "https://fe.dtyuedan.cn/shop/F2OLER91/52wtgh",
+            "variant": "default"
+          }
+        ],
+        "reviews_link": true,
+        "disclaimer": {
+          "text": "支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见",
+          "link": {
+            "title": "服务条款",
+            "url": "/terms-of-service"
+          }
+        },
+        "trust_marks": [
+          { "text": "无需密码", "icon": "shield" },
+          { "text": "支持退款保障", "icon": "check" },
+          { "text": "稳定运营2年+", "icon": "clock" }
+        ]
+      },
+      "reviews": {
+        "id": "reviews",
+        "block": "review-carousel",
+        "title": "客户好评展示",
+        "items": [
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png", "title": "客户好评截图1" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png", "title": "客户好评截图2" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png", "title": "客户好评截图3" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png", "title": "客户好评截图4" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png", "title": "客户好评截图5" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png", "title": "客户好评截图6" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png", "title": "客户好评截图7" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png", "title": "客户好评截图8" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png", "title": "客户好评截图9" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png", "title": "客户好评截图10" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png", "title": "客户好评截图11" }
+        ]
+      },
+      "faq": {
+        "id": "faqs",
+        "title": "常见问题",
+        "description": "关于 GPT Plus 升级的常见问题",
+        "items": [
+          {
+            "question": "Q: 没有海外信用卡可以充值吗？",
+            "answer": "可以，无需信用卡，微信或支付宝即可完成充值。"
+          },
+          {
+            "question": "Q: 充值过程需要提供账号密码吗？",
+            "answer": "不需要，整个流程不涉及账号密码，保护账户安全。"
+          },
+          {
+            "question": "Q: 充值需要多久？",
+            "answer": "通常 1-2 分钟完成，繁忙时段可能略有延迟。"
+          },
+          {
+            "question": "Q: 充值失败怎么办？",
+            "answer": "如遇失败或未交付，按退款政策处理，支持原路退回。"
+          },
+          {
+            "question": "Q: 如何联系客服？",
+            "answer": "如有问题，请联系 QQ 客服：2316149029。"
+          }
+        ]
+      },
+      "floating-customer-service": {
+        "id": "floating-cs",
+        "block": "floating-customer-service",
+        "disabled": false,
+        "qq_number": "2316149029",
+        "qr_code_path": "/qq-qrcode.png",
+        "service_time": "在线时间：9:00 ~ 23:00"
+      }
+    }
+  }
+}

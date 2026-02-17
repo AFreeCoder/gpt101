@@ -50,6 +50,8 @@ export const localeMessagesPaths = [
   'activity/ai-tasks',
   'activity/chats',
   'pages/index',
+  'pages/chatgpt-mirror',
+  'pages/lp-upgrade-chatgpt',
   'pages/pricing',
   'pages/showcases',
   'pages/blog',

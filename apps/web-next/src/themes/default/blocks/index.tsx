@@ -31,3 +31,8 @@ export * from './purchase-channel-modal';
 export * from './review-carousel';
 export * from './customer-support';
 export * from './floating-customer-service';
+export * from './mirror-hero';
+export * from './service-comparison';
+export * from './service-details';
+export * from './upgrade-channel';
+export * from './maintenance-page';
