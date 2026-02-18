@@ -4,6 +4,7 @@ import { createRelativeLink } from 'fumadocs-ui/mdx';
 import moment from 'moment';
 
 import { db } from '@/core/db';
+import { envConfigs } from '@/config';
 import { logsSource, pagesSource, postsSource } from '@/core/docs/source';
 import { generateTOC } from '@/core/docs/toc';
 import { post } from '@/config/db/schema';
@@ -152,6 +153,11 @@ export async function getPost({
   postPrefix?: string;
 }): Promise<BlogPostType | null> {
   let post: BlogPostType | null = null;
+
+  if (!envConfigs.database_url) {
+    // 未配置数据库，直接使用本地文件
+    return getLocalPost({ slug, locale, postPrefix });
+  }
 
   try {
     // get post from database
@@ -386,6 +392,16 @@ export async function getRemotePostsAndCategories({
 }) {
   const dbPostsList: BlogPostType[] = [];
   const dbCategoriesList: BlogCategoryType[] = [];
+
+  if (!envConfigs.database_url) {
+    // 未配置数据库，返回空结果
+    return {
+      posts: [],
+      postsCount: 0,
+      categories: [],
+      categoriesCount: 0,
+    };
+  }
 
   try {
     // get posts from database

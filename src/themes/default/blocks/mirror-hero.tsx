@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Check, Info, ArrowRight } from 'lucide-react';
 
-import { ScrollAnimation } from '@/shared/components/ui/scroll-animation';
 import { Section } from '@/shared/types/blocks/landing';
 
 export function MirrorHero({ section }: { section: Section }) {
@@ -63,8 +62,7 @@ export function MirrorHero({ section }: { section: Section }) {
   const disclaimer = section.disclaimer as { text?: string; link?: { title?: string; url?: string } } | undefined;
 
   return (
-    <section id={section.id || 'hero'} className="pb-8 pt-6 md:pb-12 md:pt-8 lg:pb-16 lg:pt-10">
-      <ScrollAnimation>
+    <section id={section.id || 'hero'} className="pb-8 pt-[68px] md:pb-12 md:pt-[76px] lg:pb-16">
         <div className="mx-auto max-w-5xl px-4">
           {/* Plus 代充横幅 */}
           {plusBanner && (
@@ -194,7 +192,6 @@ export function MirrorHero({ section }: { section: Section }) {
             </div>
           )}
         </div>
-      </ScrollAnimation>
     </section>
   );
 }

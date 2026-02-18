@@ -28,7 +28,7 @@ export function UpgradeChannel({ embedUrl, title }: UpgradeChannelProps) {
   }, []);
 
   return (
-    <main className="bg-white">
+    <main className="bg-white pt-15">
       <iframe
         ref={iframeRef}
         src={embedUrl}

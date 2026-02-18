@@ -25,7 +25,8 @@
           {
             "title": "购买",
             "url": "/qf-dtyuedan-mirror-buy",
-            "variant": "green"
+            "variant": "green",
+            "target": "_blank"
           },
           {
             "title": "立刻使用",
@@ -37,7 +38,8 @@
           {
             "title": "订单查询",
             "url": "https://fe.dtyuedan.cn/order",
-            "variant": "gray"
+            "variant": "gray",
+            "target": "_blank"
           }
         ],
         "disclaimer": {
@@ -72,43 +74,6 @@
           { "feature": "APP登录", "mirror": "视套餐与网络情况", "plus": "支持（以平台规则为准）" }
         ],
         "tip": "镜像服务适合网络条件受限、中高频使用的用户；Plus会员适合需要完整移动端体验、对话记忆、Codex体验的用户"
-      },
-      "details": {
-        "id": "details",
-        "block": "service-details",
-        "title": "GPT Plus 充值步骤",
-        "steps": [
-          {
-            "number": "1",
-            "title": "购买卡密",
-            "description": "选择Plus套餐，微信支付完成订单，立即获得卡密",
-            "tag": "支持微信支付",
-            "color": "blue"
-          },
-          {
-            "number": "2",
-            "title": "验证卡密",
-            "description": "根据提示，输入卡密，验证卡密有效性",
-            "tag": "安全验证",
-            "color": "purple"
-          },
-          {
-            "number": "3",
-            "title": "完成充值",
-            "description": "根据提示核对账户等信息，系统自动升级账户",
-            "tag": "即时生效",
-            "color": "green"
-          }
-        ],
-        "security": {
-          "title": "安全保障",
-          "items": [
-            { "title": "iOS合规通道", "description": "合规Apple账户充值通道", "color": "blue" },
-            { "title": "平台订阅通道", "description": "通过平台订阅通道完成充值", "color": "green" },
-            { "title": "高成功率", "description": "成熟流程与系统保障", "color": "purple" },
-            { "title": "失败退款", "description": "充值失败按政策退款", "color": "orange" }
-          ]
-        }
       },
       "customer-support": {
         "id": "customer-support",

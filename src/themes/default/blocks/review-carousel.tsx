@@ -23,7 +23,7 @@ export function ReviewCarousel({ section }: { section: Section }) {
   if (images.length === 0) return null;
 
   return (
-    <section id={section.id || 'reviews'} className="pt-3 pb-8 md:pt-4 md:pb-10 lg:pt-5 lg:pb-12">
+    <section id={section.id || 'reviews'} className="scroll-mt-20 pt-3 pb-8 md:pt-4 md:pb-10 lg:pt-5 lg:pb-12">
       <ScrollAnimation>
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 className="text-foreground mb-4 text-3xl font-semibold tracking-tight md:text-4xl">

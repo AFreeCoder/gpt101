@@ -18,7 +18,7 @@ export function Gpt101Hero({ section }: { section: Section }) {
   const purchaseChannels = section.purchase_channels || [];
 
   return (
-    <section id={section.id} className="pt-24 pb-8 md:pt-28 md:pb-8">
+    <section id={section.id} className="pt-[68px] pb-8 md:pt-[76px] md:pb-8">
       <div className="mx-auto max-w-4xl px-4 text-center">
         {/* 镜像服务推荐条 */}
         {section.mirror_banner && (
