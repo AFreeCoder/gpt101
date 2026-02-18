@@ -61,8 +61,5 @@ src/config/db/migrations*
 
 .chats
 
-# ShipAny 原始模板（仅本地参考）
-shipany-template/
-
 # SEO 文档
 seo/

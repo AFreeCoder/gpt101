@@ -37,14 +37,14 @@ export async function saveConfigs(configs: Record<string, string>) {
     return results;
   });
 
-  revalidateTag(CACHE_TAG_CONFIGS);
+  revalidateTag(CACHE_TAG_CONFIGS, 'max');
 
   return result;
 }
 
 export async function addConfig(newConfig: NewConfig) {
   const [result] = await db().insert(config).values(newConfig).returning();
-  revalidateTag(CACHE_TAG_CONFIGS);
+  revalidateTag(CACHE_TAG_CONFIGS, 'max');
 
   return result;
 }
