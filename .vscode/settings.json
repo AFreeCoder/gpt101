@@ -1,15 +1,6 @@
 {
-  "css.customData": ["./vscode.tailwind.json"],
-  "eslint.validate": ["javascript", "javascriptreact", "astro", "typescript", "typescriptreact"],
-  "files.associations": {
-    "*.mdx": "markdown"
-  },
-  "prettier.documentSelectors": ["**/*.astro"],
-  "[astro]": {
-    "editor.defaultFormatter": "astro-build.astro-vscode"
-  },
-  "yaml.schemas": {
-    "./.vscode/astrowind/config-schema.json": "/src/config.yaml"
-  },
-  "eslint.useFlatConfig": true
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "i18n-ally.localesPaths": ["src/config/locale/messages"],
+  "i18n-ally.keystyle": "nested"
 }
