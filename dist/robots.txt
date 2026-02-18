@@ -1,4 +1,0 @@
-User-agent: *
-Disallow:
-
-Sitemap: https://gpt101.org/sitemap-index.xml
