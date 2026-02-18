@@ -49,6 +49,7 @@ data*
 
 *.db
 
+.astro
 .open-next
 wrangler.toml
 .wrangler
