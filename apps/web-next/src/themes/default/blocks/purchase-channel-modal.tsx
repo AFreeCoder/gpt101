@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 
+import { sendOutboundClick } from '@/shared/lib/gtag';
+
 interface PurchaseChannel {
   id: number;
   label: string;
@@ -52,6 +54,7 @@ export function PurchaseChannelModal({
 
   const handleChannelClick = (channel: PurchaseChannel) => {
     if (channel.url) {
+      sendOutboundClick(channel.url, channel.label || '购买渠道');
       window.open(channel.url, '_blank', 'noopener,noreferrer');
     } else {
       setInfoChannel(channel);

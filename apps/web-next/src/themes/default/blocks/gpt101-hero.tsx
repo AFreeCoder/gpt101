@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Check, ChevronRight, Info, Shield, Clock, CircleCheck } from 'lucide-react';
 
 import { Button } from '@/shared/components/ui/button';
+import { sendOutboundClick } from '@/shared/lib/gtag';
 import { Section } from '@/shared/types/blocks/landing';
 
 import { PurchaseChannelModal } from './purchase-channel-modal';
@@ -108,6 +109,11 @@ export function Gpt101Hero({ section }: { section: Section }) {
               href={section.buttons[0].url || '#'}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => {
+                const url = section.buttons![0].url || '';
+                const label = section.buttons![0].title || '购买';
+                sendOutboundClick(url, label);
+              }}
               className="w-full rounded-xl bg-gradient-to-r from-green-500 to-blue-500 px-10 py-4 text-lg font-semibold text-white shadow-md transition-all duration-300 hover:from-green-600 hover:to-blue-600 hover:shadow-lg sm:w-auto"
             >
               {section.buttons[0].title}
