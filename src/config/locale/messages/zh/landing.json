@@ -76,11 +76,6 @@
               "title": "GPT 镜像服务",
               "url": "/chatgpt-mirror",
               "target": "_self"
-            },
-            {
-              "title": "API 服务",
-              "url": "https://apimart.ai/register?aff=2aDl",
-              "target": "_blank"
             }
           ]
         },

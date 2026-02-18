@@ -8,6 +8,7 @@ import { Button } from '@/shared/components/ui/button';
 import { sendOutboundClick } from '@/shared/lib/gtag';
 import { Section } from '@/shared/types/blocks/landing';
 
+import { HeroSideAds } from './hero-side-ads';
 import { PurchaseChannelModal } from './purchase-channel-modal';
 
 export function Gpt101Hero({ section }: { section: Section }) {
@@ -17,8 +18,11 @@ export function Gpt101Hero({ section }: { section: Section }) {
   const trustMarks = section.trust_marks || [];
   const purchaseChannels = section.purchase_channels || [];
 
+  const sideAds = section.side_ads as { left?: any; right?: any } | undefined;
+
   return (
-    <section id={section.id} className="pt-[68px] pb-8 md:pt-[76px] md:pb-8">
+    <section id={section.id} className="relative pt-[68px] pb-8 md:pt-[76px] md:pb-8">
+      {sideAds && <HeroSideAds left={sideAds.left} right={sideAds.right} />}
       <div className="mx-auto max-w-4xl px-4 text-center">
         {/* 镜像服务推荐条 */}
         {section.mirror_banner && (

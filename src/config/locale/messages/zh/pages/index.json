@@ -69,6 +69,28 @@
             }
           ]
         },
+        "side_ads": {
+          "left": {
+            "title": "Claude Pro 充值",
+            "description": "无需信用卡，支付宝也能充值 Claude Pro，支持 Claude Code",
+            "tags": ["iOS充值技术", "安全快速", "合规渠道"],
+            "button_text": "立即充值",
+            "footer_text": "快速充值，即刻体验",
+            "url": "https://fe.dtyuedan.cn/shop/F2OLER91/i72az7",
+            "icon": "claude",
+            "color": "orange"
+          },
+          "right": {
+            "title": "API 服务",
+            "description": "支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro、Nano Banana 现已上线。统一协议，极低延迟⚡，价格更优。",
+            "tags": ["500+模型", "Sora 2可用", "极低延迟⚡", "国内直连"],
+            "button_text": "立即使用",
+            "footer_text": "注册立享限时折扣",
+            "url": "https://apimart.ai/register?aff=2aDl",
+            "icon": "api",
+            "color": "blue"
+          }
+        },
         "purchase_channels": [
           {
             "id": 1,
