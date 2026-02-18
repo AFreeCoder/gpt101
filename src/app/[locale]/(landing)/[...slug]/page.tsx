@@ -28,7 +28,7 @@ export async function generateMetadata({
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
 
   // filter invalid slug (files with extensions or dev server paths like @vite/client)
-  if (staticPageSlug.includes('.') || staticPageSlug.startsWith('@')) {
+  if (staticPageSlug.includes('.')) {
     return;
   }
 
@@ -110,7 +110,7 @@ export default async function DynamicPage({
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
 
   // filter invalid slug (files with extensions or dev server paths like @vite/client)
-  if (staticPageSlug.includes('.') || staticPageSlug.startsWith('@')) {
+  if (staticPageSlug.includes('.')) {
     return notFound();
   }
 
