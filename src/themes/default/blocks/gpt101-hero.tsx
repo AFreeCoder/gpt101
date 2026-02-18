@@ -18,7 +18,7 @@ export function Gpt101Hero({ section }: { section: Section }) {
   const purchaseChannels = section.purchase_channels || [];
 
   return (
-    <section id={section.id} className="pt-8 pb-8 md:pt-12 md:pb-8">
+    <section id={section.id} className="pt-24 pb-8 md:pt-28 md:pb-8">
       <div className="mx-auto max-w-4xl px-4 text-center">
         {/* 镜像服务推荐条 */}
         {section.mirror_banner && (
@@ -134,17 +134,34 @@ export function Gpt101Hero({ section }: { section: Section }) {
                   </span>
                 </button>
               </div>
-              {section.reviews_link && (
-                <Link
-                  href="#reviews"
-                  className="inline-flex items-center gap-1.5 font-semibold text-amber-600 underline hover:text-amber-700"
-                >
-                  点击查看好评 👇
-                </Link>
-              )}
             </div>
           )}
         </div>
+
+        {/* 好评链接 + 客服快捷入口 */}
+        {section.reviews_link && (
+          <div className="mb-4 flex flex-wrap items-center justify-center gap-3 text-sm">
+            <Link
+              href="#reviews"
+              className="inline-flex items-center gap-1.5 font-semibold text-amber-600 underline hover:text-amber-700"
+            >
+              查看客户好评 ★★★★★
+            </Link>
+            {section.customer_service_qq && (
+              <>
+                <span className="text-gray-400">|</span>
+                <Link
+                  href={`https://wpa.qq.com/msgrd?v=3&uin=${section.customer_service_qq}&site=qq&menu=yes`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-blue-600 underline hover:text-blue-700"
+                >
+                  客服 QQ：{section.customer_service_qq}
+                </Link>
+              </>
+            )}
+          </div>
+        )}
 
         {/* 免责声明 */}
         {section.disclaimer && (

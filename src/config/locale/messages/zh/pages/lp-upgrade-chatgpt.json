@@ -29,6 +29,7 @@
           }
         ],
         "reviews_link": true,
+        "customer_service_qq": "2316149029",
         "disclaimer": {
           "text": "支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见",
           "link": {
@@ -40,7 +41,10 @@
           { "text": "无需密码", "icon": "shield" },
           { "text": "支持退款保障", "icon": "check" },
           { "text": "稳定运营2年+", "icon": "clock" }
-        ]
+        ],
+        "guide_box": {
+          "text": "充值有问题？访问有问题？遇到降智问题？别犹豫，点右下角客服，立刻为您解决。"
+        }
       },
       "reviews": {
         "id": "reviews",
