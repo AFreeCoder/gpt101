@@ -1,5 +1,4 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import { createMDX } from 'fumadocs-mdx/next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
@@ -17,7 +16,6 @@ const withNextIntl = createNextIntlPlugin({
 const nextConfig = {
   output: process.env.VERCEL ? undefined : 'standalone',
   reactStrictMode: false,
-  serverExternalPackages: ['@libsql/client', '@libsql/isomorphic-ws'],
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   images: {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -62,5 +60,3 @@ const nextConfig = {
 };
 
 export default withBundleAnalyzer(withNextIntl(withMDX(nextConfig)));
-
-initOpenNextCloudflareForDev();
