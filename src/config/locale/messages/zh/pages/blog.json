@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "title": "教程",
+    "description": "GPT Plus 充值教程、镜像服务指南等实用教程"
+  },
+  "page": {
+    "title": "GPT101 教程",
+    "sections": {
+      "blog": {
+        "id": "blog",
+        "title": "教程",
+        "description": "阅读我们最新的充值教程、镜像服务指南和使用技巧。"
+      }
+    }
+  },
+  "messages": {
+    "all": "全部",
+    "no_content": "暂无内容",
+    "crumb": "教程",
+    "toc": "目录"
+  }
+}

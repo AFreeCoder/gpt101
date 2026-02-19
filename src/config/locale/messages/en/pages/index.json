@@ -1,0 +1,194 @@
+{
+  "page": {
+    "show_sections": [
+      "hero",
+      "reviews",
+      "faq",
+      "customer-support",
+      "floating-customer-service"
+    ],
+    "sections": {
+      "hero": {
+        "id": "hero",
+        "block": "gpt101-hero",
+        "highlight_text": "One-stop GPT",
+        "normal_text": "Subscription Service",
+        "description": "Plus / Pro / Team supported. WeChat & Alipay payment, usually 1-2 minutes delivery. No credit card needed.",
+        "mirror_banner": {
+          "title": "Network issues?",
+          "subtitle": "Try our mirror service",
+          "highlight": "→ Works in China, full experience, only ¥58/month",
+          "url": "/chatgpt-mirror",
+          "button_text": "Learn More"
+        },
+        "features": [
+          { "text": "No overseas credit card", "icon": "check" },
+          { "text": "WeChat / Alipay", "icon": "check" },
+          { "text": "1-2 min delivery", "icon": "check" },
+          { "text": "Compliant channels", "icon": "check" },
+          { "text": "Invoice available", "icon": "check" },
+          { "text": "Same-day refund eligible", "icon": "check" }
+        ],
+        "buttons": [
+          {
+            "title": "Buy Now",
+            "url": "/qf-dtyuedan-buy",
+            "variant": "default"
+          },
+          {
+            "title": "Upgrade Now",
+            "variant": "outline"
+          }
+        ],
+        "reviews_link": true,
+        "disclaimer": {
+          "text": "Payment and order queries are processed on third-party platforms. Refund policy:",
+          "link": {
+            "title": "Terms of Service",
+            "url": "/terms-of-service"
+          }
+        },
+        "trust_marks": [
+          { "text": "No password required", "icon": "shield" },
+          { "text": "Same-day refund eligible", "icon": "check" },
+          { "text": "2+ years operation", "icon": "clock" }
+        ],
+        "guide_box": {
+          "text": "Already purchased? Click <span class='text-blue-600 font-semibold'>\"Upgrade Now\"</span> above",
+          "links": [
+            {
+              "title": "Order Query",
+              "url": "https://fe.dtyuedan.cn/order",
+              "target": "_blank"
+            },
+            {
+              "title": "Tutorial",
+              "url": "/tutorials/how-to-upgrade-gpt-plus"
+            }
+          ]
+        },
+        "purchase_channels": [
+          {
+            "id": 1,
+            "label": "[Recommended 1] GPT Subscription (your account)",
+            "url": "/gpt-upgrade-987ai",
+            "description": "In-site checkout page"
+          },
+          {
+            "id": 2,
+            "label": "[Recommended 2] GPT Subscription (your account)",
+            "url": "https://9977ai.vip/",
+            "description": "In-site checkout page"
+          },
+          {
+            "id": 3,
+            "label": "[Recommended 3] GPT Subscription (your account)",
+            "url": "/gpt-upgrade-xiaobei",
+            "description": "In-site checkout page"
+          },
+          {
+            "id": 6,
+            "label": "[Backup] GPT Subscription (your account)",
+            "url": "",
+            "description": "Contact support QQ: 2316149029"
+          },
+          {
+            "id": 7,
+            "label": "[Pro] GPT Pro Subscription (your account)",
+            "url": "",
+            "description": "Contact support QQ: 2316149029"
+          }
+        ]
+      },
+      "reviews": {
+        "id": "reviews",
+        "block": "review-carousel",
+        "title": "Customer Reviews",
+        "items": [
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png", "title": "Review 1" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png", "title": "Review 2" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png", "title": "Review 3" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png", "title": "Review 4" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png", "title": "Review 5" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png", "title": "Review 6" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png", "title": "Review 7" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png", "title": "Review 8" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png", "title": "Review 9" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png", "title": "Review 10" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png", "title": "Review 11" }
+        ]
+      },
+      "faq": {
+        "id": "faqs",
+        "title": "FAQ",
+        "description": "Frequently asked questions about GPT Plus subscription service",
+        "items": [
+          {
+            "question": "Q: Can I subscribe without an overseas credit card?",
+            "answer": "Yes! You can use WeChat Pay or Alipay through our platform."
+          },
+          {
+            "question": "Q: Do I need to provide my account password?",
+            "answer": "No! Our self-service platform doesn't require your account or password."
+          },
+          {
+            "question": "Q: How long does it take?",
+            "answer": "Usually 1-2 minutes. Contact support QQ: 2316149029 if you need help."
+          },
+          {
+            "question": "Q: What if the subscription fails?",
+            "answer": "We'll process a refund per our policy. Refund timing depends on the payment platform. Contact QQ: 2316149029."
+          },
+          {
+            "question": "Q: Will my account get banned?",
+            "answer": "We cannot guarantee against bans. Account status depends on the platform's policies. If issues arise from our service, we'll investigate and process refunds per policy."
+          },
+          {
+            "question": "Q: Can I get an invoice?",
+            "answer": "Yes. Contact support QQ: 2316149029 with your billing details."
+          },
+          {
+            "question": "Q: Should I choose Plus subscription or mirror service?",
+            "answer": "Choose Plus if you need full features and have good network access. Choose mirror for a lighter experience that works well in China."
+          }
+        ]
+      },
+      "customer-support": {
+        "id": "customer-support",
+        "block": "customer-support",
+        "title": "Customer Support",
+        "description": "Need help? We're here for you.",
+        "qq_number": "2316149029",
+        "show_contact_card": true,
+        "items": [
+          {
+            "title": "Refund Eligible",
+            "description": "Failed subscriptions are refundable per our policy.",
+            "icon": "✓",
+            "color": "green"
+          },
+          {
+            "title": "Enterprise Service",
+            "description": "Bulk orders and invoices available for purchases over ¥150.",
+            "icon": "💳",
+            "color": "blue"
+          },
+          {
+            "title": "Fast Response",
+            "description": "Auto-processing most of the time, quick response during business hours.",
+            "icon": "⚡",
+            "color": "orange"
+          }
+        ]
+      },
+      "floating-customer-service": {
+        "id": "floating-cs",
+        "block": "floating-customer-service",
+        "disabled": false,
+        "qq_number": "2316149029",
+        "qr_code_path": "/qq-qrcode.png",
+        "service_time": "Online: 9:00 ~ 23:00"
+      }
+    }
+  }
+}

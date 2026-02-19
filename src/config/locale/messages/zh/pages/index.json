@@ -1,0 +1,255 @@
+{
+  "page": {
+    "show_sections": [
+      "hero",
+      "details",
+      "reviews",
+      "faq",
+      "customer-support",
+      "floating-customer-service"
+    ],
+    "sections": {
+      "hero": {
+        "id": "hero",
+        "block": "gpt101-hero",
+        "highlight_text": "一站式 GPT",
+        "normal_text": "充值服务",
+        "description": "Plus / Pro / Team 全支持，微信支付宝通常1-2分钟到账，无需信用卡",
+        "mirror_banner": {
+          "title": "网络访问不便？",
+          "subtitle": "推荐稳定的镜像服务",
+          "highlight": "→ 国内网络可用，功能体验更完整，只需¥58/月",
+          "url": "/chatgpt-mirror",
+          "button_text": "了解镜像服务"
+        },
+        "features": [
+          { "text": "无需海外信用卡", "icon": "check" },
+          { "text": "微信/支付宝", "icon": "check" },
+          { "text": "通常1-2分钟到账", "icon": "check" },
+          { "text": "合规渠道", "icon": "check" },
+          { "text": "支持开票", "icon": "check" },
+          { "text": "符合条件当天退款", "icon": "check" }
+        ],
+        "buttons": [
+          {
+            "title": "购买",
+            "url": "/qf-dtyuedan-buy",
+            "variant": "default"
+          },
+          {
+            "title": "立即升级",
+            "variant": "outline"
+          }
+        ],
+        "reviews_link": true,
+        "customer_service_qq": "2316149029",
+        "disclaimer": {
+          "text": "支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见",
+          "link": {
+            "title": "服务条款",
+            "url": "/terms-of-service"
+          }
+        },
+        "trust_marks": [
+          { "text": "无需密码", "icon": "shield" },
+          { "text": "符合条件当天退款", "icon": "check" },
+          { "text": "稳定运营2年+", "icon": "clock" }
+        ],
+        "guide_box": {
+          "text": "已完成购买？点击上方 <span class='text-blue-600 font-semibold'>「立即升级」</span>",
+          "links": [
+            {
+              "title": "订单查询",
+              "url": "https://fe.dtyuedan.cn/order",
+              "target": "_blank"
+            },
+            {
+              "title": "使用教程",
+              "url": "/tutorials/how-to-upgrade-gpt-plus"
+            }
+          ]
+        },
+        "side_ads": {
+          "left": {
+            "title": "Claude Pro 充值",
+            "description": "无需信用卡，支付宝也能充值 Claude Pro，支持 Claude Code",
+            "tags": ["iOS充值技术", "安全快速", "合规渠道"],
+            "button_text": "立即充值",
+            "footer_text": "快速充值，即刻体验",
+            "url": "https://fe.dtyuedan.cn/shop/F2OLER91/i72az7",
+            "icon": "claude",
+            "color": "orange"
+          },
+          "right": {
+            "title": "API 服务",
+            "description": "支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro、Nano Banana 现已上线。统一协议，极低延迟⚡，价格更优。",
+            "tags": ["500+模型", "Sora 2可用", "极低延迟⚡", "国内直连"],
+            "button_text": "立即使用",
+            "footer_text": "注册立享限时折扣",
+            "url": "https://apimart.ai/register?aff=2aDl",
+            "icon": "api",
+            "color": "blue"
+          }
+        },
+        "purchase_channels": [
+          {
+            "id": 1,
+            "label": "【推荐1】GPT会员自助充值(充你的号)",
+            "url": "/gpt-upgrade-987ai",
+            "description": "站内跳转独立页面下单，若无法加载请改用其他渠道"
+          },
+          {
+            "id": 2,
+            "label": "【推荐2】GPT会员自助充值(充你的号)",
+            "url": "https://9977ai.vip/",
+            "description": "站内跳转独立页面下单，若无法加载请改用其他渠道"
+          },
+          {
+            "id": 3,
+            "label": "【推荐3】GPT会员自助充值(充你的号)",
+            "url": "/gpt-upgrade-xiaobei",
+            "description": "站内跳转独立页面下单，若无法加载请改用其他渠道"
+          },
+          {
+            "id": 6,
+            "label": "【备用】GPT会员充值(充你的号)",
+            "url": "",
+            "description": "购买完后请联系客服QQ:2316149029"
+          },
+          {
+            "id": 7,
+            "label": "【Pro充值】GPT Pro 会员充值(充你的号)",
+            "url": "",
+            "description": "请联系客服QQ:2316149029 充值"
+          }
+        ]
+      },
+      "details": {
+        "id": "details",
+        "block": "service-details",
+        "title": "GPT Plus 充值步骤",
+        "steps": [
+          {
+            "number": "1",
+            "title": "购买卡密",
+            "description": "选择Plus套餐，微信/支付宝支付完成订单，立即获得卡密",
+            "tag": "支持微信/支付宝支付",
+            "color": "blue"
+          },
+          {
+            "number": "2",
+            "title": "验证卡密",
+            "description": "根据提示，输入卡密，验证卡密有效性",
+            "tag": "安全验证",
+            "color": "purple"
+          },
+          {
+            "number": "3",
+            "title": "完成充值",
+            "description": "根据提示核对账户等信息，系统自动升级账户",
+            "tag": "即时生效",
+            "color": "green"
+          }
+        ],
+        "security": {
+          "title": "安全保障",
+          "items": [
+            { "title": "iOS合规通道", "description": "合规Apple账户充值通道", "color": "blue" },
+            { "title": "平台订阅通道", "description": "通过平台订阅通道完成充值", "color": "green" },
+            { "title": "高成功率", "description": "成熟流程与系统保障", "color": "purple" },
+            { "title": "失败退款", "description": "充值失败按政策退款", "color": "orange" }
+          ]
+        }
+      },
+      "reviews": {
+        "id": "reviews",
+        "block": "review-carousel",
+        "title": "客户好评展示",
+        "items": [
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png", "title": "客户好评截图1" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png", "title": "客户好评截图2" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png", "title": "客户好评截图3" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png", "title": "客户好评截图4" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png", "title": "客户好评截图5" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png", "title": "客户好评截图6" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png", "title": "客户好评截图7" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png", "title": "客户好评截图8" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png", "title": "客户好评截图9" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png", "title": "客户好评截图10" },
+          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png", "title": "客户好评截图11" }
+        ]
+      },
+      "faq": {
+        "id": "faqs",
+        "title": "常见问题",
+        "description": "关于 GPT Plus 充值代充服务的常见问题解答",
+        "items": [
+          {
+            "question": "Q: 没有海外信用卡可以充值吗？",
+            "answer": "通过本站充值，无需信用卡，有支付宝或微信支付即可完成充值。"
+          },
+          {
+            "question": "Q: 充值过程需要提供账号密码吗？",
+            "answer": "不需要！通过我们的网站，您可以自助充值，无需提供账号和密码。"
+          },
+          {
+            "question": "Q: 充值需要多长时间？会很复杂吗？",
+            "answer": "不复杂，通常 1-2 分钟即可完成充值。若您觉得流程不够清晰，请联系客服 QQ：2316149029，我们会协助处理。"
+          },
+          {
+            "question": "Q: 如果充值失败会怎么样？",
+            "answer": "如遇充值失败或服务未交付等情况，我们会按退款政策处理并尽快发起退款，原路退回时间以支付平台为准。如有问题，联系客服QQ：2316149029。"
+          },
+          {
+            "question": "Q: 充值后会不会被封号？如果封号怎么办？",
+            "answer": "我们不承诺绝对不会封号。充值完成后账号的使用状态以第三方平台规则为准。若确因充值服务导致账号异常，我们将协助核查并按退款政策处理。"
+          },
+          {
+            "question": "Q: 可以开发票吗？",
+            "answer": "可以开具发票。如需发票，请提前联系客服QQ：2316149029，提供相关开票信息（公司名称、税号等），我们会为您办理发票开具事宜。"
+          },
+          {
+            "question": "Q: 如何选择 GPT Plus 充值还是镜像服务？",
+            "answer": "深度使用 GPT 且网络条件良好的用户可选择 Plus 充值服务；网络条件受限或中度使用的用户可选择镜像服务，国内网络可用，体验更轻量便捷。"
+          }
+        ]
+      },
+      "customer-support": {
+        "id": "customer-support",
+        "block": "customer-support",
+        "title": "专业客服支持",
+        "description": "遇到问题？我们随时为您提供帮助",
+        "qq_number": "2316149029",
+        "show_contact_card": true,
+        "items": [
+          {
+            "title": "充值失败可退款",
+            "description": "充值失败按政策退款，处理进度以支付平台为准。",
+            "icon": "✓",
+            "color": "green"
+          },
+          {
+            "title": "支持企业服务",
+            "description": "支持批量采购、开具发票，消费满150元可开发票，详情咨询客服。",
+            "icon": "💳",
+            "color": "blue"
+          },
+          {
+            "title": "响应迅速",
+            "description": "多数时段自动处理，客服在线时段快速响应。",
+            "icon": "⚡",
+            "color": "orange"
+          }
+        ]
+      },
+      "floating-customer-service": {
+        "id": "floating-cs",
+        "block": "floating-customer-service",
+        "disabled": false,
+        "qq_number": "2316149029",
+        "qr_code_path": "/qq-qrcode.png",
+        "service_time": "在线时间：9:00 ~ 23:00"
+      }
+    }
+  }
+}

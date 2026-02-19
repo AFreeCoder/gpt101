@@ -1,0 +1,152 @@
+{
+  "page": {
+    "show_sections": [
+      "hero",
+      "comparison",
+      "details",
+      "customer-support",
+      "floating-customer-service"
+    ],
+    "sections": {
+      "hero": {
+        "id": "hero",
+        "block": "mirror-hero",
+        "title_gradient": "GPT Mirror",
+        "title_normal": "Service",
+        "typewriter_texts": ["Works in China", "Only ¥58/month", "Multiple GPT models", "Flexible plans"],
+        "subtitle": "Professional GPT mirror service, works in China without VPN\nSupports GPT-5, GPTs Store, DALL-E 3 and more",
+        "plus_banner": {
+          "text": "Need APP access, conversation memory, or Codex?",
+          "subtext": "Choose Plus subscription (your account)",
+          "highlight": "→ Get the full Plus experience",
+          "url": "/",
+          "button_text": "Plus Subscription"
+        },
+        "buttons": [
+          {
+            "title": "Buy Now",
+            "url": "/qf-dtyuedan-mirror-buy",
+            "variant": "green"
+          },
+          {
+            "title": "Use Now",
+            "url": "https://chatshare.biz",
+            "variant": "purple",
+            "tooltip": "First-time users need to purchase a card key first",
+            "target": "_blank"
+          },
+          {
+            "title": "Order Query",
+            "url": "https://fe.dtyuedan.cn/order",
+            "variant": "gray"
+          }
+        ],
+        "disclaimer": {
+          "text": "Payment and order queries are processed on third-party platforms. Refund policy:",
+          "link": {
+            "title": "Terms of Service",
+            "url": "/terms-of-service"
+          }
+        },
+        "guarantee": "Service guarantee: Flexible daily, weekly, monthly plans. Common features available, experience may vary."
+      },
+      "comparison": {
+        "id": "comparison",
+        "block": "service-comparison",
+        "title": "GPT Mirror VS Plus Membership",
+        "subtitle": "Compare features at a glance, choose the best plan for you",
+        "columns": {
+          "feature": "Feature",
+          "mirror": "Mirror Service",
+          "plus": "Plus Membership"
+        },
+        "items": [
+          { "feature": "Network", "mirror": "Works in China", "plus": "Depends on region/policy", "highlight": "network" },
+          { "feature": "Usage Limits", "mirror": "Per plan terms", "plus": "Per platform policy", "highlight": "limit" },
+          { "feature": "Pricing", "mirror": "¥5/day, ¥25/week, ¥58/month", "plus": "¥144/month", "highlight": "price" },
+          { "feature": "Model Support", "mirror": "Multiple models", "plus": "Multiple models" },
+          { "feature": "GPTs Store", "mirror": "Varies by plan", "plus": "Per platform policy" },
+          { "feature": "Advanced Voice", "mirror": "Varies by plan", "plus": "Per platform policy" },
+          { "feature": "GPT-4o Image", "mirror": "Varies by plan", "plus": "Per platform policy" },
+          { "feature": "Account Type", "mirror": "Mirror account", "plus": "Platform account" },
+          { "feature": "Web Login", "mirror": "Supported", "plus": "Supported" },
+          { "feature": "APP Login", "mirror": "Varies by plan", "plus": "Supported (per platform rules)" }
+        ],
+        "tip": "Mirror is ideal for users with network limitations; Plus is ideal for full mobile, conversation memory, and Codex experience."
+      },
+      "details": {
+        "id": "details",
+        "block": "service-details",
+        "title": "GPT Plus Subscription Steps",
+        "steps": [
+          {
+            "number": "1",
+            "title": "Purchase Card Key",
+            "description": "Choose a Plus plan, pay with WeChat, get your card key instantly",
+            "tag": "WeChat Pay supported",
+            "color": "blue"
+          },
+          {
+            "number": "2",
+            "title": "Verify Card Key",
+            "description": "Enter your card key to verify its validity",
+            "tag": "Secure verification",
+            "color": "purple"
+          },
+          {
+            "number": "3",
+            "title": "Complete Subscription",
+            "description": "Confirm account details and the system will upgrade your account automatically",
+            "tag": "Instant activation",
+            "color": "green"
+          }
+        ],
+        "security": {
+          "title": "Security Guarantees",
+          "items": [
+            { "title": "iOS Compliant", "description": "Compliant Apple account subscription channel", "color": "blue" },
+            { "title": "Platform Channel", "description": "Subscription via official platform channels", "color": "green" },
+            { "title": "High Success Rate", "description": "Mature process and system guarantees", "color": "purple" },
+            { "title": "Refund on Failure", "description": "Subscription failures are refundable per policy", "color": "orange" }
+          ]
+        }
+      },
+      "customer-support": {
+        "id": "customer-support",
+        "block": "customer-support",
+        "title": "Customer Support",
+        "description": "Need help? We're here for you.",
+        "qq_number": "2316149029",
+        "show_contact_card": true,
+        "items": [
+          {
+            "title": "Refund Eligible",
+            "description": "Failed subscriptions are refundable per our policy.",
+            "icon": "✓",
+            "color": "green"
+          },
+          {
+            "title": "Enterprise Service",
+            "description": "Bulk orders and invoices available for purchases over ¥150.",
+            "icon": "💳",
+            "color": "blue"
+          },
+          {
+            "title": "Fast Response",
+            "description": "Auto-processing most of the time, quick response during business hours.",
+            "icon": "⚡",
+            "color": "orange"
+          }
+        ]
+      },
+      "floating-customer-service": {
+        "id": "floating-cs",
+        "block": "floating-customer-service",
+        "disabled": false,
+        "qq_number": "2316149029",
+        "qr_code_path": "/qq-qrcode.png",
+        "service_time": "Online: 9:00 ~ 23:00"
+      }
+    }
+  }
+}

@@ -1,4 +1,11 @@
-dist/
-node_modules/
-.vscode/
-.github/
+.next
+.vercel
+.vscode
+.wrangler
+data
+debug
+node_modules
+.cursorrules
+.git
+vercel.json
+wrangler.toml

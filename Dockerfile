@@ -1,17 +1,45 @@
-FROM node:lts AS base
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat && yarn global add pnpm
+
 WORKDIR /app
 
-FROM base AS deps
-COPY package*.json ./
-RUN npm install
+# Install dependencies based on the preferred package manager
+COPY package.json pnpm-lock.yaml* source.config.ts next.config.mjs ./
+RUN pnpm i --frozen-lockfile
 
-FROM base AS build
-COPY --from=deps /app/node_modules ./node_modules
+# Rebuild the source code only when needed
+FROM deps AS builder
+
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
 COPY . .
-RUN npm run build
+RUN pnpm build
 
-FROM nginx:stable-alpine AS deploy
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
 
-EXPOSE 8080
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs && \
+    mkdir .next && \
+    chown nextjs:nodejs .next
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+# set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+# server.js is created by next build from the standalone output
+CMD ["node", "server.js"]
