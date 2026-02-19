@@ -24,26 +24,27 @@ export class GoogleAdsProvider implements AnalyticsProvider {
   }
 
   getHeadScripts(): ReactNode {
+    // 运行时检测 gtag/js 是否已被其他 provider（如 GA）加载，
+    // 未加载时自行加载，避免重复加载导致转化事件被处理两次。
     return (
-      <>
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${this.configs.adsId}`}
-          strategy="afterInteractive"
-          async
-        />
-        <Script
-          id={this.name}
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
+      <Script
+        id={this.name}
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            if (!document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) {
+              var s = document.createElement('script');
+              s.src = 'https://www.googletagmanager.com/gtag/js?id=${this.configs.adsId}';
+              s.async = true;
+              document.head.appendChild(s);
               gtag('js', new Date());
-              gtag('config', '${this.configs.adsId}');
-            `,
-          }}
-        />
-      </>
+            }
+            gtag('config', '${this.configs.adsId}');
+          `,
+        }}
+      />
     );
   }
 }

@@ -1,8 +1,8 @@
 /**
- * Google Ads / Analytics 事件追踪工具
+ * Google Ads 转化追踪工具
  *
- * 迁移自旧 Astro 站点 src/pages/lp/g/upgrade-chatgpt.astro 的 initOutboundTracking 逻辑。
- * 用于在用户点击出站购买链接时，向 Google Ads 发送转化事件。
+ * 参考 Google Ads 官方推荐的转化代码片段，
+ * 在用户点击出站购买链接时发送 conversion 事件。
  */
 
 declare global {
@@ -33,23 +33,21 @@ const CONVERSION_SEND_TO =
   process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO || '';
 
 /**
- * 发送出站链接点击事件（含转化追踪）
+ * 发送 Google Ads 转化事件
  *
- * 1. 发送 Google Ads conversion 事件（如果配置了 send_to）
- * 2. 发送自定义 instant_upgrade_gpt_click 事件
- * 3. 使用 beacon 传输确保页面跳转前数据发送成功
+ * 对应 Google Ads 官方推荐的 gtag_report_conversion 模式：
+ * gtag('event', 'conversion', { send_to: 'AW-xxx/yyy', event_callback: cb })
  *
- * @param url - 出站链接 URL
- * @param label - 事件标签（默认使用 URL）
+ * @param url - 出站链接 URL（用于 callback 跳转，当前场景由调用方处理跳转）
  * @param callback - 事件发送完成后的回调
  */
 export function sendOutboundClick(
   url: string,
-  label?: string,
-  callback?: () => void
+  _label?: string,
+  callback?: () => void,
 ) {
   ensureGtag();
-  if (!window.gtag) {
+  if (!window.gtag || !CONVERSION_SEND_TO) {
     callback?.();
     return;
   }
@@ -62,25 +60,11 @@ export function sendOutboundClick(
   };
 
   // 发送 Google Ads 转化事件
-  if (CONVERSION_SEND_TO) {
-    window.gtag('event', 'conversion', {
-      send_to: CONVERSION_SEND_TO,
-      transport_type: 'beacon',
-      event_callback: safeCallback,
-      event_timeout: 400,
-    });
-  }
-
-  // 发送自定义出站点击事件
-  window.gtag('event', 'instant_upgrade_gpt_click', {
-    event_category: 'outbound',
-    event_label: label || url,
-    value: 1,
-    transport_type: 'beacon',
+  window.gtag('event', 'conversion', {
+    send_to: CONVERSION_SEND_TO,
     event_callback: safeCallback,
-    event_timeout: 400,
   });
 
   // 兜底：确保回调一定执行，避免阻塞用户操作
-  setTimeout(safeCallback, 450);
+  setTimeout(safeCallback, 1000);
 }
