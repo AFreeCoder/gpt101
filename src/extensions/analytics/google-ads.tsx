@@ -24,8 +24,10 @@ export class GoogleAdsProvider implements AnalyticsProvider {
   }
 
   getHeadScripts(): ReactNode {
-    // 运行时检测 gtag/js 是否已被其他 provider（如 GA）加载，
-    // 未加载时自行加载，避免重复加载导致转化事件被处理两次。
+    // Google Ads 转化跟踪不需要 gtag('config', 'AW-xxx')，
+    // 只通过 send_to 参数显式发送 conversion 事件即可。
+    // 如果注册了 config，会导致 conversion 事件被全局目标和 send_to 各处理一次（重复）。
+    // gtag/js 脚本由 GoogleAnalyticsProvider 加载；若未配置 GA，此处兜底加载。
     return (
       <Script
         id={this.name}
@@ -41,7 +43,6 @@ export class GoogleAdsProvider implements AnalyticsProvider {
               document.head.appendChild(s);
               gtag('js', new Date());
             }
-            gtag('config', '${this.configs.adsId}');
           `,
         }}
       />
