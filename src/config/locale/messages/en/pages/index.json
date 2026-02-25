@@ -2,6 +2,7 @@
   "page": {
     "show_sections": [
       "hero",
+      "tools-and-tutorials",
       "reviews",
       "faq",
       "customer-support",
@@ -99,6 +100,44 @@
             "description": "Contact support QQ: 2316149029"
           }
         ]
+      },
+      "tools-and-tutorials": {
+        "id": "tools-tutorials",
+        "block": "tools-and-tutorials",
+        "title": "Useful Tools & Featured Tutorials",
+        "tools_title": "🔧 ChatGPT Useful Tools",
+        "tutorials_title": "📚 Featured Tutorials",
+        "tools": [
+          { "name": "ChatGPT Status", "icon": "🔍", "href": "https://status.openai.com/" },
+          { "name": "IP Health Check", "icon": "🌐", "href": "https://ping0.cc/" },
+          { "name": "IP Risk Check", "icon": "🌐", "href": "https://ipdata.co/" },
+          { "name": "IP Location 1", "icon": "🌐", "href": "https://whoer.net/zh" },
+          { "name": "IP Location 2", "icon": "🌐", "href": "https://ip111.cn/" }
+        ],
+        "tutorials": [
+          {
+            "title": "ChatGPT Plus Subscription Guide",
+            "icon": "📖",
+            "href": "/tutorials/how-to-upgrade-gpt-plus",
+            "description": "Upgrade ChatGPT Plus with WeChat in less than 3 minutes"
+          },
+          {
+            "title": "ChatGPT Mirror Service Guide",
+            "icon": "🪞",
+            "href": "/tutorials/chatgpt-mirror-guide",
+            "description": "Direct access mirror service and plan options"
+          },
+          {
+            "title": "Payment Tips & Solutions",
+            "icon": "🛡️",
+            "href": "/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus",
+            "description": "7 mainstream payment methods with anti-ban and refund tips"
+          }
+        ],
+        "tutorials_center": {
+          "title": "📚 Tutorial Center",
+          "url": "/tutorials"
+        }
       },
       "reviews": {
         "id": "reviews",

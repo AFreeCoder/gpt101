@@ -29,7 +29,24 @@ const nextConfig = {
     ],
   },
   async redirects() {
-    return [];
+    return [
+      // 旧版 Astro 教程 URL → 新版 /tutorials/ 前缀 URL
+      {
+        source: '/chatgpt-mirror-guide',
+        destination: '/tutorials/chatgpt-mirror-guide',
+        permanent: true,
+      },
+      {
+        source: '/how-to-upgrade-gpt-plus',
+        destination: '/tutorials/how-to-upgrade-gpt-plus',
+        permanent: true,
+      },
+      {
+        source: '/2025-latest-7-way-to-upgrade-chatgpt-plus',
+        destination: '/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus',
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [

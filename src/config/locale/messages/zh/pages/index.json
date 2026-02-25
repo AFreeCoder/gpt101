@@ -3,6 +3,7 @@
     "show_sections": [
       "hero",
       "details",
+      "tools-and-tutorials",
       "reviews",
       "faq",
       "customer-support",
@@ -159,6 +160,44 @@
             { "title": "高成功率", "description": "成熟流程与系统保障", "color": "purple" },
             { "title": "失败退款", "description": "充值失败按政策退款", "color": "orange" }
           ]
+        }
+      },
+      "tools-and-tutorials": {
+        "id": "tools-tutorials",
+        "block": "tools-and-tutorials",
+        "title": "实用工具 & 精选教程",
+        "tools_title": "🔧 ChatGPT实用工具集合",
+        "tutorials_title": "📚 精选教程文档",
+        "tools": [
+          { "name": "ChatGPT状态检测", "icon": "🔍", "href": "https://status.openai.com/" },
+          { "name": "IP 健康度检测", "icon": "🌐", "href": "https://ping0.cc/" },
+          { "name": "IP 风险检测", "icon": "🌐", "href": "https://ipdata.co/" },
+          { "name": "IP 地点检测 1", "icon": "🌐", "href": "https://whoer.net/zh" },
+          { "name": "IP 地点检测 2", "icon": "🌐", "href": "https://ip111.cn/" }
+        ],
+        "tutorials": [
+          {
+            "title": "ChatGPT Plus 充值教程",
+            "icon": "📖",
+            "href": "/tutorials/how-to-upgrade-gpt-plus",
+            "description": "用微信就能直接升级 ChatGPT Plus，全程不到 3 分钟"
+          },
+          {
+            "title": "ChatGPT 镜像使用指南",
+            "icon": "🪞",
+            "href": "/tutorials/chatgpt-mirror-guide",
+            "description": "国内直连镜像服务体验与套餐选择说明"
+          },
+          {
+            "title": "充值避坑与支付方案",
+            "icon": "🛡️",
+            "href": "/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus",
+            "description": "汇总 7 种主流充值方式，附防封与退款建议"
+          }
+        ],
+        "tutorials_center": {
+          "title": "📚 进入教程中心",
+          "url": "/tutorials"
         }
       },
       "reviews": {
