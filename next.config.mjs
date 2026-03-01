@@ -1,4 +1,5 @@
 import bundleAnalyzer from '@next/bundle-analyzer';
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import { createMDX } from 'fumadocs-mdx/next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
@@ -16,6 +17,7 @@ const withNextIntl = createNextIntlPlugin({
 const nextConfig = {
   output: process.env.VERCEL ? undefined : 'standalone',
   reactStrictMode: false,
+  serverExternalPackages: ['@libsql/client', '@libsql/isomorphic-ws'],
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   images: {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -69,11 +71,12 @@ const nextConfig = {
     },
   },
   experimental: {
-    turbopackFileSystemCacheForDev: true,
-    // Disable mdxRs for Vercel deployment compatibility with fumadocs-mdx
-    ...(process.env.VERCEL ? {} : { mdxRs: true }),
+    // mdxRs disabled for Cloudflare compatibility
   },
-  reactCompiler: true,
 };
 
 export default withBundleAnalyzer(withNextIntl(withMDX(nextConfig)));
+
+if (process.env.NODE_ENV === 'development') {
+  initOpenNextCloudflareForDev();
+}

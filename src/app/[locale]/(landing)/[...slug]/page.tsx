@@ -27,7 +27,7 @@ export async function generateMetadata({
   const staticPageSlug =
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
 
-  // filter invalid slug (files with extensions or dev server paths like @vite/client)
+  // filter invalid slug
   if (staticPageSlug.includes('.')) {
     return;
   }
@@ -109,7 +109,7 @@ export default async function DynamicPage({
   const staticPageSlug =
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
 
-  // filter invalid slug (files with extensions or dev server paths like @vite/client)
+  // filter invalid slug
   if (staticPageSlug.includes('.')) {
     return notFound();
   }

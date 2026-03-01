@@ -3,6 +3,7 @@ import postgres from 'postgres';
 
 import { envConfigs } from '@/config';
 import { isCloudflareWorker } from '@/shared/lib/env';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 // Global database connection instance (singleton pattern)
 let dbInstance: ReturnType<typeof drizzle> | null = null;
@@ -19,7 +20,7 @@ export function getPostgresDb() {
       : {};
 
   if (isCloudflareWorker) {
-    const { env }: { env: any } = { env: {} };
+    const { env }: { env: any } = getCloudflareContext();
     // Detect if set Hyperdrive
     isHyperdrive = 'HYPERDRIVE' in env;
 
