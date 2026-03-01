@@ -15,7 +15,7 @@ const withNextIntl = createNextIntlPlugin({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: process.env.VERCEL ? undefined : 'standalone',
+  output: 'standalone',
   reactStrictMode: false,
   serverExternalPackages: ['@libsql/client', '@libsql/isomorphic-ws'],
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
@@ -76,7 +76,6 @@ const nextConfig = {
 };
 
 export default withBundleAnalyzer(withNextIntl(withMDX(nextConfig)));
-
 if (process.env.NODE_ENV === 'development') {
   initOpenNextCloudflareForDev();
 }
