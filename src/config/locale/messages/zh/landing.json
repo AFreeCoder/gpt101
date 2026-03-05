@@ -46,7 +46,8 @@
     "show_theme": false,
     "show_locale": false,
     "topbanner": {
-      "text": ""
+      "text": "🚀&ensp;本站新推出 API 中转业务，支持 GPT-5.3-Codex、Claude-Opus-4.6，完美适配 Codex / Claude Code，OpenClaw🦞 最佳搭档，<a href='https://apipool.dev?ref=gpt101' target='_blank' style='text-decoration:underline;font-weight:600;'>详情点击 »</a>",
+      "dismissedExpiryDays": 3
     }
   },
   "footer": {

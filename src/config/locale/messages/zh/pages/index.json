@@ -82,14 +82,15 @@
             "color": "orange"
           },
           "right": {
-            "title": "API 服务",
-            "description": "支持 OpenAI、DeepSeek、Google 等 500+ 模型。Sora 2、Claude 4.5、Gemini 3 Pro、Nano Banana 现已上线。统一协议，极低延迟⚡，价格更优。",
-            "tags": ["500+模型", "Sora 2可用", "极低延迟⚡", "国内直连"],
+            "title": "APIPool",
+            "description": "支持 Codex / Claude Code，GPT-5.3-Codex、Claude-Opus-4-6 现已上线，兼容 OpenClaw（小龙虾🦞）。",
+            "highlight": "官方价 0.5 折起！",
+            "tags": ["官方直连", "按量计费", "稳定靠谱", "性价比极高"],
             "button_text": "立即使用",
-            "footer_text": "注册立享限时折扣",
-            "url": "https://apimart.ai/register?aff=2aDl",
-            "icon": "api",
-            "color": "blue"
+            "footer_text": "注册即送体验额度",
+            "url": "https://apipool.dev/register?ref=gpt101",
+            "icon": "apipool",
+            "color": "orange"
           }
         },
         "purchase_channels": [
@@ -155,10 +156,26 @@
         "security": {
           "title": "安全保障",
           "items": [
-            { "title": "iOS合规通道", "description": "合规Apple账户充值通道", "color": "blue" },
-            { "title": "平台订阅通道", "description": "通过平台订阅通道完成充值", "color": "green" },
-            { "title": "高成功率", "description": "成熟流程与系统保障", "color": "purple" },
-            { "title": "失败退款", "description": "充值失败按政策退款", "color": "orange" }
+            {
+              "title": "iOS合规通道",
+              "description": "合规Apple账户充值通道",
+              "color": "blue"
+            },
+            {
+              "title": "平台订阅通道",
+              "description": "通过平台订阅通道完成充值",
+              "color": "green"
+            },
+            {
+              "title": "高成功率",
+              "description": "成熟流程与系统保障",
+              "color": "purple"
+            },
+            {
+              "title": "失败退款",
+              "description": "充值失败按政策退款",
+              "color": "orange"
+            }
           ]
         }
       },
@@ -169,10 +186,22 @@
         "tools_title": "🔧 ChatGPT实用工具集合",
         "tutorials_title": "📚 精选教程文档",
         "tools": [
-          { "name": "ChatGPT状态检测", "icon": "🔍", "href": "https://status.openai.com/" },
-          { "name": "IP 健康度检测", "icon": "🌐", "href": "https://ping0.cc/" },
+          {
+            "name": "ChatGPT状态检测",
+            "icon": "🔍",
+            "href": "https://status.openai.com/"
+          },
+          {
+            "name": "IP 健康度检测",
+            "icon": "🌐",
+            "href": "https://ping0.cc/"
+          },
           { "name": "IP 风险检测", "icon": "🌐", "href": "https://ipdata.co/" },
-          { "name": "IP 地点检测 1", "icon": "🌐", "href": "https://whoer.net/zh" },
+          {
+            "name": "IP 地点检测 1",
+            "icon": "🌐",
+            "href": "https://whoer.net/zh"
+          },
           { "name": "IP 地点检测 2", "icon": "🌐", "href": "https://ip111.cn/" }
         ],
         "tutorials": [
@@ -205,17 +234,50 @@
         "block": "review-carousel",
         "title": "客户好评展示",
         "items": [
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png", "title": "客户好评截图1" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png", "title": "客户好评截图2" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png", "title": "客户好评截图3" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png", "title": "客户好评截图4" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png", "title": "客户好评截图5" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png", "title": "客户好评截图6" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png", "title": "客户好评截图7" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png", "title": "客户好评截图8" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png", "title": "客户好评截图9" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png", "title": "客户好评截图10" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png", "title": "客户好评截图11" }
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png",
+            "title": "客户好评截图1"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png",
+            "title": "客户好评截图2"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png",
+            "title": "客户好评截图3"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png",
+            "title": "客户好评截图4"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png",
+            "title": "客户好评截图5"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png",
+            "title": "客户好评截图6"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png",
+            "title": "客户好评截图7"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png",
+            "title": "客户好评截图8"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png",
+            "title": "客户好评截图9"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png",
+            "title": "客户好评截图10"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png",
+            "title": "客户好评截图11"
+          }
         ]
       },
       "faq": {

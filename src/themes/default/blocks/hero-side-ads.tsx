@@ -11,6 +11,7 @@ interface SideAd {
   url: string;
   icon?: string;
   color?: 'orange' | 'blue';
+  highlight?: string;
 }
 
 interface HeroSideAdsProps {
@@ -44,6 +45,19 @@ function ApiIcon() {
   );
 }
 
+function ApiPoolIcon() {
+  return (
+    <svg viewBox="0 0 512 512" className="h-10 w-10" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#ffffff" strokeLinecap="round">
+        <path d="M90,170 Q148,130 206,170 Q264,210 322,170 Q380,130 422,170" strokeWidth="20" />
+        <path d="M75,235 Q138,195 201,235 Q264,275 327,235 Q390,195 437,235" strokeWidth="22" />
+        <path d="M90,300 Q148,260 206,300 Q264,340 322,300 Q380,260 422,300" strokeWidth="24" />
+        <path d="M75,365 Q138,325 201,365 Q264,405 327,365 Q390,325 437,365" strokeWidth="26" />
+      </g>
+    </svg>
+  );
+}
+
 function AdCard({ ad, side }: { ad: SideAd; side: 'left' | 'right' }) {
   const isOrange = ad.color === 'orange';
   const gradientClass = isOrange ? 'from-orange-400 to-orange-500' : 'from-blue-500 to-blue-600';
@@ -61,8 +75,15 @@ function AdCard({ ad, side }: { ad: SideAd; side: 'left' | 'right' }) {
         href={ad.url}
         target="_blank"
         rel="noopener noreferrer"
-        className={`block overflow-hidden rounded-2xl border bg-white shadow-xl ${borderClass}`}
+        className={`relative block overflow-hidden rounded-2xl border bg-white shadow-xl ${borderClass}`}
       >
+        {/* 右上角价格徽标 */}
+        {ad.highlight && (
+          <div className="absolute -right-[30px] top-[24px] z-10 inline-flex h-8 rotate-45 items-center justify-center bg-rose-500 px-5 shadow-md">
+            <span className="block whitespace-nowrap text-center text-xs font-bold leading-tight text-white">{ad.highlight}</span>
+          </div>
+        )}
+
         {/* 顶部渐变线 */}
         <div className={`h-1.5 bg-gradient-to-r ${gradientClass}`} />
 
@@ -70,7 +91,7 @@ function AdCard({ ad, side }: { ad: SideAd; side: 'left' | 'right' }) {
           {/* 头部 */}
           <div className="mb-5 flex items-center gap-3">
             <div className={`flex h-12 w-12 items-center justify-center rounded-full shadow-md ${iconBgClass}`}>
-              {ad.icon === 'claude' ? <ClaudeIcon /> : <ApiIcon />}
+              {ad.icon === 'claude' ? <ClaudeIcon /> : ad.icon === 'apipool' ? <ApiPoolIcon /> : <ApiIcon />}
             </div>
             <div className="flex-1">
               <h3 className="text-base font-bold leading-tight text-gray-900">{ad.title}</h3>
@@ -99,7 +120,7 @@ function AdCard({ ad, side }: { ad: SideAd; side: 'left' | 'right' }) {
           </div>
 
           {/* 按钮 */}
-          <div className={`flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r py-3 text-center font-bold text-white shadow-md transition-all duration-300 hover:shadow-lg ${gradientClass}`}>
+          <div className={`flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r py-2.5 text-center text-sm font-bold text-white shadow-md transition-all duration-300 hover:shadow-lg ${gradientClass}`}>
             <Zap className="h-5 w-5" />
             {ad.button_text}
           </div>

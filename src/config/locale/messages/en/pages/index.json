@@ -99,7 +99,20 @@
             "url": "",
             "description": "Contact support WeChat: AFreeCoder01"
           }
-        ]
+        ],
+        "side_ads": {
+          "right": {
+            "title": "APIPool",
+            "description": "Codex & Claude Code ready. GPT-5.3-Codex, Claude-Opus-4-6 now available. OpenClaw compatible. One API for all.",
+            "highlight": "From 10% of official price!",
+            "tags": ["3-in-1 API", "Pay-as-you-go", "Reliable"],
+            "button_text": "Get Started",
+            "footer_text": "Sign up to get started",
+            "url": "https://apipool.dev/register?ref=gpt101",
+            "icon": "apipool",
+            "color": "orange"
+          }
+        }
       },
       "tools-and-tutorials": {
         "id": "tools-tutorials",

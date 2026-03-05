@@ -33,7 +33,7 @@ export default async function LandingLayout({
           buttonText={header.topbanner?.buttonText}
           href={header.topbanner?.href}
           target={header.topbanner?.target}
-          closable
+          closable={false}
           rememberDismiss
           dismissedExpiryDays={header.topbanner?.dismissedExpiryDays ?? 1}
         />
