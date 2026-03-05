@@ -91,13 +91,13 @@
             "id": 6,
             "label": "[Backup] GPT Subscription (your account)",
             "url": "",
-            "description": "Contact support QQ: 2316149029"
+            "description": "Contact support WeChat: AFreeCoder01"
           },
           {
             "id": 7,
             "label": "[Pro] GPT Pro Subscription (your account)",
             "url": "",
-            "description": "Contact support QQ: 2316149029"
+            "description": "Contact support WeChat: AFreeCoder01"
           }
         ]
       },
@@ -172,11 +172,11 @@
           },
           {
             "question": "Q: How long does it take?",
-            "answer": "Usually 1-2 minutes. Contact support QQ: 2316149029 if you need help."
+            "answer": "Usually 1-2 minutes. Contact support WeChat: AFreeCoder01 if you need help."
           },
           {
             "question": "Q: What if the subscription fails?",
-            "answer": "We'll process a refund per our policy. Refund timing depends on the payment platform. Contact QQ: 2316149029."
+            "answer": "We'll process a refund per our policy. Refund timing depends on the payment platform. Contact WeChat: AFreeCoder01."
           },
           {
             "question": "Q: Will my account get banned?",
@@ -184,7 +184,7 @@
           },
           {
             "question": "Q: Can I get an invoice?",
-            "answer": "Yes. Contact support QQ: 2316149029 with your billing details."
+            "answer": "Yes. Contact support WeChat: AFreeCoder01 with your billing details."
           },
           {
             "question": "Q: Should I choose Plus subscription or mirror service?",
@@ -197,7 +197,7 @@
         "block": "customer-support",
         "title": "Customer Support",
         "description": "Need help? We're here for you.",
-        "qq_number": "2316149029",
+        "wechat_id": "AFreeCoder01",
         "show_contact_card": true,
         "items": [
           {
@@ -224,8 +224,8 @@
         "id": "floating-cs",
         "block": "floating-customer-service",
         "disabled": false,
-        "qq_number": "2316149029",
-        "qr_code_path": "/qq-qrcode.png",
+        "wechat_id": "AFreeCoder01",
+        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg",
         "service_time": "Online: 9:00 ~ 23:00"
       }
     }

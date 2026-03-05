@@ -6,15 +6,15 @@ import { Section } from '@/shared/types/blocks/landing';
 
 export function CustomerSupport({ section }: { section: Section }) {
   const cards = section.items || [];
-  const qqNumber = section.qq_number || '2316149029';
+  const wechatId = section.wechat_id || 'AFreeCoder01';
 
   const handleCopy = () => {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      navigator.clipboard.writeText(qqNumber).then(() => {
+      navigator.clipboard.writeText(wechatId).then(() => {
         toast.success('已复制到剪贴板');
       });
     } else {
-      window.prompt('请复制客服QQ号', qqNumber);
+      window.prompt('请复制客服微信号', wechatId);
     }
   };
 
@@ -61,7 +61,7 @@ export function CustomerSupport({ section }: { section: Section }) {
               </div>
             ))}
 
-            {/* 客服联系方式卡片（如果 section 中配置了 qq_number） */}
+            {/* 客服联系方式卡片（如果 section 中配置了 wechat_id） */}
             {section.show_contact_card && (
               <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-lg transition-shadow duration-300 hover:shadow-xl">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
@@ -70,7 +70,7 @@ export function CustomerSupport({ section }: { section: Section }) {
                 <h3 className="mb-3 text-lg font-bold text-gray-800">
                   客服联系方式
                 </h3>
-                <p className="mb-3 text-sm text-gray-600">QQ: {qqNumber}</p>
+                <p className="mb-3 text-sm text-gray-600">微信: {wechatId}</p>
                 <button
                   onClick={handleCopy}
                   className="mx-auto flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-purple-700"

@@ -17,5 +17,5 @@ export default async function ChatGPTPlusMaintenancePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <MaintenancePage qqNumber="2316149029" qrCodePath="/qq-qrcode.png" />;
+  return <MaintenancePage wechatId="AFreeCoder01" qrCodeUrl="https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg" />;
 }

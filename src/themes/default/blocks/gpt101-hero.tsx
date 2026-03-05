@@ -151,17 +151,12 @@ export function Gpt101Hero({ section }: { section: Section }) {
             >
               查看客户好评 ★★★★★
             </Link>
-            {section.customer_service_qq && (
+            {section.customer_service_wechat && (
               <>
                 <span className="text-gray-400">|</span>
-                <Link
-                  href={`https://wpa.qq.com/msgrd?v=3&uin=${section.customer_service_qq}&site=qq&menu=yes`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-blue-600 underline hover:text-blue-700"
-                >
-                  客服 QQ：{section.customer_service_qq}
-                </Link>
+                <span className="font-semibold text-blue-600">
+                  客服微信：{section.customer_service_wechat}
+                </span>
               </>
             )}
           </div>

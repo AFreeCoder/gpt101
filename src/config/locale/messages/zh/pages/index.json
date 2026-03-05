@@ -43,7 +43,7 @@
           }
         ],
         "reviews_link": true,
-        "customer_service_qq": "2316149029",
+        "customer_service_wechat": "AFreeCoder01",
         "disclaimer": {
           "text": "支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见",
           "link": {
@@ -115,13 +115,13 @@
             "id": 6,
             "label": "【备用】GPT会员充值(充你的号)",
             "url": "",
-            "description": "购买完后请联系客服QQ:2316149029"
+            "description": "购买完后请联系客服微信:AFreeCoder01"
           },
           {
             "id": 7,
             "label": "【Pro充值】GPT Pro 会员充值(充你的号)",
             "url": "",
-            "description": "请联系客服QQ:2316149029 充值"
+            "description": "请联系客服微信:AFreeCoder01 充值"
           }
         ]
       },
@@ -233,11 +233,11 @@
           },
           {
             "question": "Q: 充值需要多长时间？会很复杂吗？",
-            "answer": "不复杂，通常 1-2 分钟即可完成充值。若您觉得流程不够清晰，请联系客服 QQ：2316149029，我们会协助处理。"
+            "answer": "不复杂，通常 1-2 分钟即可完成充值。若您觉得流程不够清晰，请联系客服微信：AFreeCoder01，我们会协助处理。"
           },
           {
             "question": "Q: 如果充值失败会怎么样？",
-            "answer": "如遇充值失败或服务未交付等情况，我们会按退款政策处理并尽快发起退款，原路退回时间以支付平台为准。如有问题，联系客服QQ：2316149029。"
+            "answer": "如遇充值失败或服务未交付等情况，我们会按退款政策处理并尽快发起退款，原路退回时间以支付平台为准。如有问题，联系客服微信：AFreeCoder01。"
           },
           {
             "question": "Q: 充值后会不会被封号？如果封号怎么办？",
@@ -245,7 +245,7 @@
           },
           {
             "question": "Q: 可以开发票吗？",
-            "answer": "可以开具发票。如需发票，请提前联系客服QQ：2316149029，提供相关开票信息（公司名称、税号等），我们会为您办理发票开具事宜。"
+            "answer": "可以开具发票。如需发票，请提前联系客服微信：AFreeCoder01，提供相关开票信息（公司名称、税号等），我们会为您办理发票开具事宜。"
           },
           {
             "question": "Q: 如何选择 GPT Plus 充值还是镜像服务？",
@@ -258,7 +258,7 @@
         "block": "customer-support",
         "title": "专业客服支持",
         "description": "遇到问题？我们随时为您提供帮助",
-        "qq_number": "2316149029",
+        "wechat_id": "AFreeCoder01",
         "show_contact_card": true,
         "items": [
           {
@@ -285,8 +285,8 @@
         "id": "floating-cs",
         "block": "floating-customer-service",
         "disabled": false,
-        "qq_number": "2316149029",
-        "qr_code_path": "/qq-qrcode.png",
+        "wechat_id": "AFreeCoder01",
+        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg",
         "service_time": "在线时间：9:00 ~ 23:00"
       }
     }

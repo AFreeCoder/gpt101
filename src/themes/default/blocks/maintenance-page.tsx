@@ -5,23 +5,23 @@ import { ArrowLeft, Copy, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MaintenancePageProps {
-  qqNumber?: string;
-  qrCodePath?: string;
+  wechatId?: string;
+  qrCodeUrl?: string;
 }
 
 export function MaintenancePage({
-  qqNumber = '2316149029',
-  qrCodePath = '/qq-qrcode.png',
+  wechatId = 'AFreeCoder01',
+  qrCodeUrl = 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg',
 }: MaintenancePageProps) {
   const handleCopy = useCallback(() => {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      navigator.clipboard.writeText(qqNumber).then(() => {
-        toast.success('QQ号已复制到剪贴板');
+      navigator.clipboard.writeText(wechatId).then(() => {
+        toast.success('微信号已复制到剪贴板');
       });
     } else {
-      window.prompt('请复制客服QQ号', qqNumber);
+      window.prompt('请复制客服微信号', wechatId);
     }
-  }, [qqNumber]);
+  }, [wechatId]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-blue-50 px-4 py-8">
@@ -57,7 +57,7 @@ export function MaintenancePage({
           {/* 客服联系区域 */}
           <div className="px-6 pb-6">
             <div className="mb-6 text-center">
-              <h2 className="text-lg font-bold text-gray-800">添加客服QQ</h2>
+              <h2 className="text-lg font-bold text-gray-800">添加客服微信</h2>
             </div>
 
             <div className="mb-6 flex items-start gap-6">
@@ -66,20 +66,20 @@ export function MaintenancePage({
                 <div className="mb-2 h-32 w-32">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={qrCodePath}
-                    alt="客服QQ二维码"
+                    src={qrCodeUrl}
+                    alt="客服微信二维码"
                     className="h-full w-full rounded-xl border border-gray-200 object-cover shadow-sm"
                   />
                 </div>
-                <p className="text-xs text-gray-600">客服QQ二维码</p>
+                <p className="text-xs text-gray-600">客服微信二维码</p>
               </div>
 
-              {/* 右侧QQ号 */}
+              {/* 右侧微信号 */}
               <div className="flex-1">
                 <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <span className="text-sm text-gray-700">
-                      QQ：<span className="font-mono font-semibold">{qqNumber}</span>
+                      微信：<span className="font-mono font-semibold">{wechatId}</span>
                     </span>
                     <button
                       type="button"

@@ -66,7 +66,7 @@
 - PurchaseChannelModal（7 渠道选择弹窗）
 - 好评轮播（客户截图自动滚动 34s/40s）
 - FAQs（7 个常见问题）
-- CustomerSupport（客服卡片 + QQ 二维码）
+- CustomerSupport（客服卡片 + 微信二维码）
 
 **迁移方式**：在 shipany 的 `(landing)/page.tsx` 中用 React 重写所有组件，业务数据放入 i18n JSON
 
@@ -170,7 +170,7 @@
 | `ServiceComparison` | `widgets/ServiceComparison.astro` | Plus vs 镜像对比表 |
 | `ServiceDetails` | `widgets/ServiceDetails.astro` | 充值步骤指引 |
 | `FloatingCustomerService` | `widgets/FloatingCustomerService.astro` | 右下角悬浮客服按钮 |
-| `CustomerSupport` | `widgets/CustomerSupport.astro` | 客服卡片 + QQ 二维码 |
+| `CustomerSupport` | `widgets/CustomerSupport.astro` | 客服卡片 + 微信二维码 |
 | `TypewriterTitle` | 镜像页打字机效果 | 标题逐字显示 |
 | `UpgradeChannel` | 新建通用组件 | iframe 嵌入升级渠道页 |
 | `CardPurchase` | 新建通用组件 | iframe 嵌入卡密购买页 |
@@ -274,7 +274,7 @@
 4. **性能**：Astro SSG 生成的静态页面加载极快，Next.js 需要配置合理的缓存策略
 5. **百度统计**：自定义接入需要确保与 Next.js 的客户端路由兼容（SPA 路由变化时需手动上报）
 6. **好评轮播图片**：确保所有客户截图图片正确迁移
-7. **QQ 二维码**：确保二维码图片路径正确
+7. **微信二维码**：确保二维码图片路径正确
 
 ---
 

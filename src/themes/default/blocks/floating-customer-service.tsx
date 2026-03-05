@@ -9,19 +9,19 @@ import { Section } from '@/shared/types/blocks/landing';
 export function FloatingCustomerService({ section }: { section: Section }) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const qqNumber = section.qq_number || '2316149029';
-  const qrCodePath = section.qr_code_path || '/qq-qrcode.png';
+  const wechatId = section.wechat_id || 'AFreeCoder01';
+  const qrCodeUrl = section.qr_code_url || 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg';
   const serviceTime = section.service_time || '在线时间：9:00 ~ 23:00';
 
   const handleCopy = useCallback(() => {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      navigator.clipboard.writeText(qqNumber).then(() => {
+      navigator.clipboard.writeText(wechatId).then(() => {
         toast.success('已复制到剪贴板');
       });
     } else {
-      window.prompt('请复制客服QQ号', qqNumber);
+      window.prompt('请复制客服微信号', wechatId);
     }
-  }, [qqNumber]);
+  }, [wechatId]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -75,7 +75,7 @@ export function FloatingCustomerService({ section }: { section: Section }) {
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-semibold">在线QQ客服</h3>
+                <h3 className="text-base font-semibold">在线微信客服</h3>
                 <p className="text-xs text-white/80">有任何问题请联系客服</p>
               </div>
             </div>
@@ -92,14 +92,14 @@ export function FloatingCustomerService({ section }: { section: Section }) {
 
         {/* 内容 */}
         <div className="space-y-3 p-4">
-          {/* QQ二维码 */}
+          {/* 微信二维码 */}
           <div className="text-center">
-            <p className="mb-2 text-xs font-medium text-gray-600">扫码添加客服QQ</p>
+            <p className="mb-2 text-xs font-medium text-gray-600">扫码添加客服微信</p>
             <div className="flex justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={qrCodePath}
-                alt="客服QQ二维码"
+                src={qrCodeUrl}
+                alt="客服微信二维码"
                 width={128}
                 height={128}
                 loading="lazy"
@@ -109,17 +109,17 @@ export function FloatingCustomerService({ section }: { section: Section }) {
             </div>
           </div>
 
-          {/* QQ号 + 复制 */}
+          {/* 微信号 + 复制 */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-2">
               <div className="rounded border border-gray-200 bg-gray-50 px-2.5 py-1.5">
-                <p className="select-all text-sm font-bold text-gray-900">{qqNumber}</p>
+                <p className="select-all text-sm font-bold text-gray-900">{wechatId}</p>
               </div>
               <button
                 type="button"
                 onClick={handleCopy}
                 className="flex items-center gap-1 rounded bg-blue-600 px-2.5 py-1.5 text-white transition-colors duration-200 hover:bg-blue-700"
-                aria-label="复制QQ号"
+                aria-label="复制微信号"
               >
                 <Copy className="h-3.5 w-3.5" />
                 <span className="text-xs font-medium">复制</span>
