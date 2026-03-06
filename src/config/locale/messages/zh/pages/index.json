@@ -87,7 +87,7 @@
             "highlight": "官方价 0.5 折起！",
             "tags": ["官方直连", "按量计费", "稳定靠谱", "性价比极高"],
             "button_text": "立即使用",
-            "footer_text": "注册即送体验额度",
+            "footer_text": "注册联系客服即送体验额度",
             "url": "https://apipool.dev/register?ref=gpt101",
             "icon": "apipool",
             "color": "orange"
