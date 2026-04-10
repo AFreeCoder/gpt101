@@ -12,6 +12,9 @@ import {
   disableCardkey,
 } from '@/shared/models/channel-cardkey';
 
+// 确保所有 adapter 被注册（side-effect import）
+import './adapters/mock';
+
 export interface RunTaskInput {
   taskId: string;
   productCode: 'plus' | 'pro' | 'team';
