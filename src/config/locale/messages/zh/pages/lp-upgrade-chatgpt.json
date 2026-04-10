@@ -24,7 +24,7 @@
         "buttons": [
           {
             "title": "立即升级",
-            "url": "https://fe.dtyuedan.cn/shop/F2OLER91/52wtgh",
+            "url": "/upgrade?source=ad-plus",
             "variant": "default"
           }
         ],

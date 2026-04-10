@@ -39,6 +39,7 @@
           },
           {
             "title": "立即升级",
+            "url": "/upgrade?source=home",
             "variant": "outline"
           }
         ],
