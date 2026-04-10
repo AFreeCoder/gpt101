@@ -1,0 +1,88 @@
+# =============================================================================
+# GPT101 Docker Compose - 生产部署
+# =============================================================================
+# 部署在 silicon 服务器，包含 Next.js 应用 + Worker 进程 + PostgreSQL
+# =============================================================================
+
+services:
+  gpt101:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: gpt101
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: 512m
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_APP_URL=${APP_URL:-https://gpt101.org}
+      - NEXT_PUBLIC_APP_NAME=${APP_NAME:-GPT101}
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-gpt101}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@gpt101-postgres:5432/${POSTGRES_DB:-gpt101}
+      - AUTH_SECRET=${AUTH_SECRET:?AUTH_SECRET is required}
+      - GOOGLE_ANALYTICS_ID=${GOOGLE_ANALYTICS_ID:-}
+      - GOOGLE_ADS_ID=${GOOGLE_ADS_ID:-}
+      - BAIDU_ANALYTICS_ID=${BAIDU_ANALYTICS_ID:-}
+    depends_on:
+      gpt101-postgres:
+        condition: service_healthy
+    networks:
+      - gpt101-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  gpt101-worker:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: gpt101-worker
+    restart: unless-stopped
+    stop_grace_period: 60s
+    mem_limit: 256m
+    command: ["node", "worker.js"]
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-gpt101}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@gpt101-postgres:5432/${POSTGRES_DB:-gpt101}
+    depends_on:
+      gpt101-postgres:
+        condition: service_healthy
+    networks:
+      - gpt101-network
+
+  gpt101-postgres:
+    image: postgres:18-alpine
+    container_name: gpt101-postgres
+    restart: unless-stopped
+    mem_limit: 512m
+    volumes:
+      - gpt101_postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-gpt101}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - POSTGRES_DB=${POSTGRES_DB:-gpt101}
+      - PGDATA=/var/lib/postgresql/data
+      - TZ=${TZ:-Asia/Shanghai}
+    networks:
+      - gpt101-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gpt101} -d ${POSTGRES_DB:-gpt101}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  gpt101-network:
+    driver: bridge
+
+volumes:
+  gpt101_postgres_data:
