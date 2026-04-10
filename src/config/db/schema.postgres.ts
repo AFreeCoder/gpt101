@@ -555,3 +555,199 @@ export const chatMessage = table(
     index('idx_chat_message_user_id').on(table.userId, table.status),
   ]
 );
+
+export const redeemCodeBatch = table('redeem_code_batch', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  productCode: text('product_code').notNull(),
+  count: integer('count').notNull(),
+  unitPrice: integer('unit_price').notNull(),
+  currency: text('currency').notNull().default('CNY'),
+  note: text('note'),
+  createdBy: text('created_by'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const redeemCode = table(
+  'redeem_code',
+  {
+    id: text('id').primaryKey(),
+    batchId: text('batch_id').notNull(),
+    code: text('code').notNull().unique(),
+    productCode: text('product_code').notNull(),
+    status: text('status').notNull(),
+    exportedAt: timestamp('exported_at'),
+    usedAt: timestamp('used_at'),
+    usedByTaskId: text('used_by_task_id'),
+    disabledAt: timestamp('disabled_at'),
+    disabledReason: text('disabled_reason'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [index('idx_redeem_code_status_batch').on(t.status, t.batchId)]
+);
+
+export const upgradeChannel = table(
+  'upgrade_channel',
+  {
+    id: text('id').primaryKey(),
+    code: text('code').notNull().unique(),
+    name: text('name').notNull(),
+    driver: text('driver').notNull(),
+    supportedProducts: text('supported_products').notNull(),
+    status: text('status').notNull(),
+    priority: integer('priority').notNull().default(100),
+    requiresCardkey: boolean('requires_cardkey').notNull().default(false),
+    note: text('note'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [index('idx_upgrade_channel_status_priority').on(t.status, t.priority)]
+);
+
+export const channelCardkey = table(
+  'channel_cardkey',
+  {
+    id: text('id').primaryKey(),
+    channelId: text('channel_id').notNull(),
+    cardkey: text('cardkey').notNull(),
+    productCode: text('product_code').notNull(),
+    status: text('status').notNull(),
+    lockedByTaskId: text('locked_by_task_id'),
+    usedByAttemptId: text('used_by_attempt_id'),
+    usedAt: timestamp('used_at'),
+    disabledReason: text('disabled_reason'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_channel_cardkey_channel_status_product').on(
+      t.channelId,
+      t.status,
+      t.productCode
+    ),
+  ]
+);
+
+export const upgradeTask = table(
+  'upgrade_task',
+  {
+    id: text('id').primaryKey(),
+    taskNo: text('task_no').notNull().unique(),
+    redeemCodeId: text('redeem_code_id').notNull(),
+    redeemCodePlain: text('redeem_code_plain').notNull(),
+    productCode: text('product_code').notNull(),
+    sessionToken: text('session_token').notNull(),
+    chatgptEmail: text('chatgpt_email').notNull(),
+    chatgptAccountId: text('chatgpt_account_id'),
+    contactEmail: text('contact_email'),
+    status: text('status').notNull(),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    successChannelId: text('success_channel_id'),
+    successChannelCardkeyId: text('success_channel_cardkey_id'),
+    lastError: text('last_error'),
+    startedAt: timestamp('started_at'),
+    finishedAt: timestamp('finished_at'),
+    clientIp: text('client_ip'),
+    userAgent: text('user_agent'),
+    metadata: text('metadata'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_upgrade_task_status_created').on(t.status, t.createdAt),
+    index('idx_upgrade_task_chatgpt_email').on(t.chatgptEmail),
+    index('idx_upgrade_task_redeem_code').on(t.redeemCodeId),
+  ]
+);
+
+export const upgradeTaskAttempt = table(
+  'upgrade_task_attempt',
+  {
+    id: text('id').primaryKey(),
+    taskId: text('task_id').notNull(),
+    channelId: text('channel_id').notNull(),
+    channelCardkeyId: text('channel_cardkey_id'),
+    attemptNo: integer('attempt_no').notNull(),
+    status: text('status').notNull(),
+    errorMessage: text('error_message'),
+    requestPayload: text('request_payload'),
+    responseBody: text('response_body'),
+    durationMs: integer('duration_ms'),
+    startedAt: timestamp('started_at').defaultNow().notNull(),
+    finishedAt: timestamp('finished_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [index('idx_upgrade_task_attempt_task_no').on(t.taskId, t.attemptNo)]
+);
+
+export const renewalDiscount = table('renewal_discount', {
+  id: text('id').primaryKey(),
+  verifyType: text('verify_type').notNull(),
+  verifyValue: text('verify_value').notNull().unique(),
+  discountResult: text('discount_result'),
+  clientIp: text('client_ip'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const renewalDiscountCoupon = table(
+  'renewal_discount_coupon',
+  {
+    id: text('id').primaryKey(),
+    couponCode: text('coupon_code').notNull().unique(),
+    status: text('status').notNull(),
+    issuedToId: text('issued_to_id'),
+    issuedAt: timestamp('issued_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [index('idx_renewal_discount_coupon_status').on(t.status)]
+);
+
+export const invoiceRequest = table(
+  'invoice_request',
+  {
+    id: text('id').primaryKey(),
+    status: text('status').notNull(),
+    buyerType: text('buyer_type'),
+    buyerName: text('buyer_name'),
+    buyerTaxId: text('buyer_tax_id'),
+    buyerAddress: text('buyer_address'),
+    buyerPhone: text('buyer_phone'),
+    buyerBank: text('buyer_bank'),
+    buyerBankAccount: text('buyer_bank_account'),
+    invoiceType: text('invoice_type'),
+    invoiceItem: text('invoice_item'),
+    invoiceAmount: integer('invoice_amount'),
+    recipientEmail: text('recipient_email').notNull(),
+    submittedAt: timestamp('submitted_at'),
+    exportedAt: timestamp('exported_at'),
+    sentAt: timestamp('sent_at'),
+    invoiceFileUrl: text('invoice_file_url'),
+    note: text('note'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_invoice_request_status_created').on(t.status, t.createdAt),
+    index('idx_invoice_request_recipient_email').on(t.recipientEmail),
+  ]
+);
