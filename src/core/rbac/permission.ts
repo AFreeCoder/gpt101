@@ -60,6 +60,27 @@ export const PERMISSIONS = {
   AITASKS_READ: 'admin.ai-tasks.read',
   AITASKS_WRITE: 'admin.ai-tasks.write',
   AITASKS_DELETE: 'admin.ai-tasks.delete',
+
+  // Redeem Codes
+  REDEEM_READ: 'admin.redeem-codes.read',
+  REDEEM_WRITE: 'admin.redeem-codes.write',
+  REDEEM_DELETE: 'admin.redeem-codes.delete',
+
+  // Upgrade Channels
+  UPGRADE_CHANNEL_READ: 'admin.upgrade-channels.read',
+  UPGRADE_CHANNEL_WRITE: 'admin.upgrade-channels.write',
+
+  // Channel Cardkeys
+  CHANNEL_CARDKEY_READ: 'admin.channel-cardkeys.read',
+  CHANNEL_CARDKEY_WRITE: 'admin.channel-cardkeys.write',
+
+  // Upgrade Tasks
+  UPGRADE_TASK_READ: 'admin.upgrade-tasks.read',
+  UPGRADE_TASK_WRITE: 'admin.upgrade-tasks.write',
+
+  // Invoice Requests
+  INVOICE_READ: 'admin.invoices.read',
+  INVOICE_WRITE: 'admin.invoices.write',
 } as const;
 
 /**

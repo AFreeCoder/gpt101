@@ -251,6 +251,93 @@ const defaultPermissions = [
     description: 'Delete AI tasks',
   },
 
+  // Redeem Codes management
+  {
+    code: 'admin.redeem-codes.read',
+    resource: 'redeem-codes',
+    action: 'read',
+    title: 'Read Redeem Codes',
+    description: 'View redeem code list and details',
+  },
+  {
+    code: 'admin.redeem-codes.write',
+    resource: 'redeem-codes',
+    action: 'write',
+    title: 'Write Redeem Codes',
+    description: 'Generate, import, disable redeem codes',
+  },
+  {
+    code: 'admin.redeem-codes.delete',
+    resource: 'redeem-codes',
+    action: 'delete',
+    title: 'Delete Redeem Codes',
+    description: 'Delete unused redeem codes',
+  },
+
+  // Upgrade Channels management
+  {
+    code: 'admin.upgrade-channels.read',
+    resource: 'upgrade-channels',
+    action: 'read',
+    title: 'Read Upgrade Channels',
+    description: 'View upgrade channel list and details',
+  },
+  {
+    code: 'admin.upgrade-channels.write',
+    resource: 'upgrade-channels',
+    action: 'write',
+    title: 'Write Upgrade Channels',
+    description: 'Create, update, enable/disable upgrade channels',
+  },
+
+  // Channel Cardkeys management
+  {
+    code: 'admin.channel-cardkeys.read',
+    resource: 'channel-cardkeys',
+    action: 'read',
+    title: 'Read Channel Cardkeys',
+    description: 'View channel cardkey inventory',
+  },
+  {
+    code: 'admin.channel-cardkeys.write',
+    resource: 'channel-cardkeys',
+    action: 'write',
+    title: 'Write Channel Cardkeys',
+    description: 'Import and manage channel cardkeys',
+  },
+
+  // Upgrade Tasks management
+  {
+    code: 'admin.upgrade-tasks.read',
+    resource: 'upgrade-tasks',
+    action: 'read',
+    title: 'Read Upgrade Tasks',
+    description: 'View upgrade task list and details',
+  },
+  {
+    code: 'admin.upgrade-tasks.write',
+    resource: 'upgrade-tasks',
+    action: 'write',
+    title: 'Write Upgrade Tasks',
+    description: 'Retry, mark success, cancel upgrade tasks',
+  },
+
+  // Invoice Requests management
+  {
+    code: 'admin.invoices.read',
+    resource: 'invoices',
+    action: 'read',
+    title: 'Read Invoices',
+    description: 'View invoice request list and details',
+  },
+  {
+    code: 'admin.invoices.write',
+    resource: 'invoices',
+    action: 'write',
+    title: 'Write Invoices',
+    description: 'Export and send invoices',
+  },
+
   // Wildcard permission for super admin
   {
     code: '*',
@@ -288,6 +375,11 @@ const defaultRoles = [
       'admin.apikeys.*',
       'admin.settings.read',
       'admin.ai-tasks.*',
+      'admin.redeem-codes.*',
+      'admin.upgrade-channels.*',
+      'admin.channel-cardkeys.*',
+      'admin.upgrade-tasks.*',
+      'admin.invoices.*',
     ],
   },
   {

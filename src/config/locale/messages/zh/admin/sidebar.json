@@ -76,6 +76,53 @@
       ]
     },
     {
+      "title": "升级管理",
+      "items": [
+        {
+          "title": "卡密管理",
+          "icon": "Ticket",
+          "is_expand": true,
+          "children": [
+            {
+              "title": "卡密列表",
+              "url": "/admin/redeem-codes",
+              "icon": "List"
+            },
+            {
+              "title": "批量生成",
+              "url": "/admin/redeem-codes/generate",
+              "icon": "Plus"
+            },
+            {
+              "title": "批次管理",
+              "url": "/admin/redeem-codes/batches",
+              "icon": "Package"
+            },
+            {
+              "title": "导入卡密",
+              "url": "/admin/redeem-codes/import",
+              "icon": "Upload"
+            }
+          ]
+        },
+        {
+          "title": "渠道管理",
+          "url": "/admin/upgrade-channels",
+          "icon": "Route"
+        },
+        {
+          "title": "升级任务",
+          "url": "/admin/upgrade-tasks",
+          "icon": "Zap"
+        },
+        {
+          "title": "发票管理",
+          "url": "/admin/invoice-requests",
+          "icon": "Receipt"
+        }
+      ]
+    },
+    {
       "title": "业务",
       "items": [
         {
