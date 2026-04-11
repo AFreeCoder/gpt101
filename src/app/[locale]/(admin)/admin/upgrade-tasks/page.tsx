@@ -38,6 +38,12 @@ export default function UpgradeTasksPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [viewToken, setViewToken] = useState('');
+  const [showMarkSuccess, setShowMarkSuccess] = useState<string | null>(null); // taskId
+  const [msChannelName, setMsChannelName] = useState('');
+  const [msChannelCardkey, setMsChannelCardkey] = useState('');
+  const [msNote, setMsNote] = useState('');
+  const [msSaving, setMsSaving] = useState(false);
+  const [channels, setChannels] = useState<{ id: string; name: string }[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -53,6 +59,13 @@ export default function UpgradeTasksPage() {
   }, [statusFilter, search, page]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // 加载渠道列表（标记成功弹窗用）
+  useEffect(() => {
+    fetch('/api/admin/upgrade-channels/list')
+      .then((r) => r.json())
+      .then((d) => { if (d.code === 0) setChannels(d.data.map((c: any) => ({ id: c.id, name: c.name }))); });
+  }, []);
 
   const handleAction = async (taskId: string, action: 'retry' | 'cancel' | 'markSuccess') => {
     const labels = { retry: '重试', cancel: '取消', markSuccess: '标记成功' };
@@ -127,9 +140,7 @@ export default function UpgradeTasksPage() {
                   <td className="px-3 py-2 text-xs">{getProductMemberLabel(t.productCode, t.memberType)}</td>
                   <td className="px-3 py-2 font-mono text-xs">{t.redeemCodePlain}</td>
                   <td className="px-3 py-2 text-xs">{t.successChannelName || '-'}</td>
-                  <td className="px-3 py-2 font-mono text-xs max-w-20 truncate" title={t.successChannelCardkey}>
-                    {t.successChannelCardkey ? t.successChannelCardkey.slice(0, 8) + '...' : '-'}
-                  </td>
+                  <td className="px-3 py-2 font-mono text-xs">{t.successChannelCardkey || '-'}</td>
                   <td className="px-3 py-2 text-xs">{t.chatgptEmail}</td>
                   <td className="px-3 py-2 text-xs text-gray-500">{t.chatgptCurrentPlan || '-'}</td>
                   <td className="px-3 py-2">
@@ -152,7 +163,7 @@ export default function UpgradeTasksPage() {
                       {t.status === 'failed' && (
                         <>
                           <button onClick={() => handleAction(t.id, 'retry')} className="text-xs text-blue-600 hover:underline">重试</button>
-                          <button onClick={() => handleAction(t.id, 'markSuccess')} className="text-xs text-green-600 hover:underline">标记成功</button>
+                          <button onClick={() => { setShowMarkSuccess(t.id); setMsChannelName(''); setMsChannelCardkey(''); setMsNote(''); }} className="text-xs text-green-600 hover:underline">标记成功</button>
                           <button onClick={() => handleAction(t.id, 'cancel')} className="text-xs text-red-600 hover:underline">取消</button>
                         </>
                       )}
@@ -192,6 +203,61 @@ export default function UpgradeTasksPage() {
                 className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700">复制</button>
               <button onClick={() => setViewToken('')}
                 className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">关闭</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 标记成功弹窗 */}
+      {showMarkSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowMarkSuccess(null)} />
+          <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+            <h3 className="mb-4 text-lg font-semibold">标记任务成功</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium">使用的渠道</label>
+                <select value={msChannelName} onChange={(e) => setMsChannelName(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 text-sm">
+                  <option value="">请选择</option>
+                  {channels.map((ch) => (
+                    <option key={ch.id} value={ch.name}>{ch.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">使用的渠道卡密</label>
+                <input type="text" value={msChannelCardkey} onChange={(e) => setMsChannelCardkey(e.target.value)}
+                  placeholder="输入渠道卡密（如有）" className="w-full rounded-lg border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">备注</label>
+                <input type="text" value={msNote} onChange={(e) => setMsNote(e.target.value)}
+                  placeholder="可选" className="w-full rounded-lg border px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button onClick={() => setShowMarkSuccess(null)}
+                className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50">取消</button>
+              <button disabled={msSaving} onClick={async () => {
+                setMsSaving(true);
+                try {
+                  const res = await fetch('/api/admin/upgrade-tasks/markSuccess', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      taskId: showMarkSuccess,
+                      note: [msChannelName && `渠道: ${msChannelName}`, msChannelCardkey && `卡密: ${msChannelCardkey}`, msNote].filter(Boolean).join('; '),
+                    }),
+                  });
+                  const data = await res.json();
+                  if (data.code !== 0) alert(data.message);
+                  else { setShowMarkSuccess(null); fetchData(); }
+                } catch { alert('操作失败'); }
+                setMsSaving(false);
+              }}
+                className="flex-1 rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
+                {msSaving ? '处理中...' : '确认标记成功'}
+              </button>
             </div>
           </div>
         </div>
