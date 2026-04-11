@@ -1,169 +1,165 @@
 'use client';
 
 import { useState } from 'react';
+import { PRODUCT_TYPES, getMemberTypes } from '@/shared/lib/redeem-code';
 
 export default function GenerateRedeemCodesPage() {
-  const [productCode, setProductCode] = useState('plus');
+  const [productCode, setProductCode] = useState('');
+  const [memberType, setMemberType] = useState('');
   const [count, setCount] = useState(10);
-  const [unitPrice, setUnitPrice] = useState(17900);
+  const [unitPrice, setUnitPrice] = useState('179.00');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ batchId: string; codes: string[] } | null>(null);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<{
-    batchId: string;
-    codes: string[];
-  } | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const memberTypes = productCode ? getMemberTypes(productCode) : [];
+
+  const handleGenerate = async () => {
     setError('');
     setResult(null);
-    setLoading(true);
 
+    if (!productCode) { setError('请选择产品类型'); return; }
+    if (!memberType) { setError('请选择会员类型'); return; }
+    if (!title.trim()) { setError('请输入批次名称'); return; }
+    if (count < 1 || count > 5000) { setError('数量范围 1-5000'); return; }
+
+    setLoading(true);
     try {
       const res = await fetch('/api/admin/redeem-codes/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productCode, count, unitPrice, title }),
+        body: JSON.stringify({ productCode, memberType, count, unitPrice, title: title.trim() }),
       });
-
       const data = await res.json();
-
       if (data.code !== 0) {
-        setError(data.message || '生成失败');
-      } else {
-        setResult(data.data);
+        setError(data.message);
+        return;
       }
-    } catch (err: any) {
-      setError(err.message || '请求失败');
+      setResult(data.data);
+    } catch {
+      setError('网络错误');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  function handleCopyAll() {
+  const handleCopyAll = async () => {
     if (!result) return;
-    navigator.clipboard.writeText(result.codes.join('\n'));
-  }
+    await navigator.clipboard.writeText(result.codes.join('\n'));
+    alert('已复制全部卡密');
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b px-6 py-4">
-        <nav className="text-sm text-muted-foreground">
-          <a href="/admin" className="hover:underline">管理后台</a>
-          <span className="mx-2">/</span>
-          <a href="/admin/redeem-codes" className="hover:underline">卡密列表</a>
-          <span className="mx-2">/</span>
-          <span className="text-foreground">批量生成</span>
-        </nav>
-      </div>
+    <div className="mx-auto max-w-2xl p-6">
+      <h1 className="mb-6 text-2xl font-bold">批量生成卡密</h1>
 
-      <div className="mx-auto max-w-2xl p-6">
-        <h1 className="mb-6 text-2xl font-bold">批量生成卡密</h1>
+      {error && (
+        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border p-6">
-          {/* 产品类型 */}
+      {!result ? (
+        <div className="space-y-4 rounded-xl border p-6">
           <div>
             <label className="mb-1 block text-sm font-medium">产品类型</label>
             <select
               value={productCode}
-              onChange={(e) => setProductCode(e.target.value)}
-              className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
+              onChange={(e) => { setProductCode(e.target.value); setMemberType(''); }}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
             >
-              <option value="plus">Plus</option>
-              <option value="pro">Pro</option>
-              <option value="team">Team</option>
+              <option value="">请选择</option>
+              {PRODUCT_TYPES.map((p) => (
+                <option key={p.code} value={p.code}>{p.label}</option>
+              ))}
             </select>
           </div>
 
-          {/* 数量 */}
           <div>
-            <label className="mb-1 block text-sm font-medium">生成数量</label>
-            <input
-              type="number"
-              min={1}
-              max={1000}
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-              className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
+            <label className="mb-1 block text-sm font-medium">会员类型</label>
+            <select
+              value={memberType}
+              onChange={(e) => setMemberType(e.target.value)}
+              disabled={!productCode}
+              className="w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-50"
+            >
+              <option value="">请选择</option>
+              {memberTypes.map((m) => (
+                <option key={m.code} value={m.code}>{m.label}</option>
+              ))}
+            </select>
           </div>
 
-          {/* 单价（分） */}
           <div>
-            <label className="mb-1 block text-sm font-medium">
-              单价（分，1元=100分，默认 17900 即 179 元）
-            </label>
-            <input
-              type="number"
-              min={0}
-              value={unitPrice}
-              onChange={(e) => setUnitPrice(Number(e.target.value))}
-              className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              实际金额：{(unitPrice / 100).toFixed(2)} 元
-            </p>
-          </div>
-
-          {/* 批次名称 */}
-          <div>
-            <label className="mb-1 block text-sm font-medium">批次名称</label>
+            <label className="mb-1 block text-sm font-medium">批次名称（不可重复）</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="例：2026-04 Plus 批次"
-              className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
+              placeholder="如：2026-04 GPT Plus 第一批"
+              className="w-full rounded-lg border px-3 py-2 text-sm"
             />
           </div>
 
-          {error && (
-            <div className="rounded bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
+          <div>
+            <label className="mb-1 block text-sm font-medium">数量</label>
+            <input
+              type="number"
+              value={count}
+              onChange={(e) => setCount(parseInt(e.target.value) || 0)}
+              min={1}
+              max={5000}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">单价（元）</label>
+            <input
+              type="text"
+              value={unitPrice}
+              onChange={(e) => setUnitPrice(e.target.value)}
+              placeholder="179.00"
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+            />
+          </div>
 
           <button
-            type="submit"
+            onClick={handleGenerate}
             disabled={loading}
-            className="w-full rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {loading ? '生成中...' : '生成卡密'}
+            {loading ? '生成中...' : `生成 ${count} 张卡密`}
           </button>
-        </form>
-
-        {/* 生成结果 */}
-        {result && (
-          <div className="mt-6 rounded-lg border p-6">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
-                生成成功 —— 共 {result.codes.length} 张卡密
-              </h2>
-              <button
-                onClick={handleCopyAll}
-                className="rounded border px-3 py-1 text-sm hover:bg-muted"
-              >
-                复制全部
-              </button>
+        </div>
+      ) : (
+        <div className="rounded-xl border p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-green-700">✓ 生成成功</h2>
+              <p className="text-sm text-gray-500">
+                批次 ID: {result.batchId}，共 {result.codes.length} 张
+              </p>
             </div>
-            <p className="mb-2 text-xs text-muted-foreground">
-              批次 ID：{result.batchId}
-            </p>
-            <textarea
-              readOnly
-              value={result.codes.join('\n')}
-              rows={Math.min(result.codes.length + 2, 20)}
-              className="w-full rounded border bg-muted/30 px-3 py-2 font-mono text-xs focus:outline-none"
-            />
+            <button
+              onClick={handleCopyAll}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              复制全部
+            </button>
           </div>
-        )}
-      </div>
+          <div className="max-h-96 overflow-y-auto rounded-lg bg-gray-50 p-4">
+            <pre className="text-sm font-mono">
+              {result.codes.join('\n')}
+            </pre>
+          </div>
+          <button
+            onClick={() => { setResult(null); setTitle(''); }}
+            className="mt-4 w-full rounded-lg border py-2 text-sm hover:bg-gray-50"
+          >
+            继续生成
+          </button>
+        </div>
+      )}
     </div>
   );
 }

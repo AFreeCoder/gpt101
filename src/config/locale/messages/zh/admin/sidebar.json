@@ -97,11 +97,6 @@
               "title": "批次管理",
               "url": "/admin/redeem-codes/batches",
               "icon": "Package"
-            },
-            {
-              "title": "导入卡密",
-              "url": "/admin/redeem-codes/import",
-              "icon": "Upload"
             }
           ]
         },

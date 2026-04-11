@@ -16,7 +16,6 @@ export async function POST(req: Request) {
       const messages: Record<string, string> = {
         not_found: '卡密不存在',
         disabled: '该卡密已被禁用',
-        in_use: '该卡密正在使用中',
         already_used: '该卡密已被使用',
       };
       return respErr(messages[result.reason!] || '卡密无效');

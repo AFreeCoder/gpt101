@@ -4,6 +4,7 @@ import { PERMISSIONS, requirePermission } from '@/core/rbac';
 import { Header, Main, MainHeader } from '@/shared/blocks/dashboard';
 import { TableCard } from '@/shared/blocks/table';
 import { getBatchList } from '@/shared/models/redeem-code';
+import { getProductMemberLabel } from '@/shared/lib/redeem-code';
 import { Crumb } from '@/shared/types/blocks/common';
 import { type Table } from '@/shared/types/blocks/table';
 
@@ -38,13 +39,16 @@ export default async function RedeemCodeBatchesPage({
   const table: Table = {
     columns: [
       { name: 'title', title: '批次名称' },
-      { name: 'productCode', title: '产品', type: 'label' },
-      { name: 'count', title: '生成数量' },
       {
-        title: '单价（元）',
+        title: '产品/会员',
         callback: (item) => (
-          <span>{(item.unitPrice / 100).toFixed(2)}</span>
+          <span>{getProductMemberLabel(item.productCode, item.memberType)}</span>
         ),
+      },
+      { name: 'count', title: '数量' },
+      {
+        title: '单价',
+        callback: (item) => <span>¥{item.unitPrice}</span>,
       },
       { name: 'createdAt', title: '创建时间', type: 'time' },
       {
@@ -60,11 +64,7 @@ export default async function RedeemCodeBatchesPage({
       },
     ],
     data: items,
-    pagination: {
-      total,
-      page,
-      limit,
-    },
+    pagination: { total, page, limit },
   };
 
   return (

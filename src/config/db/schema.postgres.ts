@@ -558,11 +558,11 @@ export const chatMessage = table(
 
 export const redeemCodeBatch = table('redeem_code_batch', {
   id: text('id').primaryKey(),
-  title: text('title').notNull(),
+  title: text('title').notNull().unique(),
   productCode: text('product_code').notNull(),
+  memberType: text('member_type').notNull(),
   count: integer('count').notNull(),
-  unitPrice: integer('unit_price').notNull(),
-  currency: text('currency').notNull().default('CNY'),
+  unitPrice: text('unit_price').notNull(), // 元，如 "179.00"
   note: text('note'),
   createdBy: text('created_by'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -579,7 +579,8 @@ export const redeemCode = table(
     batchId: text('batch_id').notNull(),
     code: text('code').notNull().unique(),
     productCode: text('product_code').notNull(),
-    status: text('status').notNull(),
+    memberType: text('member_type').notNull(),
+    status: text('status').notNull(), // available / consumed / disabled
     exportedAt: timestamp('exported_at'),
     usedAt: timestamp('used_at'),
     usedByTaskId: text('used_by_task_id'),
@@ -591,7 +592,10 @@ export const redeemCode = table(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (t) => [index('idx_redeem_code_status_batch').on(t.status, t.batchId)]
+  (t) => [
+    index('idx_redeem_code_status_batch').on(t.status, t.batchId),
+    index('idx_redeem_code_product_member').on(t.productCode, t.memberType),
+  ]
 );
 
 export const upgradeChannel = table(

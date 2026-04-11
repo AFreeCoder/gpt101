@@ -39,7 +39,6 @@ export async function verifyRedeemCode(code: string): Promise<{
 
   if (!row) return { valid: false, reason: 'not_found' };
   if (row.status === 'disabled') return { valid: false, reason: 'disabled' };
-  if (row.status === 'consuming') return { valid: false, reason: 'in_use' };
   if (row.status === 'consumed') return { valid: false, reason: 'already_used' };
 
   return { valid: true, productCode: row.productCode };
