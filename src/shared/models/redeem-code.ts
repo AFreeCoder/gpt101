@@ -39,7 +39,7 @@ export async function generateBatch(args: {
   await db().transaction(async (tx: any) => {
     await tx.insert(redeemCodeBatch).values({
       id: batchId,
-      title: args.title,
+      title,
       productCode: args.productCode,
       memberType: args.memberType,
       count: args.count,
