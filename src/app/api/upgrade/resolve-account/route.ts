@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       email: account.email,
       accountId: account.accountId,
       currentPlan: account.currentPlan,
+      accessToken: account.accessToken, // 传回前端，submit 时一并提交
     });
   } catch (err: any) {
     return respErr(err.message || '解析账号失败');

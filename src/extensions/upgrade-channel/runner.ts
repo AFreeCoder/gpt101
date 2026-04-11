@@ -14,6 +14,7 @@ import {
 
 // 确保所有 adapter 被注册（side-effect import）
 import './adapters/mock';
+import './adapters/987ai';
 
 export interface RunTaskInput {
   taskId: string;

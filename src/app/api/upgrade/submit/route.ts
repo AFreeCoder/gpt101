@@ -5,7 +5,7 @@ import { submitUpgradeTask } from '@/shared/services/upgrade-task';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { code, sessionToken, chatgptEmail, chatgptAccountId, source, utm_source, utm_medium, utm_campaign } = body;
+    const { code, sessionToken, chatgptEmail, chatgptAccountId, chatgptCurrentPlan, source, utm_source, utm_medium, utm_campaign } = body;
 
     if (!code) return respErr('请输入卡密');
     if (!sessionToken) return respErr('请输入 session token');
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       sessionToken,
       chatgptEmail,
       chatgptAccountId,
+      chatgptCurrentPlan,
       clientIp,
       userAgent,
       metadata: Object.keys(metadata).length > 0 ? metadata : undefined,

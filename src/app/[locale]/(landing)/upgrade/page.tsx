@@ -14,6 +14,8 @@ export default function UpgradePage() {
   const [productCode, setProductCode] = useState('');
   const [accountEmail, setAccountEmail] = useState('');
   const [accountId, setAccountId] = useState('');
+  const [currentPlan, setCurrentPlan] = useState('');
+  const [accessToken, setAccessToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -58,6 +60,8 @@ export default function UpgradePage() {
       }
       setAccountEmail(data.data.email);
       setAccountId(data.data.accountId);
+      setCurrentPlan(data.data.currentPlan || '');
+      setAccessToken(data.data.accessToken || sessionToken.trim());
       setStep(3);
     } catch {
       setError('网络错误，请重试');
@@ -76,9 +80,10 @@ export default function UpgradePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: code.trim(),
-          sessionToken: sessionToken.trim(),
+          sessionToken: accessToken,
           chatgptEmail: accountEmail,
           chatgptAccountId: accountId,
+          chatgptCurrentPlan: currentPlan,
           source,
           utm_source: searchParams.get('utm_source') || '',
           utm_medium: searchParams.get('utm_medium') || '',
@@ -218,6 +223,12 @@ export default function UpgradePage() {
               <span className="text-gray-500">ChatGPT 账号</span>
               <span className="font-medium">{accountEmail}</span>
             </div>
+            {currentPlan && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">当前会员</span>
+                <span className="font-medium">{currentPlan}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">卡密</span>
               <span className="font-mono text-xs">{code}</span>

@@ -50,10 +50,48 @@ export async function resolveAccount(sessionToken: string): Promise<{
   email: string;
   accountId: string;
   currentPlan?: string;
+  accessToken?: string;
 }> {
-  // TODO: 调用 ChatGPT API 解析 session token
-  // 当前占位实现，需要根据实际 API 替换
-  throw new Error('resolveAccount not implemented yet - need ChatGPT API integration');
+  // 用户可能提交纯 accessToken 字符串，也可能提交完整的 JSON
+  let parsed: any = null;
+
+  try {
+    parsed = JSON.parse(sessionToken);
+  } catch {
+    // 不是 JSON，当作纯 accessToken 处理
+  }
+
+  if (parsed && typeof parsed === 'object') {
+    // JSON 格式：从中提取信息
+    const email = parsed.user?.email || '';
+    const accountId = parsed.account?.id || parsed.user?.id || '';
+    const currentPlan = parsed.account?.planType || '';
+    const accessToken = parsed.accessToken || '';
+
+    if (!email) {
+      throw new Error('无法从 Token 中解析出邮箱，请检查 Token 格式');
+    }
+
+    return { email, accountId, currentPlan, accessToken };
+  }
+
+  // 纯 accessToken 字符串：尝试解码 JWT payload 提取邮箱
+  try {
+    const parts = sessionToken.split('.');
+    if (parts.length === 3) {
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+      const profile = payload['https://api.openai.com/profile'] || {};
+      const auth = payload['https://api.openai.com/auth'] || {};
+      return {
+        email: profile.email || '',
+        accountId: auth.chatgpt_user_id || payload.sub || '',
+        currentPlan: auth.chatgpt_plan_type || '',
+        accessToken: sessionToken,
+      };
+    }
+  } catch {}
+
+  throw new Error('无法解析 Token，请粘贴完整的 Session Token 内容');
 }
 
 // --- Step 3: 提交升级任务 ---
@@ -63,6 +101,7 @@ export async function submitUpgradeTask(req: {
   sessionToken: string;
   chatgptEmail: string;
   chatgptAccountId?: string;
+  chatgptCurrentPlan?: string;
   clientIp?: string;
   userAgent?: string;
   metadata?: Record<string, string>;
@@ -84,9 +123,11 @@ export async function submitUpgradeTask(req: {
       redeemCodeId: result.codeId,
       redeemCodePlain: req.code.toUpperCase(),
       productCode: result.productCode,
+      memberType: result.memberType,
       sessionToken: req.sessionToken,
       chatgptEmail: req.chatgptEmail,
       chatgptAccountId: req.chatgptAccountId,
+      chatgptCurrentPlan: req.chatgptCurrentPlan,
       status: UpgradeTaskStatus.PENDING,
       clientIp: req.clientIp,
       userAgent: req.userAgent,
