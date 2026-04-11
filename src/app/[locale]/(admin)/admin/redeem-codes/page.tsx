@@ -30,6 +30,8 @@ export default function RedeemCodesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [actionLoading, setActionLoading] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [exportText, setExportText] = useState('');
 
   // 筛选参数
   const status = searchParams.get('status') || '';
@@ -116,14 +118,16 @@ export default function RedeemCodesPage() {
     setActionLoading(false);
   };
 
-  // 导出
+  // 导出：弹窗显示卡密文本
   const handleExport = () => {
-    const params = new URLSearchParams();
-    if (status) params.set('status', status);
-    if (productCode) params.set('productCode', productCode);
-    if (memberType) params.set('memberType', memberType);
-    if (batchId) params.set('batchId', batchId);
-    window.open(`/api/admin/redeem-codes/export?${params}`, '_blank');
+    const codeTexts = codes.map((c) => c.code).join('\n');
+    setExportText(codeTexts);
+    setShowExport(true);
+  };
+
+  const handleCopyExport = async () => {
+    await navigator.clipboard.writeText(exportText);
+    alert('已复制全部卡密');
   };
 
   return (
@@ -265,6 +269,39 @@ export default function RedeemCodesPage() {
           {page > 1 && <a href={buildUrl({ page: String(page - 1) })} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">上一页</a>}
           <span className="px-3 py-1 text-sm text-gray-500">第 {page} 页，共 {Math.ceil(total / 30)} 页</span>
           {page * 30 < total && <a href={buildUrl({ page: String(page + 1) })} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">下一页</a>}
+        </div>
+      )}
+
+      {/* 导出弹窗 */}
+      {showExport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowExport(false)} />
+          <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">导出卡密（{codes.length} 张）</h3>
+              <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <textarea
+              readOnly
+              value={exportText}
+              rows={12}
+              className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-sm"
+            />
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={handleCopyExport}
+                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                一键复制全部
+              </button>
+              <button
+                onClick={() => setShowExport(false)}
+                className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
