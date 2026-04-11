@@ -14,8 +14,8 @@ interface Task {
   sessionToken: string;
   status: string;
   attemptCount: number;
-  successChannelId: string | null;
-  successChannelCardkeyId: string | null;
+  successChannelName: string;
+  successChannelCardkey: string;
   lastError: string | null;
   resultMessage: string | null;
   createdAt: string;
@@ -37,6 +37,7 @@ export default function UpgradeTasksPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [viewToken, setViewToken] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -53,7 +54,6 @@ export default function UpgradeTasksPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // 管理操作
   const handleAction = async (taskId: string, action: 'retry' | 'cancel' | 'markSuccess') => {
     const labels = { retry: '重试', cancel: '取消', markSuccess: '标记成功' };
     if (!confirm(`确定${labels[action]}此任务？`)) return;
@@ -104,28 +104,40 @@ export default function UpgradeTasksPage() {
               <th className="px-3 py-2 text-left">任务编号</th>
               <th className="px-3 py-2 text-left">产品/会员</th>
               <th className="px-3 py-2 text-left">本站卡密</th>
+              <th className="px-3 py-2 text-left">渠道</th>
+              <th className="px-3 py-2 text-left">渠道卡密</th>
               <th className="px-3 py-2 text-left">用户邮箱</th>
               <th className="px-3 py-2 text-left">当前会员</th>
+              <th className="px-3 py-2 text-left">Session Token</th>
               <th className="px-3 py-2 text-left">升级状态</th>
               <th className="px-3 py-2 text-left">升级结果</th>
-              <th className="px-3 py-2 text-left">尝试次数</th>
               <th className="px-3 py-2 text-left">创建时间</th>
               <th className="px-3 py-2 text-left">操作</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={10} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={12} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
             ) : tasks.length === 0 ? (
-              <tr><td colSpan={10} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={12} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
             ) : (
               tasks.map((t) => (
                 <tr key={t.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2 font-mono text-xs">{t.taskNo}</td>
                   <td className="px-3 py-2 text-xs">{getProductMemberLabel(t.productCode, t.memberType)}</td>
                   <td className="px-3 py-2 font-mono text-xs">{t.redeemCodePlain}</td>
+                  <td className="px-3 py-2 text-xs">{t.successChannelName || '-'}</td>
+                  <td className="px-3 py-2 font-mono text-xs max-w-20 truncate" title={t.successChannelCardkey}>
+                    {t.successChannelCardkey ? t.successChannelCardkey.slice(0, 8) + '...' : '-'}
+                  </td>
                   <td className="px-3 py-2 text-xs">{t.chatgptEmail}</td>
                   <td className="px-3 py-2 text-xs text-gray-500">{t.chatgptCurrentPlan || '-'}</td>
+                  <td className="px-3 py-2">
+                    <button onClick={() => setViewToken(t.sessionToken)}
+                      className="text-xs text-blue-600 hover:underline">
+                      查看
+                    </button>
+                  </td>
                   <td className="px-3 py-2">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[t.status]?.color || ''}`}>
                       {STATUS_MAP[t.status]?.label || t.status}
@@ -134,7 +146,6 @@ export default function UpgradeTasksPage() {
                   <td className="px-3 py-2 text-xs text-gray-500 max-w-48 truncate" title={t.resultMessage || t.lastError || ''}>
                     {t.resultMessage || t.lastError || '-'}
                   </td>
-                  <td className="px-3 py-2 text-center">{t.attemptCount}</td>
                   <td className="px-3 py-2 text-xs text-gray-500">{new Date(t.createdAt).toLocaleString('zh-CN')}</td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
@@ -162,6 +173,27 @@ export default function UpgradeTasksPage() {
           {page > 1 && <button onClick={() => setPage(page - 1)} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">上一页</button>}
           <span className="px-3 py-1 text-sm text-gray-500">第 {page} 页，共 {Math.ceil(total / 30)} 页</span>
           {page * 30 < total && <button onClick={() => setPage(page + 1)} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">下一页</button>}
+        </div>
+      )}
+
+      {/* Session Token 查看弹窗 */}
+      {viewToken && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setViewToken('')} />
+          <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Session Token</h3>
+              <button onClick={() => setViewToken('')} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <textarea readOnly value={viewToken} rows={8}
+              className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-xs break-all" />
+            <div className="mt-4 flex gap-3">
+              <button onClick={async () => { await navigator.clipboard.writeText(viewToken); alert('已复制'); }}
+                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700">复制</button>
+              <button onClick={() => setViewToken('')}
+                className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50">关闭</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
