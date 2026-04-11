@@ -119,8 +119,20 @@
         },
         {
           "title": "升级任务",
-          "url": "/admin/upgrade-tasks",
-          "icon": "Zap"
+          "icon": "Zap",
+          "is_expand": true,
+          "children": [
+            {
+              "title": "任务结果",
+              "url": "/admin/upgrade-tasks",
+              "icon": "CheckCircle"
+            },
+            {
+              "title": "任务记录",
+              "url": "/admin/upgrade-task-attempts",
+              "icon": "List"
+            }
+          ]
         },
         {
           "title": "发票管理",
