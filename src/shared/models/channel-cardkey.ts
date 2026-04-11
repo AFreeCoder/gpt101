@@ -86,6 +86,13 @@ export async function importCardkeys(args: {
   let importedCount = 0;
   let skippedCount = 0;
 
+  // 先查出该渠道下已有的卡密，用于去重
+  const existing = await db()
+    .select({ cardkey: channelCardkey.cardkey })
+    .from(channelCardkey)
+    .where(eq(channelCardkey.channelId, args.channelId));
+  const existingSet = new Set(existing.map((e) => e.cardkey));
+
   await db().transaction(async (tx: any) => {
     for (const key of args.cardkeys) {
       const trimmed = key.trim();
@@ -93,19 +100,20 @@ export async function importCardkeys(args: {
         skippedCount++;
         continue;
       }
-      try {
-        await tx.insert(channelCardkey).values({
-          id: getUuid(),
-          channelId: args.channelId,
-          cardkey: trimmed,
-          productCode: args.productCode,
-          memberType: args.memberType,
-          status: ChannelCardkeyStatus.AVAILABLE,
-        });
-        importedCount++;
-      } catch {
+      if (existingSet.has(trimmed)) {
         skippedCount++;
+        continue;
       }
+      await tx.insert(channelCardkey).values({
+        id: getUuid(),
+        channelId: args.channelId,
+        cardkey: trimmed,
+        productCode: args.productCode,
+        memberType: args.memberType,
+        status: ChannelCardkeyStatus.AVAILABLE,
+      });
+      existingSet.add(trimmed); // 防止同一批导入内重复
+      importedCount++;
     }
   });
 
