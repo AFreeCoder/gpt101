@@ -51,15 +51,15 @@ export default function GenerateRedeemCodesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <h1 className="mb-6 text-2xl font-bold">批量生成卡密</h1>
+    <div className="p-6">
+      <h2 className="mb-6 text-lg font-semibold">批量生成卡密</h2>
 
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       {!result ? (
-        <div className="space-y-4 rounded-xl border p-6">
+        <div className="max-w-xl space-y-4 rounded-xl border bg-card p-6">
           <div>
             <label className="mb-1 block text-sm font-medium">产品类型</label>
             <select
@@ -132,7 +132,7 @@ export default function GenerateRedeemCodesPage() {
           </button>
         </div>
       ) : (
-        <div className="rounded-xl border p-6">
+        <div className="max-w-xl rounded-xl border bg-card p-6">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-green-700">✓ 生成成功</h2>
