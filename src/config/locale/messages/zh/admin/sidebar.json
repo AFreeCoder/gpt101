@@ -101,9 +101,21 @@
           ]
         },
         {
-          "title": "渠道管理",
-          "url": "/admin/upgrade-channels",
-          "icon": "Route"
+          "title": "上游渠道",
+          "icon": "Route",
+          "is_expand": true,
+          "children": [
+            {
+              "title": "渠道管理",
+              "url": "/admin/upgrade-channels",
+              "icon": "List"
+            },
+            {
+              "title": "卡密管理",
+              "url": "/admin/channel-cardkeys",
+              "icon": "Key"
+            }
+          ]
         },
         {
           "title": "升级任务",
