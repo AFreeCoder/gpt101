@@ -11,19 +11,14 @@ export async function GET(req: Request) {
 
   try {
     const url = new URL(req.url);
-    const channelId = url.searchParams.get('channelId');
-
-    if (!channelId) {
-      return respErr('缺少 channelId');
-    }
 
     const result = await getCardkeyList({
-      channelId,
+      channelId: url.searchParams.get('channelId') || undefined,
       productCode: url.searchParams.get('productCode') || undefined,
       memberType: url.searchParams.get('memberType') || undefined,
       status: url.searchParams.get('status') || undefined,
       page: Number(url.searchParams.get('page')) || 1,
-      pageSize: Number(url.searchParams.get('pageSize')) || 20,
+      pageSize: Number(url.searchParams.get('pageSize')) || 30,
     });
 
     return respData(result);

@@ -72,10 +72,10 @@ export default function ChannelCardkeysPage() {
 
   // 加载卡密
   const fetchData = useCallback(async () => {
-    if (!channelId) { setCardkeys([]); setTotal(0); setLoading(false); return; }
     setLoading(true);
     try {
-      const params = new URLSearchParams({ channelId, page: String(page), pageSize: '30' });
+      const params = new URLSearchParams({ page: String(page), pageSize: '30' });
+      if (channelId) params.set('channelId', channelId);
       if (productCode) params.set('productCode', productCode);
       if (memberType) params.set('memberType', memberType);
       if (statusFilter) params.set('status', statusFilter);
@@ -215,10 +215,7 @@ export default function ChannelCardkeysPage() {
         </div>
       )}
 
-      {!channelId ? (
-        <div className="rounded-lg border py-16 text-center text-gray-400">请先选择一个渠道</div>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
@@ -257,7 +254,6 @@ export default function ChannelCardkeysPage() {
             </tbody>
           </table>
         </div>
-      )}
 
       {/* 分页 */}
       {total > 30 && (

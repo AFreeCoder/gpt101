@@ -4,7 +4,7 @@ import { PERMISSIONS, requirePermission } from '@/core/rbac';
 import { Header, Main, MainHeader } from '@/shared/blocks/dashboard';
 import { TableCard } from '@/shared/blocks/table';
 import { getBatchById, getBatchStats, getCodeList } from '@/shared/models/redeem-code';
-import { getProductMemberLabel } from '@/shared/lib/redeem-code';
+import { getProductMemberLabel, STATUS_LABELS, STATUS_COLORS } from '@/shared/lib/redeem-code';
 import { Crumb } from '@/shared/types/blocks/common';
 import { type Table } from '@/shared/types/blocks/table';
 
@@ -49,7 +49,15 @@ export default async function BatchDetailPage({
   const table: Table = {
     columns: [
       { name: 'code', title: '卡密', type: 'copy' },
-      { name: 'status', title: '状态' },
+      {
+        name: 'status',
+        title: '状态',
+        callback: (item) => (
+          <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[item.status] || 'bg-gray-100 text-gray-600'}`}>
+            {STATUS_LABELS[item.status] || item.status}
+          </span>
+        ),
+      },
       { name: 'createdAt', title: '创建时间', type: 'time' },
       { name: 'usedAt', title: '使用时间', type: 'time', placeholder: '-' },
     ],
@@ -81,8 +89,8 @@ export default async function BatchDetailPage({
             <div className="text-xs text-gray-500">使用进度</div>
             <div className="mt-1 font-medium">
               {stats.map((s) => (
-                <span key={s.status} className="mr-2 text-xs">
-                  {s.status}: {s.count}
+                <span key={s.status} className={`mr-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[s.status] || ''}`}>
+                  {STATUS_LABELS[s.status] || s.status}: {s.count}
                 </span>
               ))}
             </div>

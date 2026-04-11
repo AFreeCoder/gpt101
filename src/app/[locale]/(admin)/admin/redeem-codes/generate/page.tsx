@@ -7,7 +7,7 @@ export default function GenerateRedeemCodesPage() {
   const [productCode, setProductCode] = useState('');
   const [memberType, setMemberType] = useState('');
   const [count, setCount] = useState(10);
-  const [unitPrice, setUnitPrice] = useState('179.00');
+  const [unitPrice, setUnitPrice] = useState('');
   const [loading, setLoading] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [resultCodes, setResultCodes] = useState<string[]>([]);
@@ -106,7 +106,7 @@ export default function GenerateRedeemCodesPage() {
             type="text"
             value={unitPrice}
             onChange={(e) => setUnitPrice(e.target.value)}
-            placeholder="179.00"
+            placeholder="请输入单价"
             className="w-full rounded-lg border px-3 py-2 text-sm"
           />
         </div>

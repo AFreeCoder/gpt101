@@ -16,7 +16,7 @@ export enum ChannelCardkeyStatus {
 // --- 查询 ---
 
 export async function getCardkeyList(args: {
-  channelId: string;
+  channelId?: string;
   page?: number;
   pageSize?: number;
   status?: string;
@@ -25,7 +25,8 @@ export async function getCardkeyList(args: {
 }) {
   const { page = 1, pageSize = 20 } = args;
   const offset = (page - 1) * pageSize;
-  const conditions = [eq(channelCardkey.channelId, args.channelId)];
+  const conditions = [];
+  if (args.channelId) conditions.push(eq(channelCardkey.channelId, args.channelId));
 
   if (args.status) conditions.push(eq(channelCardkey.status, args.status));
   if (args.productCode) conditions.push(eq(channelCardkey.productCode, args.productCode));

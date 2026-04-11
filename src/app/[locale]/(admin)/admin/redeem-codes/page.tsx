@@ -136,7 +136,7 @@ export default function RedeemCodesPage() {
         <h2 className="text-lg font-semibold">卡密列表</h2>
         <div className="flex gap-2">
           <button onClick={handleExport} className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50">
-            导出 CSV
+            导出
           </button>
         </div>
       </div>

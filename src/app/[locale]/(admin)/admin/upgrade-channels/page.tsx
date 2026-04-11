@@ -24,7 +24,6 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 const defaultForm = {
   code: '',
   name: '',
-  driver: '',
   supportedProducts: [] as string[],
   status: 'active',
   priority: 100,
@@ -65,7 +64,6 @@ export default function UpgradeChannelsPage() {
     setForm({
       code: ch.code,
       name: ch.name,
-      driver: ch.driver,
       supportedProducts: ch.supportedProducts.split(',').map((s) => s.trim()).filter(Boolean),
       status: ch.status,
       priority: ch.priority,
@@ -80,7 +78,6 @@ export default function UpgradeChannelsPage() {
     setError('');
     if (!form.name) { setError('请输入渠道名称'); return; }
     if (!form.code) { setError('请输入渠道代码'); return; }
-    if (!form.driver) { setError('请输入渠道标识'); return; }
     if (form.supportedProducts.length === 0) { setError('请选择支持的产品'); return; }
 
     setSaving(true);
@@ -90,7 +87,7 @@ export default function UpgradeChannelsPage() {
         ...(editingId ? { id: editingId } : {}),
         code: form.code,
         name: form.name,
-        driver: form.driver,
+        driver: form.code,
         supportedProducts: form.supportedProducts.join(','),
         status: form.status,
         priority: form.priority,
@@ -148,7 +145,6 @@ export default function UpgradeChannelsPage() {
             <tr>
               <th className="px-3 py-2 text-left">名称</th>
               <th className="px-3 py-2 text-left">代码</th>
-              <th className="px-3 py-2 text-left">渠道标识</th>
               <th className="px-3 py-2 text-left">状态</th>
               <th className="px-3 py-2 text-left">优先级</th>
               <th className="px-3 py-2 text-left">支持产品</th>
@@ -159,15 +155,14 @@ export default function UpgradeChannelsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
             ) : channels.length === 0 ? (
-              <tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">暂无渠道</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">暂无渠道</td></tr>
             ) : (
               channels.map((ch) => (
                 <tr key={ch.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2 font-medium">{ch.name}</td>
                   <td className="px-3 py-2 font-mono text-xs">{ch.code}</td>
-                  <td className="px-3 py-2 text-xs text-gray-500">{ch.driver}</td>
                   <td className="px-3 py-2">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[ch.status]?.color || ''}`}>
                       {STATUS_MAP[ch.status]?.label || ch.status}
@@ -219,12 +214,6 @@ export default function UpgradeChannelsPage() {
                 <label className="mb-1 block text-sm font-medium">渠道代码{editingId && <span className="text-gray-400">（不可修改）</span>}</label>
                 <input type="text" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })}
                   disabled={!!editingId} placeholder="如：987ai" className="w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-50" />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">渠道标识<span className="text-gray-400 text-xs ml-1">（对应代码中的 adapter 名称）</span></label>
-                <input type="text" value={form.driver} onChange={(e) => setForm({ ...form, driver: e.target.value })}
-                  placeholder="如：mock、987ai" className="w-full rounded-lg border px-3 py-2 text-sm" />
               </div>
 
               <div>
