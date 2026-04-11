@@ -20,12 +20,16 @@ export async function getCardkeyList(args: {
   page?: number;
   pageSize?: number;
   status?: string;
+  productCode?: string;
+  memberType?: string;
 }) {
   const { page = 1, pageSize = 20 } = args;
   const offset = (page - 1) * pageSize;
   const conditions = [eq(channelCardkey.channelId, args.channelId)];
 
   if (args.status) conditions.push(eq(channelCardkey.status, args.status));
+  if (args.productCode) conditions.push(eq(channelCardkey.productCode, args.productCode));
+  if (args.memberType) conditions.push(eq(channelCardkey.memberType, args.memberType));
 
   const where = and(...conditions);
 
@@ -76,6 +80,7 @@ export async function getAvailableCount(
 export async function importCardkeys(args: {
   channelId: string;
   productCode: string;
+  memberType: string;
   cardkeys: string[];
 }): Promise<{ importedCount: number; skippedCount: number }> {
   let importedCount = 0;
@@ -94,6 +99,7 @@ export async function importCardkeys(args: {
           channelId: args.channelId,
           cardkey: trimmed,
           productCode: args.productCode,
+          memberType: args.memberType,
           status: ChannelCardkeyStatus.AVAILABLE,
         });
         importedCount++;
@@ -199,7 +205,10 @@ export async function batchDeleteCardkeys(cardkeyIds: string[]) {
     .where(
       and(
         inArray(channelCardkey.id, cardkeyIds),
-        eq(channelCardkey.status, ChannelCardkeyStatus.AVAILABLE)
+        inArray(channelCardkey.status, [
+          ChannelCardkeyStatus.AVAILABLE,
+          ChannelCardkeyStatus.DISABLED,
+        ])
       )
     );
 }

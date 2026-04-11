@@ -626,6 +626,7 @@ export const channelCardkey = table(
     channelId: text('channel_id').notNull(),
     cardkey: text('cardkey').notNull(),
     productCode: text('product_code').notNull(),
+    memberType: text('member_type').notNull(),
     status: text('status').notNull(),
     lockedByTaskId: text('locked_by_task_id'),
     usedByAttemptId: text('used_by_attempt_id'),
