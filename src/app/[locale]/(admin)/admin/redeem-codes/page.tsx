@@ -1,109 +1,272 @@
-import { setRequestLocale } from 'next-intl/server';
+'use client';
 
-import { PERMISSIONS, requirePermission } from '@/core/rbac';
-import { Header, Main, MainHeader } from '@/shared/blocks/dashboard';
-import { TableCard } from '@/shared/blocks/table';
-import { getCodeList } from '@/shared/models/redeem-code';
-import { getProductMemberLabel, PRODUCT_TYPES } from '@/shared/lib/redeem-code';
-import { Crumb, Tab } from '@/shared/types/blocks/common';
-import { type Table } from '@/shared/types/blocks/table';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import {
+  PRODUCT_TYPES,
+  getMemberTypes,
+  getProductMemberLabel,
+  STATUS_LABELS,
+  STATUS_COLORS,
+} from '@/shared/lib/redeem-code';
 
-export default async function RedeemCodesPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{
-    page?: number;
-    pageSize?: number;
-    status?: string;
-    productCode?: string;
-    memberType?: string;
-    search?: string;
-  }>;
-}) {
-  const { locale } = await params;
-  setRequestLocale(locale);
+interface RedeemCode {
+  id: string;
+  code: string;
+  productCode: string;
+  memberType: string;
+  status: string;
+  batchId: string;
+  createdAt: string;
+  usedAt: string | null;
+}
 
-  await requirePermission({
-    code: PERMISSIONS.REDEEM_READ,
-    redirectUrl: '/admin/no-permission',
-    locale,
-  });
+export default function RedeemCodesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const sp = await searchParams;
-  const page = sp.page || 1;
-  const limit = sp.pageSize || 30;
+  const [codes, setCodes] = useState<RedeemCode[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const crumbs: Crumb[] = [
-    { title: '管理后台', url: '/admin' },
-    { title: '卡密列表', is_active: true },
-  ];
+  // 筛选参数
+  const status = searchParams.get('status') || '';
+  const productCode = searchParams.get('productCode') || '';
+  const memberType = searchParams.get('memberType') || '';
+  const batchId = searchParams.get('batchId') || '';
+  const search = searchParams.get('search') || '';
+  const page = Number(searchParams.get('page')) || 1;
 
-  const tabs: Tab[] = [
-    { name: 'all', title: '全部', url: '/admin/redeem-codes', is_active: !sp.status },
-    { name: 'available', title: '可用', url: '/admin/redeem-codes?status=available', is_active: sp.status === 'available' },
-    { name: 'consumed', title: '已使用', url: '/admin/redeem-codes?status=consumed', is_active: sp.status === 'consumed' },
-    { name: 'disabled', title: '已禁用', url: '/admin/redeem-codes?status=disabled', is_active: sp.status === 'disabled' },
-  ];
+  const memberTypes = productCode ? getMemberTypes(productCode) : [];
 
-  const { items, total } = await getCodeList({
-    page,
-    pageSize: limit,
-    status: sp.status,
-    productCode: sp.productCode,
-    memberType: sp.memberType,
-    search: sp.search,
-  });
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (status) params.set('status', status);
+      if (productCode) params.set('productCode', productCode);
+      if (memberType) params.set('memberType', memberType);
+      if (batchId) params.set('batchId', batchId);
+      if (search) params.set('search', search);
+      params.set('page', String(page));
+      params.set('pageSize', '30');
 
-  const table: Table = {
-    columns: [
-      { name: 'code', title: '卡密', type: 'copy' },
-      {
-        name: 'productCode',
-        title: '产品/会员',
-        callback: (item) => (
-          <span>{getProductMemberLabel(item.productCode, item.memberType)}</span>
-        ),
-      },
-      { name: 'status', title: '状态' },
-      { name: 'batchId', title: '批次' },
-      { name: 'createdAt', title: '创建时间', type: 'time' },
-      { name: 'usedAt', title: '使用时间', type: 'time', placeholder: '-' },
-    ],
-    data: items,
-    pagination: { total, page, limit },
+      const res = await fetch(`/api/admin/redeem-codes/list?${params}`);
+      const data = await res.json();
+      if (data.code === 0) {
+        setCodes(data.data.items);
+        setTotal(data.data.total);
+      }
+    } catch {}
+    setLoading(false);
+  }, [status, productCode, memberType, batchId, search, page]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // 构建筛选 URL
+  const buildUrl = (overrides: Record<string, string>) => {
+    const params = new URLSearchParams();
+    const merged = { status, productCode, memberType, batchId, search, ...overrides };
+    Object.entries(merged).forEach(([k, v]) => { if (v) params.set(k, v); });
+    return `/admin/redeem-codes?${params}`;
+  };
+
+  // 全选/取消全选
+  const toggleAll = () => {
+    if (selectedIds.size === codes.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(codes.map((c) => c.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelectedIds(next);
+  };
+
+  // 批量操作
+  const handleBatchAction = async (action: 'disable' | 'delete') => {
+    if (selectedIds.size === 0) return;
+    const label = action === 'disable' ? '禁用' : '删除';
+    if (!confirm(`确定${label}选中的 ${selectedIds.size} 张卡密？`)) return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/admin/redeem-codes/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      const data = await res.json();
+      if (data.code === 0) {
+        setSelectedIds(new Set());
+        fetchData();
+      } else {
+        alert(data.message);
+      }
+    } catch {
+      alert('操作失败');
+    }
+    setActionLoading(false);
+  };
+
+  // 导出
+  const handleExport = () => {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (productCode) params.set('productCode', productCode);
+    if (memberType) params.set('memberType', memberType);
+    if (batchId) params.set('batchId', batchId);
+    window.open(`/api/admin/redeem-codes/export?${params}`, '_blank');
   };
 
   return (
-    <>
-      <Header crumbs={crumbs} />
-      <Main>
-        <MainHeader title="卡密列表" tabs={tabs} />
-
-        {/* 筛选条件 */}
-        <div className="mb-4 flex flex-wrap gap-2 px-4">
-          {PRODUCT_TYPES.map((p) => (
-            <a
-              key={p.code}
-              href={`/admin/redeem-codes?productCode=${p.code}${sp.status ? `&status=${sp.status}` : ''}`}
-              className={`rounded-full px-3 py-1 text-xs ${sp.productCode === p.code ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-            >
-              {p.label}
-            </a>
-          ))}
-          {sp.productCode && (
-            <a
-              href={`/admin/redeem-codes${sp.status ? `?status=${sp.status}` : ''}`}
-              className="rounded-full px-3 py-1 text-xs bg-red-100 text-red-600 hover:bg-red-200"
-            >
-              清除筛选
-            </a>
-          )}
+    <div className="p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">卡密列表</h2>
+        <div className="flex gap-2">
+          <button onClick={handleExport} className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50">
+            导出 CSV
+          </button>
         </div>
+      </div>
 
-        <TableCard table={table} />
-      </Main>
-    </>
+      {/* 状态 Tab */}
+      <div className="mb-4 flex gap-1 border-b">
+        {[
+          { key: '', label: '全部' },
+          { key: 'available', label: '可用' },
+          { key: 'consumed', label: '已使用' },
+          { key: 'disabled', label: '已禁用' },
+        ].map((tab) => (
+          <a
+            key={tab.key}
+            href={buildUrl({ status: tab.key, page: '' })}
+            className={`px-4 py-2 text-sm ${status === tab.key ? 'border-b-2 border-blue-600 font-medium text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            {tab.label}
+          </a>
+        ))}
+      </div>
+
+      {/* 筛选条件 */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {/* 产品筛选 */}
+        {PRODUCT_TYPES.map((p) => (
+          <a
+            key={p.code}
+            href={buildUrl({ productCode: productCode === p.code ? '' : p.code, memberType: '', page: '' })}
+            className={`rounded-full px-3 py-1 text-xs ${productCode === p.code ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+          >
+            {p.label}
+          </a>
+        ))}
+
+        {/* 会员类型筛选（选了产品后显示） */}
+        {productCode && memberTypes.length > 0 && (
+          <>
+            <span className="text-xs text-gray-400 leading-6">|</span>
+            {memberTypes.map((m) => (
+              <a
+                key={m.code}
+                href={buildUrl({ memberType: memberType === m.code ? '' : m.code, page: '' })}
+                className={`rounded-full px-3 py-1 text-xs ${memberType === m.code ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                {m.label}
+              </a>
+            ))}
+          </>
+        )}
+
+        {(productCode || memberType) && (
+          <a href="/admin/redeem-codes" className="rounded-full px-3 py-1 text-xs bg-red-100 text-red-600 hover:bg-red-200">
+            清除筛选
+          </a>
+        )}
+      </div>
+
+      {/* 批量操作栏 */}
+      {selectedIds.size > 0 && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-2">
+          <span className="text-sm text-blue-700">已选 {selectedIds.size} 项</span>
+          <button
+            onClick={() => handleBatchAction('disable')}
+            disabled={actionLoading}
+            className="rounded bg-orange-500 px-3 py-1 text-xs text-white hover:bg-orange-600 disabled:opacity-50"
+          >
+            批量禁用
+          </button>
+          <button
+            onClick={() => handleBatchAction('delete')}
+            disabled={actionLoading}
+            className="rounded bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600 disabled:opacity-50"
+          >
+            批量删除
+          </button>
+          <button onClick={() => setSelectedIds(new Set())} className="text-xs text-gray-500 hover:text-gray-700">
+            取消选择
+          </button>
+        </div>
+      )}
+
+      {/* 表格 */}
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-3 py-2 text-left">
+                <input type="checkbox" checked={selectedIds.size === codes.length && codes.length > 0} onChange={toggleAll} />
+              </th>
+              <th className="px-3 py-2 text-left">卡密</th>
+              <th className="px-3 py-2 text-left">产品/会员</th>
+              <th className="px-3 py-2 text-left">状态</th>
+              <th className="px-3 py-2 text-left">批次</th>
+              <th className="px-3 py-2 text-left">创建时间</th>
+              <th className="px-3 py-2 text-left">使用时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
+            ) : codes.length === 0 ? (
+              <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
+            ) : (
+              codes.map((c) => (
+                <tr key={c.id} className="border-t hover:bg-gray-50">
+                  <td className="px-3 py-2">
+                    <input type="checkbox" checked={selectedIds.has(c.id)} onChange={() => toggleOne(c.id)} />
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs">{c.code}</td>
+                  <td className="px-3 py-2">{getProductMemberLabel(c.productCode, c.memberType)}</td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600'}`}>
+                      {STATUS_LABELS[c.status] || c.status}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-xs text-gray-500">{c.batchId}</td>
+                  <td className="px-3 py-2 text-xs text-gray-500">{new Date(c.createdAt).toLocaleString('zh-CN')}</td>
+                  <td className="px-3 py-2 text-xs text-gray-500">{c.usedAt ? new Date(c.usedAt).toLocaleString('zh-CN') : '-'}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 分页 */}
+      {total > 30 && (
+        <div className="mt-4 flex justify-center gap-2">
+          {page > 1 && <a href={buildUrl({ page: String(page - 1) })} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">上一页</a>}
+          <span className="px-3 py-1 text-sm text-gray-500">第 {page} 页，共 {Math.ceil(total / 30)} 页</span>
+          {page * 30 < total && <a href={buildUrl({ page: String(page + 1) })} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">下一页</a>}
+        </div>
+      )}
+    </div>
   );
 }

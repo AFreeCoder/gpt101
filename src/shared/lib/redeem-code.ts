@@ -74,23 +74,38 @@ export function getProductMemberLabel(productCode: string, memberType: string): 
 
 // --- 卡密生成 ---
 
+const CODE_CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const CODE_BODY_LENGTH = 32;
+
 /**
  * 生成单个卡密
- * 格式：GPT101-XXXX-XXXX （统一前缀 + 8 位随机字符）
+ * 格式：GPT101-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX（前缀 + 32 位大写字母+数字）
  */
 export function generateRedeemCode(): string {
-  let code = '';
-  for (let i = 0; i < 8; i++) {
-    code += CHARSET[Math.floor(Math.random() * CHARSET.length)];
+  let body = '';
+  for (let i = 0; i < CODE_BODY_LENGTH; i++) {
+    body += CODE_CHARSET[Math.floor(Math.random() * CODE_CHARSET.length)];
   }
-  return `GPT101-${code.slice(0, 4)}-${code.slice(4)}`;
+  return `GPT101-${body}`;
 }
 
 /**
  * 校验卡密格式是否合法（不查库）
  */
 export function validateRedeemCodeFormat(code: string): boolean {
-  return /^GPT101-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{4}$/.test(
-    code.toUpperCase()
-  );
+  return /^GPT101-[A-Z0-9]{32}$/.test(code.toUpperCase());
 }
+
+// --- 状态显示 ---
+
+export const STATUS_LABELS: Record<string, string> = {
+  available: '可用',
+  consumed: '已使用',
+  disabled: '已禁用',
+};
+
+export const STATUS_COLORS: Record<string, string> = {
+  available: 'text-green-600 bg-green-50',
+  consumed: 'text-gray-500 bg-gray-100',
+  disabled: 'text-red-600 bg-red-50',
+};
