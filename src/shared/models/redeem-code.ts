@@ -30,10 +30,10 @@ export async function generateBatch(args: {
   memberType: string;
   count: number;
   unitPrice: string; // 元，如 "179.00"
-  title: string;
   createdBy?: string;
-}): Promise<{ batchId: string; codes: string[] }> {
+}): Promise<{ batchId: string; title: string; codes: string[] }> {
   const batchId = generateBatchId();
+  const title = `${args.productCode}-${args.memberType}-${batchId}`;
   const codes: string[] = [];
 
   await db().transaction(async (tx: any) => {
@@ -45,6 +45,7 @@ export async function generateBatch(args: {
       count: args.count,
       unitPrice: args.unitPrice,
       createdBy: args.createdBy,
+      note: args.createdBy ? `由 ${args.createdBy} 创建` : undefined,
     });
 
     for (let i = 0; i < args.count; i++) {
@@ -76,7 +77,7 @@ export async function generateBatch(args: {
     }
   });
 
-  return { batchId, codes };
+  return { batchId, title, codes };
 }
 
 export async function getBatchList(page: number = 1, pageSize: number = 20) {

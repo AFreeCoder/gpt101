@@ -8,9 +8,8 @@ export default function GenerateRedeemCodesPage() {
   const [memberType, setMemberType] = useState('');
   const [count, setCount] = useState(10);
   const [unitPrice, setUnitPrice] = useState('179.00');
-  const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ batchId: string; codes: string[] } | null>(null);
+  const [result, setResult] = useState<{ batchId: string; title: string; codes: string[] } | null>(null);
   const [error, setError] = useState('');
 
   const memberTypes = productCode ? getMemberTypes(productCode) : [];
@@ -21,7 +20,6 @@ export default function GenerateRedeemCodesPage() {
 
     if (!productCode) { setError('请选择产品类型'); return; }
     if (!memberType) { setError('请选择会员类型'); return; }
-    if (!title.trim()) { setError('请输入批次名称'); return; }
     if (count < 1 || count > 5000) { setError('数量范围 1-5000'); return; }
 
     setLoading(true);
@@ -29,7 +27,7 @@ export default function GenerateRedeemCodesPage() {
       const res = await fetch('/api/admin/redeem-codes/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productCode, memberType, count, unitPrice, title: title.trim() }),
+        body: JSON.stringify({ productCode, memberType, count, unitPrice }),
       });
       const data = await res.json();
       if (data.code !== 0) {
@@ -55,7 +53,7 @@ export default function GenerateRedeemCodesPage() {
       <h2 className="mb-6 text-lg font-semibold">批量生成卡密</h2>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+        <div className="mb-4 max-w-xl rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       {!result ? (
@@ -87,17 +85,6 @@ export default function GenerateRedeemCodesPage() {
                 <option key={m.code} value={m.code}>{m.label}</option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">批次名称（不可重复）</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="如：2026-04 GPT Plus 第一批"
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            />
           </div>
 
           <div>
@@ -137,7 +124,7 @@ export default function GenerateRedeemCodesPage() {
             <div>
               <h2 className="text-lg font-semibold text-green-700">✓ 生成成功</h2>
               <p className="text-sm text-gray-500">
-                批次 ID: {result.batchId}，共 {result.codes.length} 张
+                批次: {result.title}，共 {result.codes.length} 张
               </p>
             </div>
             <button
@@ -153,7 +140,7 @@ export default function GenerateRedeemCodesPage() {
             </pre>
           </div>
           <button
-            onClick={() => { setResult(null); setTitle(''); }}
+            onClick={() => setResult(null)}
             className="mt-4 w-full rounded-lg border py-2 text-sm hover:bg-gray-50"
           >
             继续生成
