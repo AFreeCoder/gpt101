@@ -1,16 +1,25 @@
 import type { UpgradeChannelAdapter, UpgradeRequest, UpgradeResult } from '../types';
 import { registerAdapter } from '../registry';
 
-const BASE_URL = 'https://987ai.vip';
-const TIMEOUT_MS = 60_000; // 单次请求超时
-const POLL_INTERVAL_MS = 3_000; // 轮询间隔
-const MAX_POLL_COUNT = 200; // 最大轮询次数
+// 从前端代码确认的实际 API 配置
+const BASE_URL = 'https://api.987ai.vip/api';
+const REQUEST_TIMEOUT_MS = 30_000; // 30 秒请求超时
+const POLL_INTERVAL_MS = 3_000;    // 3 秒轮询间隔
+const MAX_POLL_COUNT = 30;         // 最大轮询 30 次（90 秒）
 
-async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+async function fetchJSON(url: string, options: RequestInit = {}): Promise<any> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+    return await res.json();
   } finally {
     clearTimeout(timer);
   }
@@ -24,14 +33,15 @@ const adapter987ai: UpgradeChannelAdapter = {
       return { ok: false, retryable: false, message: '缺少渠道卡密' };
     }
 
+    if (!sessionToken) {
+      return { ok: false, retryable: false, message: '缺少 access token' };
+    }
+
     // Step 1: 验证渠道卡密
     try {
-      const verifyRes = await fetchWithTimeout(
-        `${BASE_URL}/api/card-keys/${encodeURIComponent(channelCardkey)}`,
-        { method: 'GET' },
-        TIMEOUT_MS
+      const verifyData = await fetchJSON(
+        `${BASE_URL}/card-keys/${encodeURIComponent(channelCardkey)}`
       );
-      const verifyData = await verifyRes.json();
 
       if (!verifyData.available) {
         return {
@@ -49,21 +59,18 @@ const adapter987ai: UpgradeChannelAdapter = {
     }
 
     // Step 2: 创建升级任务
+    // 注意：force_recharge 固定为 false（不覆盖充值）
     let taskId: string;
     try {
-      const createRes = await fetchWithTimeout(
-        `${BASE_URL}/api/tasks`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            card_key: channelCardkey,
-            access_token: sessionToken,
-          }),
-        },
-        TIMEOUT_MS
-      );
-      const createData = await createRes.json();
+      const createData = await fetchJSON(`${BASE_URL}/tasks`, {
+        method: 'POST',
+        body: JSON.stringify({
+          card_key: channelCardkey,
+          access_token: sessionToken,
+          idp: '',
+          force_recharge: false,
+        }),
+      });
 
       if (!createData.success) {
         return {
@@ -73,7 +80,10 @@ const adapter987ai: UpgradeChannelAdapter = {
         };
       }
 
-      taskId = createData.task_id;
+      taskId = createData.task_id || createData.taskId;
+      if (!taskId) {
+        return { ok: false, retryable: false, message: '创建任务成功但未返回任务 ID' };
+      }
     } catch (err: any) {
       return {
         ok: false,
@@ -87,48 +97,47 @@ const adapter987ai: UpgradeChannelAdapter = {
       await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
 
       try {
-        const pollRes = await fetchWithTimeout(
-          `${BASE_URL}/api/tasks/${encodeURIComponent(taskId)}`,
-          { method: 'GET' },
-          TIMEOUT_MS
+        const pollData = await fetchJSON(
+          `${BASE_URL}/tasks/${encodeURIComponent(taskId)}`
         );
-        const pollData = await pollRes.json();
 
-        if (pollData.status === 'completed') {
-          return {
-            ok: true,
-            message: pollData.result || '升级成功',
-          };
+        switch (pollData.status) {
+          case 'completed':
+            return { ok: true, message: pollData.result || '升级成功' };
+
+          case 'failed':
+            return {
+              ok: false,
+              retryable: false,
+              message: `升级失败: ${pollData.error || '未知错误'}`,
+            };
+
+          case 'unknown':
+            return {
+              ok: false,
+              retryable: false,
+              message: `任务不存在: ${pollData.error || ''}`,
+            };
+
+          case 'pending':
+          case 'processing':
+            // 继续轮询
+            break;
+
+          default:
+            console.warn(`[987ai] unexpected status: ${pollData.status}`);
+            break;
         }
-
-        if (pollData.status === 'failed') {
-          return {
-            ok: false,
-            retryable: false,
-            message: `升级失败: ${pollData.error || '未知错误'}`,
-          };
-        }
-
-        if (pollData.status === 'unknown') {
-          return {
-            ok: false,
-            retryable: false,
-            message: `任务不存在: ${pollData.error || ''}`,
-          };
-        }
-
-        // pending / processing -> 继续轮询
       } catch (err: any) {
-        // 网络抖动，继续轮询（不立即失败）
-        console.warn(`[987ai] poll error (attempt ${i + 1}): ${err.message}`);
+        // 网络抖动，继续轮询
+        console.warn(`[987ai] poll error (attempt ${i + 1}/${MAX_POLL_COUNT}): ${err.message}`);
       }
     }
 
-    // 超过最大轮询次数
     return {
       ok: false,
       retryable: true,
-      message: `升级超时：已轮询 ${MAX_POLL_COUNT} 次，任务仍未完成`,
+      message: `升级超时：已轮询 ${MAX_POLL_COUNT} 次（${MAX_POLL_COUNT * POLL_INTERVAL_MS / 1000}秒），任务仍未完成`,
     };
   },
 };
