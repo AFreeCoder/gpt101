@@ -159,9 +159,9 @@ export default function UpgradePage() {
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="例如：PLS-ABCD-EFGH"
+            placeholder="请输入卡密"
             className="mb-4 w-full rounded-lg border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-widest focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            maxLength={14}
+            maxLength={39}
           />
           <button
             onClick={handleVerifyCode}
