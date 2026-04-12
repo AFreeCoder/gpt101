@@ -285,20 +285,24 @@ export default function UpgradePage() {
                   </div>
                 </div>
 
-                {/* 确认信息（未提交时） */}
+                {/* 确认信息（始终显示） */}
+                {tokenParsed && (
+                  <div className="mb-4 divide-y divide-border/50 rounded-xl border border-border/50 bg-muted/30">
+                    {[
+                      ['ChatGPT 账号', accountEmail],
+                      ['升级会员', getMemberLabel(productCode, memberType)],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-medium text-foreground">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 提交按钮（未提交时） */}
                 {!taskNo && tokenParsed && (
                   <>
-                    <div className="mb-4 divide-y divide-border/50 rounded-xl border border-border/50 bg-muted/30">
-                      {[
-                        ['ChatGPT 账号', accountEmail],
-                        ['升级会员', getMemberLabel(productCode, memberType)],
-                      ].map(([label, value]) => (
-                        <div key={label} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                          <span className="text-muted-foreground">{label}</span>
-                          <span className="font-medium text-foreground">{value}</span>
-                        </div>
-                      ))}
-                    </div>
                     {error && errorStep === 3 && (
                       <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
                         <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
@@ -317,11 +321,11 @@ export default function UpgradePage() {
                   </>
                 )}
 
-                {/* 升级结果 */}
+                {/* 升级结果（显示在确认信息下方） */}
                 {taskNo && (
-                  <div className="py-2 text-center">
+                  <div className="text-center">
                     {polling ? (
-                      <div className="flex flex-col items-center gap-4 py-2">
+                      <div className="flex flex-col items-center gap-4 py-4">
                         <div className="relative h-12 w-12">
                           <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" />
                           <div className="absolute inset-2 animate-spin rounded-full border-[2px] border-primary/10 border-b-primary/50" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
@@ -332,7 +336,7 @@ export default function UpgradePage() {
                         </div>
                       </div>
                     ) : taskStatus === 'succeeded' ? (
-                      <div className="flex flex-col items-center gap-3">
+                      <div className="flex flex-col items-center gap-3 py-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10">
                           <svg className="h-7 w-7 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
@@ -344,21 +348,19 @@ export default function UpgradePage() {
                         </a>
                       </div>
                     ) : taskStatus === 'failed' ? (
-                      <div className="flex flex-col items-center gap-4 py-2">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-                          <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                      <div className="flex flex-col items-center gap-3 rounded-xl bg-amber-50 p-4 mt-2">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                          <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
                         </div>
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-foreground">充值遇到一点小问题，无需担心</p>
-                          <p className="mt-1 text-xs text-muted-foreground">请联系客服协助处理，我们会尽快为您解决</p>
-                        </div>
-                        <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-4 py-2">
-                          <span className="text-sm text-muted-foreground">客服微信：</span>
-                          <span className="text-sm font-semibold text-foreground">AFreeCoder01</span>
+                        <p className="text-sm font-medium text-amber-800">充值遇到一点小问题，无需担心</p>
+                        <p className="text-xs text-amber-700/70">请联系客服协助处理，我们会尽快为您解决</p>
+                        <div className="flex items-center gap-2 rounded-lg bg-white/80 px-4 py-1.5 text-sm">
+                          <span className="text-muted-foreground">客服微信：</span>
+                          <span className="font-semibold text-foreground">AFreeCoder01</span>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">{taskMessage}</p>
+                      <p className="py-4 text-sm text-muted-foreground">{taskMessage}</p>
                     )}
                   </div>
                 )}
