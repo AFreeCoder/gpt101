@@ -281,19 +281,19 @@ export default function UpgradePage() {
                 )}
               </div>
 
-              {/* Step 3: 确认 & 结果 */}
-              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!tokenParsed ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : taskNo ? (taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-md' : taskStatus === 'failed' ? 'border-destructive/30 bg-destructive/5 shadow-md' : 'border-primary/30 bg-card shadow-md') : 'border-primary/30 bg-card shadow-md'}`}>
+              {/* Step 3: 确认升级（样式固定不变） */}
+              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!tokenParsed ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : currentStep === 3 ? 'border-primary/30 bg-card shadow-md' : 'border-border/50 bg-card/60'}`}>
                 <div className="mb-4 flex items-center gap-3">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${taskStatus === 'succeeded' ? 'bg-emerald-500 text-white' : taskStatus === 'failed' ? 'bg-destructive text-white' : currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {taskStatus === 'succeeded' ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : taskStatus === 'failed' ? '!' : '3'}
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${taskNo ? 'bg-emerald-500 text-white' : currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {taskNo ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '3'}
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">{taskNo ? '升级结果' : '确认升级'}</h2>
-                    <p className="text-xs text-muted-foreground">{taskNo ? `任务编号：${taskNo}` : '核对信息后确认提交'}</p>
+                    <h2 className="text-sm font-semibold text-foreground">确认升级</h2>
+                    <p className="text-xs text-muted-foreground">核对信息后确认提交</p>
                   </div>
                 </div>
 
-                {/* 确认信息（始终显示） */}
+                {/* 确认信息 */}
                 {tokenParsed && (
                   <div className="mb-4 divide-y divide-border/50 rounded-xl border border-border/50 bg-muted/30">
                     {[
@@ -329,8 +329,11 @@ export default function UpgradePage() {
                   </>
                 )}
 
-                {/* 升级结果（显示在确认信息下方） */}
-                {taskNo && (
+              </div>
+
+              {/* 升级结果（独立卡片，在 Step 3 下方） */}
+              {taskNo && (
+                <div className={`rounded-2xl border p-5 sm:p-6 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : taskStatus === 'failed' ? 'border-amber-200 bg-amber-50/50' : 'border-primary/30 bg-card shadow-md'}`}>
                   <div className="text-center">
                     {polling ? (
                       <div className="flex flex-col items-center gap-4 py-4">
@@ -381,8 +384,8 @@ export default function UpgradePage() {
                       <p className="py-4 text-sm text-muted-foreground">{taskMessage}</p>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
