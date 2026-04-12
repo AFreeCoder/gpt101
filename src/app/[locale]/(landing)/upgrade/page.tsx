@@ -197,7 +197,7 @@ export default function UpgradePage() {
                     value={code}
                     onChange={(e) => { setCode(e.target.value.toUpperCase()); if (codeVerified) { setCodeVerified(false); setTokenParsed(false); } }}
                     placeholder="请输入卡密"
-                    disabled={!!taskNo}
+                    disabled={!!taskNo && taskStatus !== 'failed'}
                     className="min-w-0 flex-1 rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
                   />
                   <button
@@ -226,7 +226,7 @@ export default function UpgradePage() {
               </div>
 
               {/* Step 2 */}
-              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!codeVerified ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : currentStep === 2 ? 'border-primary/30 bg-card shadow-md' : tokenParsed ? 'border-border/50 bg-card/60' : 'border-border/30 bg-card/80'}`}>
+              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!codeVerified ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : currentStep === 2 || taskStatus === 'failed' ? 'border-primary/30 bg-card shadow-md' : tokenParsed ? 'border-border/50 bg-card/60' : 'border-border/30 bg-card/80'}`}>
                 <div className="mb-4 flex items-center gap-3">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${tokenParsed ? 'bg-emerald-500 text-white' : currentStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                     {tokenParsed ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '2'}
@@ -251,7 +251,7 @@ export default function UpgradePage() {
                   onChange={(e) => { setSessionToken(e.target.value); if (tokenParsed) setTokenParsed(false); }}
                   placeholder="粘贴完整的 Session Token（JSON 格式）"
                   rows={3}
-                  disabled={!!taskNo}
+                  disabled={!!taskNo && taskStatus !== 'failed'}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-xs leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
                 />
 
@@ -333,8 +333,7 @@ export default function UpgradePage() {
 
               {/* 升级结果（独立卡片，在 Step 3 下方） */}
               {taskNo && (
-                <div className={`rounded-2xl border p-5 sm:p-6 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : 'border-border/50 bg-card'}`}>
-                  <div className="text-center">
+                <div className={`rounded-2xl border p-4 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : 'border-border/50 bg-card'}`}>
                     {polling ? (
                       <div className="flex flex-col items-center gap-4 py-4">
                         <div className="relative h-12 w-12">
@@ -365,17 +364,16 @@ export default function UpgradePage() {
                         </div>
                       </div>
                     ) : taskStatus === 'failed' ? (
-                      <div className="mt-2 flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3">
+                      <div className="flex items-start gap-2 rounded-lg bg-destructive/5 px-3 py-2.5 text-sm">
                         <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                        <div className="text-sm">
-                          <p className="font-medium text-destructive">充值遇到一点小问题，无需担心</p>
+                        <div>
+                          <p className="text-destructive">充值遇到一点小问题，无需担心</p>
                           <p className="mt-0.5 text-xs text-muted-foreground">请联系客服协助处理 · 微信：<span className="font-medium text-foreground">AFreeCoder01</span></p>
                         </div>
                       </div>
                     ) : (
                       <p className="py-4 text-sm text-muted-foreground">{taskMessage}</p>
                     )}
-                  </div>
                 </div>
               )}
             </div>
