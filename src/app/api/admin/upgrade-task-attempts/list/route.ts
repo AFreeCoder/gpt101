@@ -1,7 +1,7 @@
 import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
-import { upgradeTaskAttempt, upgradeTask, upgradeChannel } from '@/config/db/schema';
+import { upgradeTaskAttempt, upgradeTask, upgradeChannel, channelCardkey } from '@/config/db/schema';
 import { respData, respErr } from '@/shared/lib/resp';
 import { requirePermission, PERMISSIONS } from '@/core/rbac';
 
@@ -77,10 +77,22 @@ export async function GET(req: Request) {
       channels.forEach((c) => channelMap.set(c.id, c.name));
     }
 
+    // 批量补充渠道卡密
+    const cardkeyIds = [...new Set(items.map((i) => i.channelCardkeyId).filter(Boolean))];
+    const cardkeyMap = new Map<string, string>();
+    if (cardkeyIds.length > 0) {
+      const cardkeys = await db()
+        .select({ id: channelCardkey.id, cardkey: channelCardkey.cardkey })
+        .from(channelCardkey)
+        .where(sql`${channelCardkey.id} IN ${cardkeyIds}`);
+      cardkeys.forEach((c) => cardkeyMap.set(c.id, c.cardkey));
+    }
+
     const enriched = items.map((i) => ({
       ...i,
       taskNo: taskMap.get(i.taskId) || '',
       channelName: channelMap.get(i.channelId) || '',
+      channelCardkeyValue: i.channelCardkeyId ? (cardkeyMap.get(i.channelCardkeyId) || '') : '',
     }));
 
     return respData({ items: enriched, total });

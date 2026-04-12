@@ -9,6 +9,7 @@ interface Attempt {
   channelId: string;
   channelName?: string;
   channelCardkeyId: string | null;
+  channelCardkeyValue?: string;
   attemptNo: number;
   status: string;
   errorMessage: string | null;
@@ -78,6 +79,7 @@ export default function UpgradeTaskAttemptsPage() {
             <tr>
               <th className="px-3 py-2 text-left">任务编号</th>
               <th className="px-3 py-2 text-left">渠道</th>
+              <th className="px-3 py-2 text-left">渠道卡密</th>
               <th className="px-3 py-2 text-left">尝试序号</th>
               <th className="px-3 py-2 text-left">状态</th>
               <th className="px-3 py-2 text-left">错误信息</th>
@@ -88,14 +90,15 @@ export default function UpgradeTaskAttemptsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
             ) : attempts.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">暂无记录</td></tr>
+              <tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">暂无记录</td></tr>
             ) : (
               attempts.map((a) => (
                 <tr key={a.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2 font-mono text-xs">{a.taskNo || a.taskId.slice(0, 8)}</td>
                   <td className="px-3 py-2 text-xs">{a.channelName || a.channelId.slice(0, 8)}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{a.channelCardkeyValue || '-'}</td>
                   <td className="px-3 py-2 text-center">{a.attemptNo}</td>
                   <td className="px-3 py-2">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[a.status]?.color || ''}`}>
