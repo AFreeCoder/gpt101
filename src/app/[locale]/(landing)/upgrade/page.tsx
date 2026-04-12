@@ -255,7 +255,18 @@ export default function UpgradePage() {
                   className="w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-xs leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
                 />
 
-                <div className="mt-3 flex justify-end">
+                <div className="mt-3 flex justify-between">
+                  {tokenParsed ? (
+                    <button onClick={() => { setTokenParsed(false); setTaskNo(''); setTaskStatus(''); setTaskMessage(''); }}
+                      className="rounded-xl border border-border px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50">
+                      返回修改
+                    </button>
+                  ) : (
+                    <button onClick={() => { setCodeVerified(false); setSessionToken(''); }}
+                      className="rounded-xl border border-border px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50">
+                      上一步
+                    </button>
+                  )}
                   <button
                     onClick={handleParseToken}
                     disabled={loading === 'token' || !sessionToken.trim() || tokenParsed || !!taskNo}
@@ -317,14 +328,19 @@ export default function UpgradePage() {
                         {error}
                       </div>
                     )}
-                    <button
-                      onClick={() => { setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setError(''); setErrorStep(0); handleSubmit(); }}
-                      disabled={loading === 'submit'}
-                      className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
-                    >
-                      {loading === 'submit' ? (
-                        <span className="flex items-center justify-center gap-2"><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />提交中...</span>
-                      ) : taskStatus === 'failed' ? '重试升级' : '确认升级'}
+                    <div className="flex gap-3">
+                      <button onClick={() => { setTokenParsed(false); setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setError(''); setErrorStep(0); }}
+                        className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50">
+                        上一步
+                      </button>
+                      <button
+                        onClick={() => { setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setError(''); setErrorStep(0); handleSubmit(); }}
+                        disabled={loading === 'submit'}
+                        className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        {loading === 'submit' ? (
+                          <span className="flex items-center justify-center gap-2"><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />提交中...</span>
+                        ) : taskStatus === 'failed' ? '重试升级' : '确认升级'}
                     </button>
                   </>
                 )}
