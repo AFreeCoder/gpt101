@@ -321,12 +321,15 @@ export default function UpgradePage() {
                 {taskNo && (
                   <div className="py-2 text-center">
                     {polling ? (
-                      <div className="flex flex-col items-center gap-3">
+                      <div className="flex flex-col items-center gap-4 py-2">
                         <div className="relative h-12 w-12">
                           <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" />
                           <div className="absolute inset-2 animate-spin rounded-full border-[2px] border-primary/10 border-b-primary/50" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
                         </div>
-                        <p className="text-sm font-medium text-primary">{taskMessage}</p>
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-primary">{taskMessage}</p>
+                          <p className="mt-1.5 text-xs text-muted-foreground">一般充值预计 10 分钟左右，请耐心等待</p>
+                        </div>
                       </div>
                     ) : taskStatus === 'succeeded' ? (
                       <div className="flex flex-col items-center gap-3">
@@ -346,8 +349,9 @@ export default function UpgradePage() {
                           <svg className="h-7 w-7 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                         <p className="text-base font-semibold text-destructive">{taskMessage}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">充值遇到一点小问题，无需担心，请联系客服处理。</p>
                         <p className="text-sm text-muted-foreground">
-                          请联系客服微信：<span className="font-semibold text-foreground">AFreeCoder01</span>
+                          客服微信：<span className="font-semibold text-foreground">AFreeCoder01</span>
                         </p>
                       </div>
                     ) : (
