@@ -124,7 +124,8 @@ export async function importCardkeys(args: {
 // --- 锁定/释放/使用 ---
 
 /**
- * 从渠道库存池中锁定一张可用卡密（PG FOR UPDATE SKIP LOCKED）
+ * 从渠道库存池中锁定一张可用卡密
+ * 优先复用该任务上次使用过的卡密（通过 lockedByTaskId 匹配）
  */
 export async function acquireCardkey(
   tx: any,
@@ -132,8 +133,22 @@ export async function acquireCardkey(
   productCode: string,
   taskId: string
 ): Promise<ChannelCardkey | null> {
-  // FOR UPDATE SKIP LOCKED 确保并发安全
-  const [row] = await tx
+  // 优先取该任务上次用过的卡密（重试时复用同一张）
+  const [previous] = await tx
+    .select()
+    .from(channelCardkey)
+    .where(
+      and(
+        eq(channelCardkey.channelId, channelId),
+        eq(channelCardkey.productCode, productCode),
+        eq(channelCardkey.status, ChannelCardkeyStatus.AVAILABLE),
+        eq(channelCardkey.lockedByTaskId, taskId)
+      )
+    )
+    .limit(1)
+    .for('update', { skipLocked: true });
+
+  const row = previous || (await tx
     .select()
     .from(channelCardkey)
     .where(
@@ -143,9 +158,10 @@ export async function acquireCardkey(
         eq(channelCardkey.status, ChannelCardkeyStatus.AVAILABLE)
       )
     )
-    .orderBy(channelCardkey.createdAt)
+    .orderBy(channelCardkey.createdAt, channelCardkey.id)
     .limit(1)
-    .for('update', { skipLocked: true });
+    .for('update', { skipLocked: true })
+  )?.[0];
 
   if (!row) return null;
 
@@ -164,11 +180,11 @@ export async function acquireCardkey(
  * 释放渠道卡密（升级失败后放回池中）
  */
 export async function releaseCardkey(cardkeyId: string) {
+  // 保留 lockedByTaskId，重试时可以优先复用同一张卡密
   await db()
     .update(channelCardkey)
     .set({
       status: ChannelCardkeyStatus.AVAILABLE,
-      lockedByTaskId: null,
     })
     .where(eq(channelCardkey.id, cardkeyId));
 }
