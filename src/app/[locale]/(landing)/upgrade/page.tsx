@@ -333,7 +333,7 @@ export default function UpgradePage() {
 
               {/* 升级结果（独立卡片，在 Step 3 下方） */}
               {taskNo && (
-                <div className={`rounded-2xl border p-5 sm:p-6 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : taskStatus === 'failed' ? 'border-amber-200 bg-amber-50/50' : 'border-primary/30 bg-card shadow-md'}`}>
+                <div className={`rounded-2xl border p-5 sm:p-6 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : 'border-border/50 bg-card'}`}>
                   <div className="text-center">
                     {polling ? (
                       <div className="flex flex-col items-center gap-4 py-4">
@@ -365,15 +365,11 @@ export default function UpgradePage() {
                         </div>
                       </div>
                     ) : taskStatus === 'failed' ? (
-                      <div className="flex flex-col items-center gap-3 rounded-xl bg-amber-50 p-4 mt-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-                          <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-                        </div>
-                        <p className="text-sm font-medium text-amber-800">充值遇到一点小问题，无需担心</p>
-                        <p className="text-xs text-amber-700/70">请联系客服协助处理，我们会尽快为您解决</p>
-                        <div className="flex items-center gap-2 rounded-lg bg-white/80 px-4 py-1.5 text-sm">
-                          <span className="text-muted-foreground">客服微信：</span>
-                          <span className="font-semibold text-foreground">AFreeCoder01</span>
+                      <div className="mt-2 flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3">
+                        <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                        <div className="text-sm">
+                          <p className="font-medium text-destructive">充值遇到一点小问题，无需担心</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">请联系客服协助处理 · 微信：<span className="font-medium text-foreground">AFreeCoder01</span></p>
                         </div>
                       </div>
                     ) : (
