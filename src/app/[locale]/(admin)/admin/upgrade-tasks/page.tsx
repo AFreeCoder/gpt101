@@ -111,7 +111,7 @@ export default function UpgradeTasksPage() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border">
-        <table className="min-w-max text-sm">
+        <table className="w-full min-w-[1200px] text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-3 py-2 text-left">任务编号</th>
