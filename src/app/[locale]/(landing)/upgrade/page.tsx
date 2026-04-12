@@ -14,6 +14,7 @@ export default function UpgradePage() {
   const [accessToken, setAccessToken] = useState('');
   const [loading, setLoading] = useState('');
   const [error, setError] = useState('');
+  const [errorStep, setErrorStep] = useState<number>(0); // 错误出现在哪一步
   const [codeVerified, setCodeVerified] = useState(false);
   const [tokenParsed, setTokenParsed] = useState(false);
   const [taskNo, setTaskNo] = useState('');
@@ -24,7 +25,7 @@ export default function UpgradePage() {
   const productLabel = getProductMemberLabel(productCode, memberType);
 
   const handleVerifyCode = async () => {
-    setError('');
+    setError(''); setErrorStep(0);
     setLoading('code');
     try {
       const res = await fetch('/api/upgrade/verify-code', {
@@ -33,31 +34,65 @@ export default function UpgradePage() {
         body: JSON.stringify({ code: code.trim() }),
       });
       const data = await res.json();
-      if (data.code !== 0) { setError(data.message); return; }
+      if (data.code !== 0) { setError(data.message); setErrorStep(1); return; }
       setProductCode(data.data.productCode);
       setMemberType(data.data.memberType || '');
       setCodeVerified(true);
-    } catch { setError('网络错误，请重试'); }
+    } catch { setError('网络错误，请重试'); setErrorStep(1); }
     finally { setLoading(''); }
   };
 
   const handleParseToken = async () => {
-    setError('');
+    setError(''); setErrorStep(0);
     setLoading('token');
+
+    // 前端预校验 JSON 格式
+    const trimmed = sessionToken.trim();
+    if (trimmed.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        const missing = [];
+        if (!parsed.user?.id) missing.push('user.id');
+        if (!parsed.user?.email) missing.push('user.email');
+        if (!parsed.account?.id) missing.push('account.id');
+        if (!parsed.account?.planType) missing.push('account.planType');
+        if (!parsed.accessToken) missing.push('accessToken');
+        if (missing.length > 0) {
+          setError(`Token 格式不完整，缺少字段：${missing.join('、')}`);
+          setErrorStep(2);
+          setLoading('');
+          return;
+        }
+      } catch {
+        setError('Token 格式错误，请粘贴完整的 JSON 内容');
+        setErrorStep(2);
+        setLoading('');
+        return;
+      }
+    }
+
     try {
       const res = await fetch('/api/upgrade/resolve-account', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionToken: sessionToken.trim() }),
+        body: JSON.stringify({ sessionToken: trimmed }),
       });
       const data = await res.json();
-      if (data.code !== 0) { setError(data.message); return; }
+      if (data.code !== 0) { setError(data.message); setErrorStep(2); return; }
+
+      // Plus 会员拦截
+      if (data.data.currentPlan === 'plus') {
+        setError('当前账号为 Plus 会员，请等会员到期后再进行充值升级');
+        setErrorStep(2);
+        return;
+      }
+
       setAccountEmail(data.data.email);
       setAccountId(data.data.accountId);
       setCurrentPlan(data.data.currentPlan || '');
-      setAccessToken(data.data.accessToken || sessionToken.trim());
+      setAccessToken(data.data.accessToken || trimmed);
       setTokenParsed(true);
-    } catch { setError('网络错误，请重试'); }
+    } catch { setError('网络错误，请重试'); setErrorStep(2); }
     finally { setLoading(''); }
   };
 
@@ -77,14 +112,14 @@ export default function UpgradePage() {
         }),
       });
       const data = await res.json();
-      if (data.code !== 0) { setError(data.message); return; }
+      if (data.code !== 0) { setError(data.message); setErrorStep(3); return; }
       setTaskNo(data.data.taskNo);
       setTaskStatus('pending');
       setTaskMessage('升级任务已提交，正在排队处理...');
       fetch('/api/upgrade/worker', { method: 'POST' }).catch(() => {});
       setPolling(true);
       pollStatus(data.data.taskNo);
-    } catch { setError('网络错误，请重试'); }
+    } catch { setError('网络错误，请重试'); setErrorStep(3); }
     finally { setLoading(''); }
   };
 
@@ -132,14 +167,6 @@ export default function UpgradePage() {
           </p>
         </div>
 
-        {/* 错误提示 */}
-        {error && (
-          <div className="mx-auto mb-6 flex max-w-2xl items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-            <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
-            {error}
-          </div>
-        )}
-
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* 左侧：主操作区 */}
           <div className="min-w-0 flex-1">
@@ -176,10 +203,16 @@ export default function UpgradePage() {
                   </button>
                 </div>
 
+                {error && errorStep === 1 && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                    {error}
+                  </div>
+                )}
                 {codeVerified && (
                   <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
                     <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    卡密有效 · 产品：<span className="font-semibold">{productLabel}</span>
+                    卡密有效
                   </div>
                 )}
               </div>
@@ -192,23 +225,27 @@ export default function UpgradePage() {
                   </div>
                   <div>
                     <h2 className="text-sm font-semibold text-foreground">核验 Token</h2>
-                    <p className="text-xs text-muted-foreground">
-                      粘贴您的 ChatGPT Session Token ·{' '}
-                      <a href="https://chat.openai.com/api/auth/session" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        如何获取？
-                      </a>
-                    </p>
+                    <p className="text-xs text-muted-foreground">粘贴您的 ChatGPT Session Token</p>
                   </div>
                 </div>
 
                 <textarea
                   value={sessionToken}
                   onChange={(e) => { setSessionToken(e.target.value); if (tokenParsed) setTokenParsed(false); }}
-                  placeholder="粘贴完整的 Session Token（JSON 格式或纯 Access Token）"
+                  placeholder="粘贴完整的 Session Token（JSON 格式）"
                   rows={3}
                   disabled={!!taskNo}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-xs leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
                 />
+
+                {/* Token 获取教程 */}
+                <div className="mt-3 rounded-lg bg-muted/50 px-3 py-2.5 text-xs text-muted-foreground">
+                  <p className="mb-1 font-medium text-foreground/80">如何获取 Token：</p>
+                  <ol className="list-inside list-decimal space-y-0.5">
+                    <li>登录 ChatGPT 官网：<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com</a></li>
+                    <li>打开 <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com/api/auth/session</a>，复制页面全部内容</li>
+                  </ol>
+                </div>
 
                 <div className="mt-3 flex justify-end">
                   <button
@@ -222,11 +259,16 @@ export default function UpgradePage() {
                   </button>
                 </div>
 
+                {error && errorStep === 2 && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                    {error}
+                  </div>
+                )}
                 {tokenParsed && (
                   <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    账号：<span className="font-semibold">{accountEmail}</span>
-                    {currentPlan && <span className="ml-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-xs font-medium">{currentPlan}</span>}
+                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    Token 验证通过
                   </div>
                 )}
               </div>
@@ -248,9 +290,8 @@ export default function UpgradePage() {
                   <>
                     <div className="mb-4 divide-y divide-border/50 rounded-xl border border-border/50 bg-muted/30">
                       {[
-                        ['升级产品', productLabel],
                         ['ChatGPT 账号', accountEmail],
-                        ...(currentPlan ? [['当前会员', currentPlan]] : []),
+                        ['升级会员', productLabel],
                       ].map(([label, value]) => (
                         <div key={label} className="flex items-center justify-between px-4 py-2.5 text-sm">
                           <span className="text-muted-foreground">{label}</span>
@@ -258,6 +299,12 @@ export default function UpgradePage() {
                         </div>
                       ))}
                     </div>
+                    {error && errorStep === 3 && (
+                      <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                        <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                        {error}
+                      </div>
+                    )}
                     <button
                       onClick={handleSubmit}
                       disabled={loading === 'submit'}
