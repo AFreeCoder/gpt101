@@ -341,7 +341,8 @@ export default function UpgradePage() {
                         {loading === 'submit' ? (
                           <span className="flex items-center justify-center gap-2"><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />提交中...</span>
                         ) : taskStatus === 'failed' ? '重试升级' : '确认升级'}
-                    </button>
+                      </button>
+                    </div>
                   </>
                 )}
 
