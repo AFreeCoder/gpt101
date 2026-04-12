@@ -217,7 +217,7 @@ export function TopBanner({
       <div
         ref={bannerRef}
         className={cn(
-          'from-blue-600 to-blue-700 text-white fixed top-0 right-0 left-0 z-[51] hidden bg-gradient-to-r px-3 py-2 shadow-sm md:block',
+          'bg-blue-50 text-gray-700 border-b border-blue-100 fixed top-0 right-0 left-0 z-[51] hidden px-3 py-2 md:block',
           className
         )}
       >
@@ -225,7 +225,7 @@ export function TopBanner({
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-1 items-center justify-center gap-2">
               <div
-                className="text-sm [&_a]:text-white [&_a]:underline [&_a]:hover:text-white/80"
+                className="text-sm [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-700"
                 dangerouslySetInnerHTML={{ __html: String(text ?? '') }}
               />
             </div>
@@ -236,9 +236,9 @@ export function TopBanner({
                   isExternalHref(href) ? (
                     <Button
                       asChild
-                      variant="secondary"
+                      variant="default"
                       size="sm"
-                      className="bg-background text-xs"
+                      className="text-xs"
                     >
                       <a
                         href={href}
@@ -255,9 +255,9 @@ export function TopBanner({
                   ) : (
                     <Button
                       asChild
-                      variant="secondary"
+                      variant="default"
                       size="sm"
-                      className="bg-background text-xs"
+                      className="text-xs"
                     >
                       <Link href={href}>{buttonText}</Link>
                     </Button>
@@ -277,7 +277,7 @@ export function TopBanner({
               {closable ? (
                 <button
                   onClick={handleDismiss}
-                  className="text-white/60 hover:text-white flex-shrink-0 rounded p-1 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 flex-shrink-0 rounded p-1 transition-colors"
                   aria-label="Close"
                 >
                   <X className="h-4 w-4" />
