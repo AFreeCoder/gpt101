@@ -72,7 +72,25 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
     // 获取 adapter
     const adapter = getAdapter(channel.driver);
     if (!adapter) {
-      console.warn(`[runner] No adapter for driver: ${channel.driver}`);
+      const noAdapterAttemptId = getUuid();
+      await db().insert(upgradeTaskAttempt).values({
+        id: noAdapterAttemptId,
+        taskId: input.taskId,
+        channelId: channel.id,
+        attemptNo: attemptNo,
+        status: 'skipped',
+        errorMessage: `未找到渠道适配器: ${channel.driver}`,
+        durationMs: 0,
+        startedAt: new Date(),
+        finishedAt: new Date(),
+      });
+      attempts.push({
+        channelId: channel.id,
+        attemptNo,
+        ok: false,
+        message: `未找到渠道适配器: ${channel.driver}`,
+        durationMs: 0,
+      });
       continue;
     }
 
@@ -87,10 +105,27 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
       });
 
       if (!cardkey) {
-        // 库存不足，跳过该渠道
-        console.warn(
-          `[runner] No cardkeys available for channel ${channel.code}`
-        );
+        // 库存不足，记录 attempt 后跳过
+        const skipAttemptId = getUuid();
+        await db().insert(upgradeTaskAttempt).values({
+          id: skipAttemptId,
+          taskId: input.taskId,
+          channelId: channel.id,
+          attemptNo: attemptNo,
+          status: 'skipped',
+          errorMessage: '渠道卡密库存不足',
+          durationMs: 0,
+          startedAt: new Date(),
+          finishedAt: new Date(),
+        });
+        attempts.push({
+          channelId: channel.id,
+          channelCardkeyId: undefined,
+          attemptNo,
+          ok: false,
+          message: '渠道卡密库存不足',
+          durationMs: 0,
+        });
         continue;
       }
       cardkeyId = cardkey.id;
