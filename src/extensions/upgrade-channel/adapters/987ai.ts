@@ -67,7 +67,29 @@ const adapter987ai: UpgradeChannelAdapter = {
       };
     }
 
-    // Step 2: 创建升级任务
+    // Step 2: 验证 Token
+    try {
+      const tokenData = await fetchJSON(`${BASE_URL}/parse-token`, {
+        method: 'POST',
+        body: JSON.stringify({ access_token: accessToken }),
+      });
+
+      if (!tokenData.success) {
+        return {
+          ok: false,
+          retryable: false,
+          message: `Token 验证失败: ${tokenData.message || '无效的 Token'}`,
+        };
+      }
+    } catch (err: any) {
+      return {
+        ok: false,
+        retryable: true,
+        message: `Token 验证网络错误: ${err.message}`,
+      };
+    }
+
+    // Step 3: 创建升级任务
     // 注意：force_recharge 固定为 false（不覆盖充值）
     let taskId: string;
     try {
@@ -101,7 +123,7 @@ const adapter987ai: UpgradeChannelAdapter = {
       };
     }
 
-    // Step 3: 轮询任务结果
+    // Step 4: 轮询任务结果
     for (let i = 0; i < MAX_POLL_COUNT; i++) {
       await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
 

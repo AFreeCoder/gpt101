@@ -6,6 +6,7 @@ import { registerAdapter } from '../registry';
  * 通过环境变量 MOCK_ADAPTER_MODE 控制行为：
  *   success (默认) — 1 秒后返回成功
  *   fail_cardkey   — 模拟渠道卡密验证失败
+ *   fail_token     — 模拟 Token 验证失败
  *   fail_upgrade   — 模拟升级执行失败
  *   timeout        — 模拟超时（30 秒后失败）
  */
@@ -23,6 +24,13 @@ const mockAdapter: UpgradeChannelAdapter = {
           ok: false as const,
           retryable: false,
           message: '渠道卡密不可用: 卡密已使用或已过期',
+        };
+
+      case 'fail_token':
+        return {
+          ok: false as const,
+          retryable: false,
+          message: 'Token 验证失败: 解析Token失败: invalid token',
         };
 
       case 'fail_upgrade':
