@@ -349,7 +349,7 @@ export async function retryTask(taskId: string) {
     .where(
       and(
         eq(upgradeTask.id, taskId),
-        eq(upgradeTask.status, UpgradeTaskStatus.FAILED)
+        sql`${upgradeTask.status} IN ('failed', 'canceled')`
       )
     );
 }

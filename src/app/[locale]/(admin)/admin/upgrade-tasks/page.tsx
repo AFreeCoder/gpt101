@@ -156,14 +156,13 @@ export default function UpgradeTasksPage() {
                   <td className="px-3 py-2 text-xs text-gray-500 whitespace-nowrap">{new Date(t.createdAt).toLocaleString('zh-CN')}</td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
-                      {t.status === 'failed' && (
+                      {(t.status === 'failed' || t.status === 'canceled') && (
                         <>
                           <button onClick={() => handleAction(t.id, 'retry')} className="text-xs text-blue-600 hover:underline">重试</button>
                           <button onClick={() => { setShowMarkSuccess(t.id); setMsChannelName(''); setMsChannelCardkey(''); setMsNote(''); }} className="text-xs text-green-600 hover:underline">标记成功</button>
-                          <button onClick={() => handleAction(t.id, 'cancel')} className="text-xs text-red-600 hover:underline">取消</button>
                         </>
                       )}
-                      {t.status === 'pending' && (
+                      {(t.status === 'pending' || t.status === 'failed') && (
                         <button onClick={() => handleAction(t.id, 'cancel')} className="text-xs text-red-600 hover:underline">取消</button>
                       )}
                     </div>
