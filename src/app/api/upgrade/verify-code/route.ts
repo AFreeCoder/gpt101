@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       return respErr(messages[result.reason!] || '卡密无效');
     }
 
-    return respData({ productCode: result.productCode });
+    return respData({ productCode: result.productCode, memberType: result.memberType });
   } catch (err: any) {
     return respErr(err.message || '验证失败');
   }

@@ -32,6 +32,7 @@ function generateTaskNo(): string {
 export async function verifyRedeemCode(code: string): Promise<{
   valid: boolean;
   productCode?: string;
+  memberType?: string;
   reason?: string;
 }> {
   const { getCodeByCode } = await import('@/shared/models/redeem-code');
@@ -41,7 +42,7 @@ export async function verifyRedeemCode(code: string): Promise<{
   if (row.status === 'disabled') return { valid: false, reason: 'disabled' };
   if (row.status === 'consumed') return { valid: false, reason: 'already_used' };
 
-  return { valid: true, productCode: row.productCode };
+  return { valid: true, productCode: row.productCode, memberType: row.memberType };
 }
 
 // --- Step 2: 解析 session token ---

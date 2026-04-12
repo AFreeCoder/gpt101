@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { getProductMemberLabel } from '@/shared/lib/redeem-code';
 
 export default function UpgradePage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function UpgradePage() {
   const [code, setCode] = useState('');
   const [sessionToken, setSessionToken] = useState('');
   const [productCode, setProductCode] = useState('');
+  const [memberType, setMemberType] = useState('');
   const [accountEmail, setAccountEmail] = useState('');
   const [accountId, setAccountId] = useState('');
   const [currentPlan, setCurrentPlan] = useState('');
@@ -35,6 +37,7 @@ export default function UpgradePage() {
         return;
       }
       setProductCode(data.data.productCode);
+      setMemberType(data.data.memberType || '');
       setStep(2);
     } catch {
       setError('网络错误，请重试');
@@ -108,11 +111,7 @@ export default function UpgradePage() {
     }
   };
 
-  const productLabels: Record<string, string> = {
-    plus: 'ChatGPT Plus',
-    pro: 'ChatGPT Pro',
-    team: 'ChatGPT Team',
-  };
+  const productLabel = getProductMemberLabel(productCode, memberType);
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
@@ -177,7 +176,7 @@ export default function UpgradePage() {
       {step === 2 && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
-            ✓ 卡密验证通过，产品：{productLabels[productCode] || productCode}
+            ✓ 卡密验证通过，产品：{productLabel}
           </div>
           <h2 className="mb-4 text-lg font-semibold">输入 Session Token</h2>
           <p className="mb-4 text-sm text-gray-500">
@@ -216,7 +215,7 @@ export default function UpgradePage() {
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">升级产品</span>
               <span className="font-medium">
-                {productLabels[productCode] || productCode}
+                {productLabel}
               </span>
             </div>
             <div className="flex justify-between text-sm">

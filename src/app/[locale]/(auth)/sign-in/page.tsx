@@ -59,7 +59,7 @@ export default async function SignInPage({
   const sessionUser = await getSignUser();
   if (sessionUser) {
     const target = stripLocalePrefix(safeInternalPath(callbackUrl), locale);
-    redirect({ href: target || '/', locale });
+    redirect({ href: target || '/admin', locale });
   }
 
   const configs = await getConfigs();
@@ -67,7 +67,7 @@ export default async function SignInPage({
   return (
     <SignIn
       configs={configs}
-      callbackUrl={callbackUrl || '/'}
+      callbackUrl={callbackUrl || '/admin'}
       defaultEmail={email || ''}
     />
   );
