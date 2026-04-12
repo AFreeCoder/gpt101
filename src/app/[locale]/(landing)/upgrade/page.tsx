@@ -308,8 +308,8 @@ export default function UpgradePage() {
                   </div>
                 )}
 
-                {/* 提交按钮（未提交时） */}
-                {!taskNo && tokenParsed && (
+                {/* 提交/重试按钮 */}
+                {tokenParsed && (!taskNo || taskStatus === 'failed') && (
                   <>
                     {error && errorStep === 3 && (
                       <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -318,13 +318,13 @@ export default function UpgradePage() {
                       </div>
                     )}
                     <button
-                      onClick={handleSubmit}
+                      onClick={() => { setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setError(''); setErrorStep(0); handleSubmit(); }}
                       disabled={loading === 'submit'}
                       className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
                     >
                       {loading === 'submit' ? (
                         <span className="flex items-center justify-center gap-2"><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />提交中...</span>
-                      ) : '确认升级'}
+                      ) : taskStatus === 'failed' ? '重试升级' : '确认升级'}
                     </button>
                   </>
                 )}
@@ -375,10 +375,6 @@ export default function UpgradePage() {
                           <span className="text-muted-foreground">客服微信：</span>
                           <span className="font-semibold text-foreground">AFreeCoder01</span>
                         </div>
-                        <button onClick={resetAll}
-                          className="mt-1 rounded-xl border border-amber-200 px-5 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100/50">
-                          重新尝试
-                        </button>
                       </div>
                     ) : (
                       <p className="py-4 text-sm text-muted-foreground">{taskMessage}</p>
