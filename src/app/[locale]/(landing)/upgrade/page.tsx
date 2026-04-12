@@ -24,6 +24,14 @@ export default function UpgradePage() {
 
   const productLabel = getProductMemberLabel(productCode, memberType);
 
+  const resetAll = () => {
+    setCode(''); setSessionToken(''); setProductCode(''); setMemberType('');
+    setAccountEmail(''); setAccountId(''); setCurrentPlan(''); setAccessToken('');
+    setCodeVerified(false); setTokenParsed(false);
+    setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setPolling(false);
+    setError(''); setErrorStep(0); setLoading('');
+  };
+
   const handleVerifyCode = async () => {
     setError(''); setErrorStep(0);
     setLoading('code');
@@ -341,11 +349,17 @@ export default function UpgradePage() {
                           <svg className="h-7 w-7 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                         <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{taskMessage}</p>
-                        <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer"
-                          className="mt-1 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md">
-                          前往 ChatGPT
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                        </a>
+                        <div className="flex gap-3">
+                          <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md">
+                            前往 ChatGPT
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                          </a>
+                          <button onClick={resetAll}
+                            className="rounded-xl border border-border px-5 py-2.5 text-sm text-muted-foreground hover:bg-muted/50">
+                            继续升级
+                          </button>
+                        </div>
                       </div>
                     ) : taskStatus === 'failed' ? (
                       <div className="flex flex-col items-center gap-3 rounded-xl bg-amber-50 p-4 mt-2">
@@ -358,6 +372,10 @@ export default function UpgradePage() {
                           <span className="text-muted-foreground">客服微信：</span>
                           <span className="font-semibold text-foreground">AFreeCoder01</span>
                         </div>
+                        <button onClick={resetAll}
+                          className="mt-1 rounded-xl border border-amber-200 px-5 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100/50">
+                          重新尝试
+                        </button>
                       </div>
                     ) : (
                       <p className="py-4 text-sm text-muted-foreground">{taskMessage}</p>
