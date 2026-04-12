@@ -23,12 +23,30 @@
           "button_text": "Learn More"
         },
         "features": [
-          { "text": "No overseas credit card", "icon": "check" },
-          { "text": "WeChat / Alipay", "icon": "check" },
-          { "text": "1-2 min delivery", "icon": "check" },
-          { "text": "Compliant channels", "icon": "check" },
-          { "text": "Invoice available", "icon": "check" },
-          { "text": "Same-day refund eligible", "icon": "check" }
+          {
+            "text": "No overseas credit card",
+            "icon": "check"
+          },
+          {
+            "text": "WeChat / Alipay",
+            "icon": "check"
+          },
+          {
+            "text": "1-2 min delivery",
+            "icon": "check"
+          },
+          {
+            "text": "Compliant channels",
+            "icon": "check"
+          },
+          {
+            "text": "Invoice available",
+            "icon": "check"
+          },
+          {
+            "text": "Same-day refund eligible",
+            "icon": "check"
+          }
         ],
         "buttons": [
           {
@@ -50,9 +68,18 @@
           }
         },
         "trust_marks": [
-          { "text": "No password required", "icon": "shield" },
-          { "text": "Same-day refund eligible", "icon": "check" },
-          { "text": "2+ years operation", "icon": "clock" }
+          {
+            "text": "No password required",
+            "icon": "shield"
+          },
+          {
+            "text": "Same-day refund eligible",
+            "icon": "check"
+          },
+          {
+            "text": "2+ years operation",
+            "icon": "clock"
+          }
         ],
         "guide_box": {
           "text": "Already purchased? Click <span class='text-blue-600 font-semibold'>\"Upgrade Now\"</span> above",
@@ -103,9 +130,13 @@
         "side_ads": {
           "right": {
             "title": "APIPool",
-            "description": "Codex & Claude Code ready. GPT-5.3-Codex, Claude-Opus-4-6 now available. OpenClaw compatible. One API for all.",
+            "description": "Codex & Claude Code ready. GPT-5.4, Claude-Opus-4-6 now available. OpenClaw compatible. One API for all.",
             "highlight": "From 10% of official price!",
-            "tags": ["3-in-1 API", "Pay-as-you-go", "Reliable"],
+            "tags": [
+              "3-in-1 API",
+              "Pay-as-you-go",
+              "Reliable"
+            ],
             "button_text": "Get Started",
             "footer_text": "Sign up to get started",
             "url": "https://apipool.dev/register?ref=gpt101",
@@ -121,11 +152,31 @@
         "tools_title": "🔧 ChatGPT Useful Tools",
         "tutorials_title": "📚 Featured Tutorials",
         "tools": [
-          { "name": "ChatGPT Status", "icon": "🔍", "href": "https://status.openai.com/" },
-          { "name": "IP Health Check", "icon": "🌐", "href": "https://ping0.cc/" },
-          { "name": "IP Risk Check", "icon": "🌐", "href": "https://ipdata.co/" },
-          { "name": "IP Location 1", "icon": "🌐", "href": "https://whoer.net/zh" },
-          { "name": "IP Location 2", "icon": "🌐", "href": "https://ip111.cn/" }
+          {
+            "name": "ChatGPT Status",
+            "icon": "🔍",
+            "href": "https://status.openai.com/"
+          },
+          {
+            "name": "IP Health Check",
+            "icon": "🌐",
+            "href": "https://ping0.cc/"
+          },
+          {
+            "name": "IP Risk Check",
+            "icon": "🌐",
+            "href": "https://ipdata.co/"
+          },
+          {
+            "name": "IP Location 1",
+            "icon": "🌐",
+            "href": "https://whoer.net/zh"
+          },
+          {
+            "name": "IP Location 2",
+            "icon": "🌐",
+            "href": "https://ip111.cn/"
+          }
         ],
         "tutorials": [
           {
@@ -157,17 +208,50 @@
         "block": "review-carousel",
         "title": "Customer Reviews",
         "items": [
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png", "title": "Review 1" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png", "title": "Review 2" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png", "title": "Review 3" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png", "title": "Review 4" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png", "title": "Review 5" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png", "title": "Review 6" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png", "title": "Review 7" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png", "title": "Review 8" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png", "title": "Review 9" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png", "title": "Review 10" },
-          { "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png", "title": "Review 11" }
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/1-20260122180708-ciluxzn.png",
+            "title": "Review 1"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/2-20260122180708-3znomyw.png",
+            "title": "Review 2"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/3-20260122180708-2gh2nu7.png",
+            "title": "Review 3"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/4-20260122180708-dupi75w.png",
+            "title": "Review 4"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/5-20260122180708-g0c3h6d.png",
+            "title": "Review 5"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/6-20260122180708-ckoxrpv.png",
+            "title": "Review 6"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/7-20260122180708-ik512ii.png",
+            "title": "Review 7"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/8-20260122180708-ulnnz0g.png",
+            "title": "Review 8"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/9-20260122180708-6w5x7uq.png",
+            "title": "Review 9"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/10-20260122180708-nbjpfwl.png",
+            "title": "Review 10"
+          },
+          {
+            "url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/hexo/11-20260122180708-1gmalq5.png",
+            "title": "Review 11"
+          }
         ]
       },
       "faq": {

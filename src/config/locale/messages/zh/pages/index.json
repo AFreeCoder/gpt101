@@ -24,12 +24,30 @@
           "button_text": "了解镜像服务"
         },
         "features": [
-          { "text": "无需海外信用卡", "icon": "check" },
-          { "text": "微信/支付宝", "icon": "check" },
-          { "text": "通常1-2分钟到账", "icon": "check" },
-          { "text": "合规渠道", "icon": "check" },
-          { "text": "支持开票", "icon": "check" },
-          { "text": "符合条件当天退款", "icon": "check" }
+          {
+            "text": "无需海外信用卡",
+            "icon": "check"
+          },
+          {
+            "text": "微信/支付宝",
+            "icon": "check"
+          },
+          {
+            "text": "通常1-2分钟到账",
+            "icon": "check"
+          },
+          {
+            "text": "合规渠道",
+            "icon": "check"
+          },
+          {
+            "text": "支持开票",
+            "icon": "check"
+          },
+          {
+            "text": "符合条件当天退款",
+            "icon": "check"
+          }
         ],
         "buttons": [
           {
@@ -53,9 +71,18 @@
           }
         },
         "trust_marks": [
-          { "text": "无需密码", "icon": "shield" },
-          { "text": "符合条件当天退款", "icon": "check" },
-          { "text": "稳定运营2年+", "icon": "clock" }
+          {
+            "text": "无需密码",
+            "icon": "shield"
+          },
+          {
+            "text": "符合条件当天退款",
+            "icon": "check"
+          },
+          {
+            "text": "稳定运营2年+",
+            "icon": "clock"
+          }
         ],
         "guide_box": {
           "text": "已完成购买？点击上方 <span class='text-blue-600 font-semibold'>「立即升级」</span>",
@@ -75,7 +102,11 @@
           "left": {
             "title": "Claude Pro 充值",
             "description": "无需信用卡，支付宝也能充值 Claude Pro，支持 Claude Code",
-            "tags": ["iOS充值技术", "安全快速", "合规渠道"],
+            "tags": [
+              "iOS充值技术",
+              "安全快速",
+              "合规渠道"
+            ],
             "button_text": "立即充值",
             "footer_text": "快速充值，即刻体验",
             "url": "https://fe.dtyuedan.cn/shop/F2OLER91/i72az7",
@@ -84,9 +115,14 @@
           },
           "right": {
             "title": "APIPool",
-            "description": "支持 Codex / Claude Code，GPT-5.3-Codex、Claude-Opus-4-6 现已上线，兼容 OpenClaw（小龙虾🦞）。",
+            "description": "支持 Codex / Claude Code，GPT-5.4、Claude-Opus-4-6 现已上线，兼容 OpenClaw（小龙虾🦞）。",
             "highlight": "官方价 0.5 折起！",
-            "tags": ["官方直连", "按量计费", "稳定靠谱", "性价比极高"],
+            "tags": [
+              "官方直连",
+              "按量计费",
+              "稳定靠谱",
+              "性价比极高"
+            ],
             "button_text": "立即使用",
             "footer_text": "注册联系客服即送体验额度",
             "url": "https://apipool.dev/register?ref=gpt101",
@@ -197,13 +233,21 @@
             "icon": "🌐",
             "href": "https://ping0.cc/"
           },
-          { "name": "IP 风险检测", "icon": "🌐", "href": "https://ipdata.co/" },
+          {
+            "name": "IP 风险检测",
+            "icon": "🌐",
+            "href": "https://ipdata.co/"
+          },
           {
             "name": "IP 地点检测 1",
             "icon": "🌐",
             "href": "https://whoer.net/zh"
           },
-          { "name": "IP 地点检测 2", "icon": "🌐", "href": "https://ip111.cn/" }
+          {
+            "name": "IP 地点检测 2",
+            "icon": "🌐",
+            "href": "https://ip111.cn/"
+          }
         ],
         "tutorials": [
           {

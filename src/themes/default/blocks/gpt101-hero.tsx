@@ -27,7 +27,7 @@ export function Gpt101Hero({ section }: { section: Section }) {
         {/* 镜像服务推荐条 */}
         {section.mirror_banner && (
           <div className="mb-6">
-            <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50 p-2">
+            <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-sky-50 p-2">
               <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                 <div className="flex items-center gap-3 text-center sm:text-left">
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
@@ -61,7 +61,7 @@ export function Gpt101Hero({ section }: { section: Section }) {
 
         {/* 主标题 */}
         <h1 className="mb-6 inline-block text-5xl font-bold md:text-6xl">
-          <span className="text-blue-700 sm:bg-gradient-to-r sm:from-blue-600 sm:to-purple-600 sm:bg-clip-text sm:text-transparent">
+          <span className="text-blue-700 sm:bg-gradient-to-r sm:from-blue-600 sm:to-blue-500 sm:bg-clip-text sm:text-transparent">
             {section.highlight_text || '一站式 GPT'}
           </span>
           <span className="text-gray-800">
@@ -127,13 +127,13 @@ export function Gpt101Hero({ section }: { section: Section }) {
           {/* 立即升级按钮 */}
           {section.buttons?.[1] && (
             <div className="flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row">
-              <div className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 p-[2px] shadow-md transition-all duration-300 hover:shadow-lg sm:w-auto">
+              <div className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 p-[2px] shadow-md transition-all duration-300 hover:shadow-lg sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(true)}
                   className="group w-full rounded-[10px] bg-white px-10 py-4 text-lg font-bold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600"
                 >
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transition-colors group-hover:text-white">
+                  <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
                     {section.buttons[1].title}
                   </span>
                 </button>
