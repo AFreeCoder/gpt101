@@ -111,18 +111,14 @@ export default function UpgradeTasksPage() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border">
-        <table className="min-w-max text-sm">
+        <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-3 py-2 text-left">任务编号</th>
               <th className="px-3 py-2 text-left">产品/会员</th>
-              <th className="px-3 py-2 text-left">本站卡密</th>
-              <th className="px-3 py-2 text-left">渠道</th>
-              <th className="px-3 py-2 text-left">渠道卡密</th>
               <th className="px-3 py-2 text-left">用户邮箱</th>
-              <th className="px-3 py-2 text-left">当前会员</th>
-              <th className="px-3 py-2 text-left">Session Token</th>
               <th className="px-3 py-2 text-left">升级状态</th>
+              <th className="px-3 py-2 text-left">渠道</th>
               <th className="px-3 py-2 text-left">升级结果</th>
               <th className="px-3 py-2 text-left">创建时间</th>
               <th className="px-3 py-2 text-left">操作</th>
@@ -130,36 +126,28 @@ export default function UpgradeTasksPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={12} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
             ) : tasks.length === 0 ? (
-              <tr><td colSpan={12} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
             ) : (
               tasks.map((t) => (
                 <tr key={t.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2 font-mono text-xs">{t.taskNo}</td>
                   <td className="px-3 py-2 text-xs">{getProductMemberLabel(t.productCode, t.memberType)}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{t.redeemCodePlain}</td>
-                  <td className="px-3 py-2 text-xs">{t.successChannelName || '-'}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{t.successChannelCardkey || '-'}</td>
                   <td className="px-3 py-2 text-xs">{t.chatgptEmail}</td>
-                  <td className="px-3 py-2 text-xs text-gray-500">{t.chatgptCurrentPlan || '-'}</td>
-                  <td className="px-3 py-2">
-                    <button onClick={() => setViewToken(t.sessionToken)}
-                      className="text-xs text-blue-600 hover:underline">
-                      查看
-                    </button>
-                  </td>
                   <td className="px-3 py-2">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[t.status]?.color || ''}`}>
                       {STATUS_MAP[t.status]?.label || t.status}
                     </span>
                   </td>
+                  <td className="px-3 py-2 text-xs">{t.successChannelName || '-'}</td>
                   <td className="px-3 py-2 text-xs text-gray-500 max-w-48 truncate" title={t.resultMessage || t.lastError || ''}>
                     {t.resultMessage || t.lastError || '-'}
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">{new Date(t.createdAt).toLocaleString('zh-CN')}</td>
+                  <td className="px-3 py-2 text-xs text-gray-500 whitespace-nowrap">{new Date(t.createdAt).toLocaleString('zh-CN')}</td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">
+                      <button onClick={() => setViewToken(t.sessionToken)} className="text-xs text-blue-600 hover:underline">Token</button>
                       {t.status === 'failed' && (
                         <>
                           <button onClick={() => handleAction(t.id, 'retry')} className="text-xs text-blue-600 hover:underline">重试</button>
