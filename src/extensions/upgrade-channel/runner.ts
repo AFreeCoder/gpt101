@@ -96,7 +96,7 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
       cardkeyId = cardkey.id;
     }
 
-    // 构建请求
+    // 构建请求（sessionToken 传完整内容，由 adapter 自行提取需要的部分）
     const req: UpgradeRequest = {
       taskId: input.taskId,
       productCode: input.productCode,

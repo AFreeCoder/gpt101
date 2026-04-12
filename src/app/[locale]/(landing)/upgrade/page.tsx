@@ -105,7 +105,7 @@ export default function UpgradePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: code.trim(),
-          sessionToken: accessToken,
+          sessionToken: sessionToken.trim(),
           chatgptEmail: accountEmail,
           chatgptAccountId: accountId,
           chatgptCurrentPlan: currentPlan,

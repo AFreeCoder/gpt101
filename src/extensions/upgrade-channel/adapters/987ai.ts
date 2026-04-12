@@ -34,7 +34,16 @@ const adapter987ai: UpgradeChannelAdapter = {
     }
 
     if (!sessionToken) {
-      return { ok: false, retryable: false, message: '缺少 access token' };
+      return { ok: false, retryable: false, message: '缺少 session token' };
+    }
+
+    // 从完整 JSON 中提取 accessToken（987ai API 需要纯 accessToken）
+    let accessToken = sessionToken;
+    try {
+      const parsed = JSON.parse(sessionToken);
+      if (parsed.accessToken) accessToken = parsed.accessToken;
+    } catch {
+      // 不是 JSON，当作纯 accessToken
     }
 
     // Step 1: 验证渠道卡密
@@ -66,7 +75,7 @@ const adapter987ai: UpgradeChannelAdapter = {
         method: 'POST',
         body: JSON.stringify({
           card_key: channelCardkey,
-          access_token: sessionToken,
+          access_token: accessToken,
           idp: '',
           force_recharge: false,
         }),
