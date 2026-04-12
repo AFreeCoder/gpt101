@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { getProductMemberLabel } from '@/shared/lib/redeem-code';
+import { getProductMemberLabel, getMemberLabel } from '@/shared/lib/redeem-code';
 
 export default function UpgradePage() {
   const [code, setCode] = useState('');
@@ -80,9 +80,9 @@ export default function UpgradePage() {
       const data = await res.json();
       if (data.code !== 0) { setError(data.message); setErrorStep(2); return; }
 
-      // Plus 会员拦截
-      if (data.data.currentPlan === 'plus') {
-        setError('当前账号为 Plus 会员，请等会员到期后再进行充值升级');
+      // 只有 free 用户才能升级 Plus
+      if (data.data.currentPlan && data.data.currentPlan !== 'free') {
+        setError(`当前账号为 ${data.data.currentPlan} 会员，请等会员到期后再进行充值升级`);
         setErrorStep(2);
         return;
       }
@@ -291,7 +291,7 @@ export default function UpgradePage() {
                     <div className="mb-4 divide-y divide-border/50 rounded-xl border border-border/50 bg-muted/30">
                       {[
                         ['ChatGPT 账号', accountEmail],
-                        ['升级会员', productLabel],
+                        ['升级会员', getMemberLabel(productCode, memberType)],
                       ].map(([label, value]) => (
                         <div key={label} className="flex items-center justify-between px-4 py-2.5 text-sm">
                           <span className="text-muted-foreground">{label}</span>

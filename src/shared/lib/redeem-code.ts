@@ -72,6 +72,16 @@ export function getProductMemberLabel(productCode: string, memberType: string): 
   return `${product.label} ${member?.label || memberType}`;
 }
 
+/**
+ * 获取会员类型的显示名（不含产品名）
+ */
+export function getMemberLabel(productCode: string, memberType: string): string {
+  const product = PRODUCT_TYPES.find((p) => p.code === productCode);
+  if (!product) return memberType;
+  const member = product.members.find((m) => m.code === memberType);
+  return member?.label || memberType;
+}
+
 // --- 卡密生成 ---
 
 const CODE_CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
