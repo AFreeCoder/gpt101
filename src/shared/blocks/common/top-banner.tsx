@@ -217,7 +217,7 @@ export function TopBanner({
       <div
         ref={bannerRef}
         className={cn(
-          'bg-blue-50 text-gray-700 border-b border-blue-100 fixed top-0 right-0 left-0 z-[51] hidden px-3 py-2 md:block',
+          'bg-gradient-to-r from-sky-50 via-blue-50 to-teal-50 text-gray-700 border-b border-sky-100/80 fixed top-0 right-0 left-0 z-[51] hidden px-3 py-2 md:block',
           className
         )}
       >
