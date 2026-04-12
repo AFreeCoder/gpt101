@@ -192,17 +192,10 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
       };
     }
 
-    // 失败：释放渠道卡密回池，终止本轮
-    // 不自动禁用卡密，由管理员手动判断和处理
+    // 失败：释放渠道卡密回池，继续尝试下一个渠道
     if (cardkeyId) {
       await releaseCardkey(cardkeyId);
     }
-
-    return {
-      success: false,
-      error: result.message,
-      attempts,
-    };
   }
 
   return {
