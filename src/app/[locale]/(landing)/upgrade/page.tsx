@@ -315,8 +315,8 @@ export default function UpgradePage() {
           {/* 右侧：信息面板 */}
           <div className="w-full shrink-0 space-y-4 lg:w-72">
             {/* 流程指引 */}
-            <div className="rounded-2xl bg-foreground p-6 text-background shadow-xl">
-              <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-background/60">充值流程</h3>
+            <div className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
+              <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-muted-foreground">充值流程</h3>
               <div className="space-y-5">
                 {[
                   { n: '01', title: '核验卡密', desc: '粘贴卡密并核验，系统自动判定是否可用。' },
@@ -324,12 +324,12 @@ export default function UpgradePage() {
                   { n: '03', title: '确认升级', desc: '确认后自动处理，实时查看升级进度。' },
                 ].map((s, i) => (
                   <div key={s.n} className="flex gap-3">
-                    <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentStep > i + 1 ? 'bg-emerald-500 text-white' : currentStep === i + 1 ? 'bg-primary text-white' : 'bg-background/10 text-background/50'}`}>
+                    <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentStep > i + 1 ? 'bg-emerald-500 text-white' : currentStep === i + 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                       {currentStep > i + 1 ? '✓' : s.n}
                     </span>
                     <div>
-                      <p className={`text-sm font-medium ${currentStep >= i + 1 ? 'text-background' : 'text-background/50'}`}>{s.title}</p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-background/40">{s.desc}</p>
+                      <p className={`text-sm font-medium ${currentStep >= i + 1 ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground/70">{s.desc}</p>
                     </div>
                   </div>
                 ))}
