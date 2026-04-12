@@ -63,14 +63,22 @@ export async function resolveAccount(sessionToken: string): Promise<{
   }
 
   if (parsed && typeof parsed === 'object') {
-    // JSON 格式：从中提取信息
+    // JSON 格式：校验必要字段
     const email = parsed.user?.email || '';
-    const accountId = parsed.account?.id || parsed.user?.id || '';
+    const userId = parsed.user?.id || '';
+    const accountId = parsed.account?.id || '';
     const currentPlan = parsed.account?.planType || '';
     const accessToken = parsed.accessToken || '';
 
-    if (!email) {
-      throw new Error('无法从 Token 中解析出邮箱，请检查 Token 格式');
+    if (!userId) throw new Error('Token 格式不正确：缺少 user.id 字段');
+    if (!email) throw new Error('Token 格式不正确：缺少 user.email 字段');
+    if (!accountId) throw new Error('Token 格式不正确：缺少 account.id 字段');
+    if (!currentPlan) throw new Error('Token 格式不正确：缺少 account.planType 字段');
+    if (!accessToken) throw new Error('Token 格式不正确：缺少 accessToken 字段');
+
+    // 拦截已有 Plus 会员
+    if (currentPlan === 'plus') {
+      throw new Error('当前为 Plus 会员，请等会员到期后再进行充值升级');
     }
 
     return { email, accountId, currentPlan, accessToken };
