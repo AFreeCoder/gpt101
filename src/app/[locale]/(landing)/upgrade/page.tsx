@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { getProductMemberLabel } from '@/shared/lib/redeem-code';
 
 export default function UpgradePage() {
-  // 状态
   const [code, setCode] = useState('');
   const [sessionToken, setSessionToken] = useState('');
   const [productCode, setProductCode] = useState('');
@@ -15,12 +14,8 @@ export default function UpgradePage() {
   const [accessToken, setAccessToken] = useState('');
   const [loading, setLoading] = useState('');
   const [error, setError] = useState('');
-
-  // 步骤完成状态
   const [codeVerified, setCodeVerified] = useState(false);
   const [tokenParsed, setTokenParsed] = useState(false);
-
-  // 任务结果
   const [taskNo, setTaskNo] = useState('');
   const [taskStatus, setTaskStatus] = useState('');
   const [taskMessage, setTaskMessage] = useState('');
@@ -28,7 +23,6 @@ export default function UpgradePage() {
 
   const productLabel = getProductMemberLabel(productCode, memberType);
 
-  // Step 1: 验证卡密
   const handleVerifyCode = async () => {
     setError('');
     setLoading('code');
@@ -47,7 +41,6 @@ export default function UpgradePage() {
     finally { setLoading(''); }
   };
 
-  // Step 2: 解析 token
   const handleParseToken = async () => {
     setError('');
     setLoading('token');
@@ -68,7 +61,6 @@ export default function UpgradePage() {
     finally { setLoading(''); }
   };
 
-  // Step 3: 提交升级
   const handleSubmit = async () => {
     setError('');
     setLoading('submit');
@@ -86,278 +78,285 @@ export default function UpgradePage() {
       });
       const data = await res.json();
       if (data.code !== 0) { setError(data.message); return; }
-
       setTaskNo(data.data.taskNo);
       setTaskStatus('pending');
       setTaskMessage('升级任务已提交，正在排队处理...');
-
-      // 触发 worker
       fetch('/api/upgrade/worker', { method: 'POST' }).catch(() => {});
-
-      // 开始轮询
       setPolling(true);
       pollStatus(data.data.taskNo);
     } catch { setError('网络错误，请重试'); }
     finally { setLoading(''); }
   };
 
-  // 轮询状态
   const pollStatus = async (no: string) => {
     let count = 0;
-    const maxCount = 60;
-    const interval = 2000;
-
     const poll = async () => {
-      if (count >= maxCount) {
-        setTaskMessage('升级处理中，请稍后刷新页面查看结果');
-        setPolling(false);
-        return;
-      }
+      if (count >= 60) { setTaskMessage('处理中，请稍后刷新页面'); setPolling(false); return; }
       try {
         const res = await fetch(`/api/upgrade/task/${no}`);
         const data = await res.json();
         if (data.code === 0) {
           setTaskStatus(data.data.status);
           setTaskMessage(data.data.message);
-          if (['succeeded', 'failed', 'canceled'].includes(data.data.status)) {
-            setPolling(false);
-            return;
-          }
+          if (['succeeded', 'failed', 'canceled'].includes(data.data.status)) { setPolling(false); return; }
         }
       } catch {}
       count++;
-      setTimeout(poll, interval);
+      setTimeout(poll, 2000);
     };
     poll();
   };
 
-  const statusIcon: Record<string, string> = {
-    pending: '⏳',
-    running: '⚙️',
-    succeeded: '✅',
-    failed: '❌',
-    canceled: '🚫',
-  };
+  const currentStep = taskNo ? 4 : tokenParsed ? 3 : codeVerified ? 2 : 1;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
-        GPT 自助升级
-      </h1>
-      <p className="mb-8 text-center text-sm text-gray-500">
-        安全、快捷的自助升级服务
-      </p>
+    <div className="relative min-h-[80vh]">
+      {/* 背景装饰 */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+      </div>
 
-      {error && (
-        <div className="mx-auto mb-6 max-w-2xl rounded-lg bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-
-      <div className="flex flex-col gap-6 lg:flex-row">
-        {/* 左侧：操作区 */}
-        <div className="flex-1 space-y-6">
-
-          {/* Step 1: 卡密验证 */}
-          <div className="rounded-xl border bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center gap-2">
-              <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${codeVerified ? 'bg-green-500' : 'bg-blue-600'}`}>
-                {codeVerified ? '✓' : '1'}
-              </span>
-              <h2 className="font-semibold text-gray-900">核验卡密</h2>
-            </div>
-
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => { setCode(e.target.value.toUpperCase()); if (codeVerified) { setCodeVerified(false); setTokenParsed(false); } }}
-                placeholder="请输入卡密"
-                disabled={!!taskNo}
-                className="min-w-0 flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-mono focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
-              />
-              <button
-                onClick={handleVerifyCode}
-                disabled={loading === 'code' || code.trim().length < 10 || codeVerified || !!taskNo}
-                className="shrink-0 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading === 'code' ? '验证中...' : codeVerified ? '已验证' : '立即核验'}
-              </button>
-            </div>
-
-            {codeVerified && (
-              <div className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-                ✓ 卡密验证通过，产品：{productLabel}
-              </div>
-            )}
+      <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
+        {/* 标题区 */}
+        <div className="mb-10 text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            自助升级服务
           </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            GPT 会员升级
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            全自动处理，通常 1-2 分钟完成升级
+          </p>
+        </div>
 
-          {/* Step 2: Token 验证（卡密验证通过后展开） */}
-          {codeVerified && (
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${tokenParsed ? 'bg-green-500' : 'bg-blue-600'}`}>
-                  {tokenParsed ? '✓' : '2'}
-                </span>
-                <h2 className="font-semibold text-gray-900">核验 Token</h2>
-              </div>
+        {/* 错误提示 */}
+        {error && (
+          <div className="mx-auto mb-6 flex max-w-2xl items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            {error}
+          </div>
+        )}
 
-              <p className="mb-2 text-xs text-gray-500">
-                请粘贴您的 ChatGPT Session Token。
-                <a
-                  href="https://chat.openai.com/api/auth/session"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-1 text-blue-600 hover:underline"
-                >
-                  点击这里获取 Token →
-                </a>
-              </p>
-
-              <div className="flex gap-3">
-                <textarea
-                  value={sessionToken}
-                  onChange={(e) => { setSessionToken(e.target.value); if (tokenParsed) setTokenParsed(false); }}
-                  placeholder='粘贴完整的 Session Token 内容（JSON 格式或纯 Access Token）'
-                  rows={3}
-                  disabled={!!taskNo}
-                  className="min-w-0 flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-mono focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
-                />
-              </div>
-
-              <div className="mt-3 flex justify-end">
-                <button
-                  onClick={handleParseToken}
-                  disabled={loading === 'token' || !sessionToken.trim() || tokenParsed || !!taskNo}
-                  className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {loading === 'token' ? '解析中...' : tokenParsed ? '已验证' : '核验 Token'}
-                </button>
-              </div>
-
-              {tokenParsed && (
-                <div className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-                  ✓ 账号：{accountEmail}
-                  {currentPlan && <span className="ml-2">（当前：{currentPlan}）</span>}
+        <div className="flex flex-col gap-8 lg:flex-row">
+          {/* 左侧：主操作区 */}
+          <div className="min-w-0 flex-1">
+            <div className="space-y-1">
+              {/* Step 1 */}
+              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${currentStep === 1 ? 'border-primary/30 bg-card shadow-md' : codeVerified ? 'border-border/50 bg-card/60' : 'border-border/30 bg-muted/30'}`}>
+                <div className="mb-4 flex items-center gap-3">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${codeVerified ? 'bg-emerald-500 text-white' : currentStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {codeVerified ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '1'}
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">核验卡密</h2>
+                    <p className="text-xs text-muted-foreground">输入购买获得的升级卡密</p>
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
 
-          {/* Step 3: 确认升级（token 验证通过后展开）*/}
-          {tokenParsed && !taskNo && (
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">3</span>
-                <h2 className="font-semibold text-gray-900">确认升级</h2>
-              </div>
+                <div className="flex gap-2 sm:gap-3">
+                  <input
+                    type="text"
+                    value={code}
+                    onChange={(e) => { setCode(e.target.value.toUpperCase()); if (codeVerified) { setCodeVerified(false); setTokenParsed(false); } }}
+                    placeholder="请输入卡密"
+                    disabled={!!taskNo}
+                    className="min-w-0 flex-1 rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
+                  />
+                  <button
+                    onClick={handleVerifyCode}
+                    disabled={loading === 'code' || code.trim().length < 10 || codeVerified || !!taskNo}
+                    className="shrink-0 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    {loading === 'code' ? (
+                      <span className="flex items-center gap-1.5"><span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />验证中</span>
+                    ) : codeVerified ? '已验证' : '立即核验'}
+                  </button>
+                </div>
 
-              <div className="mb-4 space-y-2 rounded-lg bg-gray-50 p-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">升级产品</span>
-                  <span className="font-medium">{productLabel}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">ChatGPT 账号</span>
-                  <span className="font-medium">{accountEmail}</span>
-                </div>
-                {currentPlan && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">当前会员</span>
-                    <span className="font-medium">{currentPlan}</span>
+                {codeVerified && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    卡密有效 · 产品：<span className="font-semibold">{productLabel}</span>
                   </div>
                 )}
               </div>
 
-              <button
-                onClick={handleSubmit}
-                disabled={loading === 'submit'}
-                className="w-full rounded-lg bg-green-600 py-3 font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-              >
-                {loading === 'submit' ? '提交中...' : '确认升级'}
-              </button>
-            </div>
-          )}
-
-          {/* 升级结果（提交后展开）*/}
-          {taskNo && (
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-center gap-2">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${taskStatus === 'succeeded' ? 'bg-green-500' : taskStatus === 'failed' ? 'bg-red-500' : 'bg-blue-600'}`}>
-                  {taskStatus === 'succeeded' ? '✓' : '3'}
-                </span>
-                <h2 className="font-semibold text-gray-900">升级结果</h2>
-              </div>
-
-              <div className="text-center py-4">
-                <span className="text-4xl">{statusIcon[taskStatus] || '⏳'}</span>
-                <p className={`mt-3 text-lg font-semibold ${taskStatus === 'succeeded' ? 'text-green-600' : taskStatus === 'failed' ? 'text-red-600' : 'text-blue-600'}`}>
-                  {taskMessage}
-                </p>
-                <p className="mt-2 text-xs text-gray-400">任务编号：{taskNo}</p>
-              </div>
-
-              {polling && (
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                  正在查询最新状态...
+              {/* Step 2 */}
+              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!codeVerified ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : currentStep === 2 ? 'border-primary/30 bg-card shadow-md' : tokenParsed ? 'border-border/50 bg-card/60' : 'border-border/30 bg-card/80'}`}>
+                <div className="mb-4 flex items-center gap-3">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${tokenParsed ? 'bg-emerald-500 text-white' : currentStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {tokenParsed ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '2'}
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">核验 Token</h2>
+                    <p className="text-xs text-muted-foreground">
+                      粘贴您的 ChatGPT Session Token ·{' '}
+                      <a href="https://chat.openai.com/api/auth/session" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        如何获取？
+                      </a>
+                    </p>
+                  </div>
                 </div>
-              )}
 
-              {taskStatus === 'succeeded' && (
-                <div className="mt-4 text-center">
-                  <a
-                    href="https://chat.openai.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block rounded-lg bg-green-600 px-6 py-2 text-sm font-medium text-white hover:bg-green-700"
+                <textarea
+                  value={sessionToken}
+                  onChange={(e) => { setSessionToken(e.target.value); if (tokenParsed) setTokenParsed(false); }}
+                  placeholder="粘贴完整的 Session Token（JSON 格式或纯 Access Token）"
+                  rows={3}
+                  disabled={!!taskNo}
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-xs leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
+                />
+
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={handleParseToken}
+                    disabled={loading === 'token' || !sessionToken.trim() || tokenParsed || !!taskNo}
+                    className="rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
                   >
-                    前往 ChatGPT →
-                  </a>
+                    {loading === 'token' ? (
+                      <span className="flex items-center gap-1.5"><span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />解析中</span>
+                    ) : tokenParsed ? '已验证' : '核验 Token'}
+                  </button>
                 </div>
-              )}
 
-              {taskStatus === 'failed' && (
-                <p className="mt-4 text-center text-sm text-gray-500">
-                  请联系客服微信：<span className="font-medium text-gray-700">AFreeCoder01</span>
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+                {tokenParsed && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    账号：<span className="font-semibold">{accountEmail}</span>
+                    {currentPlan && <span className="ml-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-xs font-medium">{currentPlan}</span>}
+                  </div>
+                )}
+              </div>
 
-        {/* 右侧：流程说明 */}
-        <div className="w-full lg:w-72">
-          <div className="rounded-xl bg-gray-900 p-6 text-white shadow-lg">
-            <h3 className="mb-4 font-semibold">充值流程</h3>
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">1</span>
-                <div>
-                  <p className="font-medium">提交卡密</p>
-                  <p className="mt-0.5 text-xs text-gray-400">粘贴卡密并点击核验，系统会自动判定是否可用。</p>
+              {/* Step 3: 确认 & 结果 */}
+              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!tokenParsed ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : taskNo ? (taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-md' : taskStatus === 'failed' ? 'border-destructive/30 bg-destructive/5 shadow-md' : 'border-primary/30 bg-card shadow-md') : 'border-primary/30 bg-card shadow-md'}`}>
+                <div className="mb-4 flex items-center gap-3">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${taskStatus === 'succeeded' ? 'bg-emerald-500 text-white' : taskStatus === 'failed' ? 'bg-destructive text-white' : currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {taskStatus === 'succeeded' ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : taskStatus === 'failed' ? '!' : '3'}
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">{taskNo ? '升级结果' : '确认升级'}</h2>
+                    <p className="text-xs text-muted-foreground">{taskNo ? `任务编号：${taskNo}` : '核对信息后确认提交'}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">2</span>
-                <div>
-                  <p className="font-medium">核验 Token</p>
-                  <p className="mt-0.5 text-xs text-gray-400">输入 Token 后调用接口确认是否满足充值条件。</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">3</span>
-                <div>
-                  <p className="font-medium">实时更新状态</p>
-                  <p className="mt-0.5 text-xs text-gray-400">实时查看升级进度，后台会自动处理，随时可查看结果。</p>
-                </div>
+
+                {/* 确认信息（未提交时） */}
+                {!taskNo && tokenParsed && (
+                  <>
+                    <div className="mb-4 divide-y divide-border/50 rounded-xl border border-border/50 bg-muted/30">
+                      {[
+                        ['升级产品', productLabel],
+                        ['ChatGPT 账号', accountEmail],
+                        ...(currentPlan ? [['当前会员', currentPlan]] : []),
+                      ].map(([label, value]) => (
+                        <div key={label} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                          <span className="text-muted-foreground">{label}</span>
+                          <span className="font-medium text-foreground">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={handleSubmit}
+                      disabled={loading === 'submit'}
+                      className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      {loading === 'submit' ? (
+                        <span className="flex items-center justify-center gap-2"><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />提交中...</span>
+                      ) : '确认升级'}
+                    </button>
+                  </>
+                )}
+
+                {/* 升级结果 */}
+                {taskNo && (
+                  <div className="py-2 text-center">
+                    {polling ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="relative h-12 w-12">
+                          <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" />
+                          <div className="absolute inset-2 animate-spin rounded-full border-[2px] border-primary/10 border-b-primary/50" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+                        </div>
+                        <p className="text-sm font-medium text-primary">{taskMessage}</p>
+                      </div>
+                    ) : taskStatus === 'succeeded' ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10">
+                          <svg className="h-7 w-7 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{taskMessage}</p>
+                        <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md">
+                          前往 ChatGPT
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                        </a>
+                      </div>
+                    ) : taskStatus === 'failed' ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
+                          <svg className="h-7 w-7 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <p className="text-base font-semibold text-destructive">{taskMessage}</p>
+                        <p className="text-sm text-muted-foreground">
+                          请联系客服微信：<span className="font-semibold text-foreground">AFreeCoder01</span>
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{taskMessage}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border bg-white p-4 text-sm text-gray-500">
-            <p>遇到问题？联系客服微信：</p>
-            <p className="mt-1 font-medium text-gray-700">AFreeCoder01</p>
+          {/* 右侧：信息面板 */}
+          <div className="w-full shrink-0 space-y-4 lg:w-72">
+            {/* 流程指引 */}
+            <div className="rounded-2xl bg-foreground p-6 text-background shadow-xl">
+              <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-background/60">充值流程</h3>
+              <div className="space-y-5">
+                {[
+                  { n: '01', title: '核验卡密', desc: '粘贴卡密并核验，系统自动判定是否可用。' },
+                  { n: '02', title: '核验 Token', desc: '输入 Token 确认账号信息和充值条件。' },
+                  { n: '03', title: '确认升级', desc: '确认后自动处理，实时查看升级进度。' },
+                ].map((s, i) => (
+                  <div key={s.n} className="flex gap-3">
+                    <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentStep > i + 1 ? 'bg-emerald-500 text-white' : currentStep === i + 1 ? 'bg-primary text-white' : 'bg-background/10 text-background/50'}`}>
+                      {currentStep > i + 1 ? '✓' : s.n}
+                    </span>
+                    <div>
+                      <p className={`text-sm font-medium ${currentStep >= i + 1 ? 'text-background' : 'text-background/50'}`}>{s.title}</p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-background/40">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 安全保障 */}
+            <div className="rounded-2xl border border-border/50 bg-card p-5">
+              <div className="space-y-3">
+                {[
+                  { icon: '🔒', text: '数据加密传输' },
+                  { icon: '⚡', text: '通常 1-2 分钟完成' },
+                  { icon: '🛡️', text: '失败自动退还卡密' },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <span className="text-base">{item.icon}</span>
+                    {item.text}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 客服 */}
+            <div className="rounded-2xl border border-border/50 bg-card p-5">
+              <p className="text-xs text-muted-foreground">遇到问题？联系客服</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">微信：AFreeCoder01</p>
+            </div>
           </div>
         </div>
       </div>
