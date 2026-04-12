@@ -217,7 +217,7 @@ export function TopBanner({
       <div
         ref={bannerRef}
         className={cn(
-          'bg-foreground/95 text-background fixed top-0 right-0 left-0 z-[51] hidden px-3 py-1.5 text-xs backdrop-blur-sm md:block',
+          'from-slate-800 to-slate-900 text-slate-100 fixed top-0 right-0 left-0 z-[51] hidden bg-gradient-to-r px-3 py-2 shadow-sm md:block',
           className
         )}
       >
@@ -225,7 +225,7 @@ export function TopBanner({
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-1 items-center justify-center gap-2">
               <div
-                className="text-xs [&_a]:text-background/80 [&_a]:underline [&_a]:hover:text-background"
+                className="text-sm [&_a]:text-amber-300 [&_a]:underline [&_a]:hover:text-amber-200"
                 dangerouslySetInnerHTML={{ __html: String(text ?? '') }}
               />
             </div>
@@ -277,7 +277,7 @@ export function TopBanner({
               {closable ? (
                 <button
                   onClick={handleDismiss}
-                  className="text-background/40 hover:text-background flex-shrink-0 rounded p-1 transition-colors"
+                  className="text-slate-400 hover:text-slate-200 flex-shrink-0 rounded p-1 transition-colors"
                   aria-label="Close"
                 >
                   <X className="h-4 w-4" />
