@@ -193,17 +193,24 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
       };
     }
 
-    // 失败：释放渠道卡密
+    // 失败：根据错误类型决定是否换渠道
     if (cardkeyId) {
-      if (result.message?.includes('invalid_cardkey') || result.message?.includes('卡密无效')) {
+      if (result.message?.includes('invalid_cardkey') || result.message?.includes('卡密无效') || result.message?.includes('卡密不可用')) {
+        // 卡密问题：禁用这张卡密，继续尝试下一个渠道（会取新卡密）
         await disableCardkey(cardkeyId, result.message);
       } else {
+        // 非卡密问题（token 无效、账号问题等）：释放卡密回池，直接终止
+        // 换渠道也解决不了，避免浪费其他渠道卡密
         await releaseCardkey(cardkeyId);
+        return {
+          success: false,
+          error: result.message,
+          attempts,
+        };
       }
     }
 
-    // 非 retryable 的失败，继续尝试下一个渠道
-    // retryable 的也继续尝试（本轮内穷尽所有渠道）
+    // 无卡密渠道的失败，继续尝试下一个渠道
   }
 
   return {
