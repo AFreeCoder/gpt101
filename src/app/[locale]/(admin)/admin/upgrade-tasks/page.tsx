@@ -117,8 +117,7 @@ export default function UpgradeTasksPage() {
               <th className="px-3 py-2 text-left">本站卡密</th>
               <th className="px-3 py-2 text-left">用户邮箱</th>
               <th className="px-3 py-2 text-left">状态</th>
-              <th className="px-3 py-2 text-left">渠道</th>
-              <th className="px-3 py-2 text-left">结果</th>
+              <th className="px-3 py-2 text-left">渠道/卡密</th>
               <th className="px-3 py-2 text-left">Token</th>
               <th className="px-3 py-2 text-left">时间</th>
               <th className="px-3 py-2 text-left">操作</th>
@@ -126,9 +125,9 @@ export default function UpgradeTasksPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
+              <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
             ) : tasks.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
+              <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
             ) : (
               tasks.map((t) => (
                 <tr key={t.id} className="border-t hover:bg-gray-50">
@@ -139,9 +138,17 @@ export default function UpgradeTasksPage() {
                       {STATUS_MAP[t.status]?.label || t.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs">{t.successChannelName || '-'}</td>
-                  <td className="px-3 py-2 text-xs text-gray-500 max-w-36 truncate" title={t.resultMessage || t.lastError || ''}>
-                    {t.resultMessage || t.lastError || '-'}
+                  <td className="px-3 py-2 text-xs">
+                    {t.status === 'succeeded' ? (
+                      <div>
+                        <span>{t.successChannelName}</span>
+                        {t.successChannelCardkey && (
+                          <div className="font-mono text-gray-400 truncate max-w-32" title={t.successChannelCardkey}>{t.successChannelCardkey}</div>
+                        )}
+                      </div>
+                    ) : t.status === 'failed' ? (
+                      <span className="text-gray-400 truncate max-w-36 block" title={t.lastError || ''}>{t.lastError || '-'}</span>
+                    ) : '-'}
                   </td>
                   <td className="px-3 py-2">
                     <button onClick={() => setViewToken(t.sessionToken)} className="text-xs text-blue-600 hover:underline">查看</button>
