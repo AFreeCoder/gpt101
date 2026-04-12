@@ -229,6 +229,15 @@ export default function UpgradePage() {
                   </div>
                 </div>
 
+                {/* Token 获取教程 */}
+                <div className="mb-3 rounded-lg bg-muted/50 px-3 py-2.5 text-xs text-muted-foreground">
+                  <p className="mb-1 font-medium text-foreground/80">如何获取 Token：</p>
+                  <ol className="list-inside list-decimal space-y-0.5">
+                    <li>登录 ChatGPT 官网：<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com</a></li>
+                    <li>打开 <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com/api/auth/session</a>，复制页面全部内容</li>
+                  </ol>
+                </div>
+
                 <textarea
                   value={sessionToken}
                   onChange={(e) => { setSessionToken(e.target.value); if (tokenParsed) setTokenParsed(false); }}
@@ -237,15 +246,6 @@ export default function UpgradePage() {
                   disabled={!!taskNo}
                   className="w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-xs leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
                 />
-
-                {/* Token 获取教程 */}
-                <div className="mt-3 rounded-lg bg-muted/50 px-3 py-2.5 text-xs text-muted-foreground">
-                  <p className="mb-1 font-medium text-foreground/80">如何获取 Token：</p>
-                  <ol className="list-inside list-decimal space-y-0.5">
-                    <li>登录 ChatGPT 官网：<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com</a></li>
-                    <li>打开 <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com/api/auth/session</a>，复制页面全部内容</li>
-                  </ol>
-                </div>
 
                 <div className="mt-3 flex justify-end">
                   <button
