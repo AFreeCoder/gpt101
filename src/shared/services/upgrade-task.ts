@@ -1,10 +1,20 @@
-import { and, count, desc, eq, lte, isNull, sql } from 'drizzle-orm';
+import { and, count, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
-import { upgradeTask } from '@/config/db/schema';
-import { getUuid } from '@/shared/lib/hash';
-import { consumeCode, markCodeConsumed, rollbackCode } from '@/shared/models/redeem-code';
+import { redeemCode, upgradeTask } from '@/config/db/schema';
 import { runTask } from '@/extensions/upgrade-channel/runner';
+import { getUuid } from '@/shared/lib/hash';
+import {
+  consumeCode,
+  markCodeConsumed,
+  rollbackCode,
+} from '@/shared/models/redeem-code';
+import { getChannelById } from '@/shared/models/upgrade-channel';
+import { resolveVerifiedSessionAccount } from '@/shared/services/upgrade-account-resolver';
+import {
+  mergeUpgradeTaskMetadata,
+  parseUpgradeTaskMetadata,
+} from '@/shared/services/upgrade-task-helpers';
 
 export type UpgradeTask = typeof upgradeTask.$inferSelect;
 
@@ -14,6 +24,16 @@ export enum UpgradeTaskStatus {
   SUCCEEDED = 'succeeded',
   FAILED = 'failed',
   CANCELED = 'canceled',
+}
+
+function getRedeemCodeErrorMessage(reason: string): string {
+  const messages: Record<string, string> = {
+    not_found: '卡密不存在',
+    disabled: '该卡密已被禁用',
+    already_consumed: '该卡密已被使用',
+  };
+
+  return messages[reason] || '卡密不可用';
 }
 
 // --- 生成任务编号 ---
@@ -40,9 +60,14 @@ export async function verifyRedeemCode(code: string): Promise<{
 
   if (!row) return { valid: false, reason: 'not_found' };
   if (row.status === 'disabled') return { valid: false, reason: 'disabled' };
-  if (row.status === 'consumed') return { valid: false, reason: 'already_used' };
+  if (row.status === 'consumed')
+    return { valid: false, reason: 'already_used' };
 
-  return { valid: true, productCode: row.productCode, memberType: row.memberType };
+  return {
+    valid: true,
+    productCode: row.productCode,
+    memberType: row.memberType,
+  };
 }
 
 // --- Step 2: 解析 session token ---
@@ -53,54 +78,7 @@ export async function resolveAccount(sessionToken: string): Promise<{
   currentPlan?: string;
   accessToken?: string;
 }> {
-  // 用户可能提交纯 accessToken 字符串，也可能提交完整的 JSON
-  let parsed: any = null;
-
-  try {
-    parsed = JSON.parse(sessionToken);
-  } catch {
-    // 不是 JSON，当作纯 accessToken 处理
-  }
-
-  if (parsed && typeof parsed === 'object') {
-    // JSON 格式：校验必要字段
-    const email = parsed.user?.email || '';
-    const userId = parsed.user?.id || '';
-    const accountId = parsed.account?.id || '';
-    const currentPlan = parsed.account?.planType || '';
-    const accessToken = parsed.accessToken || '';
-
-    if (!userId) throw new Error('Token 格式不正确：缺少 user.id 字段');
-    if (!email) throw new Error('Token 格式不正确：缺少 user.email 字段');
-    if (!accountId) throw new Error('Token 格式不正确：缺少 account.id 字段');
-    if (!currentPlan) throw new Error('Token 格式不正确：缺少 account.planType 字段');
-    if (!accessToken) throw new Error('Token 格式不正确：缺少 accessToken 字段');
-
-    // 拦截已有 Plus 会员
-    if (currentPlan === 'plus') {
-      throw new Error('当前为 Plus 会员，请等会员到期后再进行充值升级');
-    }
-
-    return { email, accountId, currentPlan, accessToken };
-  }
-
-  // 纯 accessToken 字符串：尝试解码 JWT payload 提取邮箱
-  try {
-    const parts = sessionToken.split('.');
-    if (parts.length === 3) {
-      const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-      const profile = payload['https://api.openai.com/profile'] || {};
-      const auth = payload['https://api.openai.com/auth'] || {};
-      return {
-        email: profile.email || '',
-        accountId: auth.chatgpt_user_id || payload.sub || '',
-        currentPlan: auth.chatgpt_plan_type || '',
-        accessToken: sessionToken,
-      };
-    }
-  } catch {}
-
-  throw new Error('无法解析 Token，请粘贴完整的 Session Token 内容');
+  return resolveVerifiedSessionAccount(sessionToken);
 }
 
 // --- Step 3: 提交升级任务 ---
@@ -117,12 +95,13 @@ export async function submitUpgradeTask(req: {
 }): Promise<{ taskNo: string }> {
   const taskId = getUuid();
   const taskNo = generateTaskNo();
+  const account = await resolveVerifiedSessionAccount(req.sessionToken);
 
   await db().transaction(async (tx: any) => {
     // 锁定卡密
     const result = await consumeCode(tx, req.code, taskId);
     if (!result.ok) {
-      throw new Error(`Redeem code error: ${result.reason}`);
+      throw new Error(getRedeemCodeErrorMessage(result.reason));
     }
 
     // 创建任务
@@ -134,9 +113,9 @@ export async function submitUpgradeTask(req: {
       productCode: result.productCode,
       memberType: result.memberType,
       sessionToken: req.sessionToken,
-      chatgptEmail: req.chatgptEmail,
-      chatgptAccountId: req.chatgptAccountId,
-      chatgptCurrentPlan: req.chatgptCurrentPlan,
+      chatgptEmail: account.email,
+      chatgptAccountId: account.accountId,
+      chatgptCurrentPlan: account.currentPlan,
       status: UpgradeTaskStatus.PENDING,
       clientIp: req.clientIp,
       userAgent: req.userAgent,
@@ -177,7 +156,7 @@ export async function queryTaskStatus(
     pending: '升级任务已提交，正在排队处理...',
     running: '正在为您升级，请稍候...',
     succeeded: '升级成功！请刷新您的 ChatGPT 页面查看。',
-    failed: '升级失败，请联系客服处理。',
+    failed: '充值异常，请联系客服处理。',
     canceled: '任务已取消。',
   };
 
@@ -196,35 +175,39 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
   let processed = 0;
 
   for (let i = 0; i < maxCount; i++) {
-    // 拉取一个 pending 任务
-    const [task] = await db()
-      .select()
-      .from(upgradeTask)
-      .where(eq(upgradeTask.status, UpgradeTaskStatus.PENDING))
-      .orderBy(upgradeTask.createdAt)
-      .limit(1);
+    const task = await db().transaction(async (tx: any) => {
+      const [pendingTask] = await tx
+        .select()
+        .from(upgradeTask)
+        .where(eq(upgradeTask.status, UpgradeTaskStatus.PENDING))
+        .orderBy(upgradeTask.createdAt)
+        .limit(1)
+        .for('update', { skipLocked: true });
+
+      if (!pendingTask) return null;
+
+      await tx
+        .update(upgradeTask)
+        .set({
+          status: UpgradeTaskStatus.RUNNING,
+          startedAt: new Date(),
+          lastError: null,
+          finishedAt: null,
+          resultMessage: null,
+        })
+        .where(eq(upgradeTask.id, pendingTask.id));
+
+      return pendingTask as UpgradeTask;
+    });
 
     if (!task) break;
-
-    // 标记为 running
-    await db()
-      .update(upgradeTask)
-      .set({
-        status: UpgradeTaskStatus.RUNNING,
-        startedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(upgradeTask.id, task.id),
-          eq(upgradeTask.status, UpgradeTaskStatus.PENDING)
-        )
-      );
 
     // 执行升级
     try {
       const result = await runTask({
         taskId: task.id,
-        productCode: task.productCode as 'plus' | 'pro' | 'team',
+        productCode: task.productCode,
+        memberType: task.memberType,
         sessionToken: task.sessionToken,
         chatgptEmail: task.chatgptEmail,
       });
@@ -237,6 +220,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
             successChannelId: result.channelId,
             successChannelCardkeyId: result.channelCardkeyId,
             attemptCount: result.attempts.length,
+            resultMessage: result.message || '升级成功',
             finishedAt: new Date(),
           })
           .where(eq(upgradeTask.id, task.id));
@@ -244,18 +228,29 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
         // 标记本站卡密为已消费
         await markCodeConsumed(task.redeemCodeId);
       } else {
+        const nextMetadata = result.preserveRedeemCode
+          ? mergeUpgradeTaskMetadata(task.metadata, {
+              manualRequired: true,
+              manualRequiredReason: result.error,
+            })
+          : task.metadata;
+
         await db()
           .update(upgradeTask)
           .set({
             status: UpgradeTaskStatus.FAILED,
             lastError: result.error,
             attemptCount: result.attempts.length,
+            resultMessage: null,
+            metadata: nextMetadata,
             finishedAt: new Date(),
           })
           .where(eq(upgradeTask.id, task.id));
 
-        // 失败：回滚本站卡密
-        await rollbackCode(task.redeemCodeId);
+        if (!result.preserveRedeemCode) {
+          // 失败：回滚本站卡密
+          await rollbackCode(task.redeemCodeId);
+        }
       }
     } catch (err: any) {
       await db()
@@ -263,6 +258,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
         .set({
           status: UpgradeTaskStatus.FAILED,
           lastError: err.message,
+          resultMessage: null,
           finishedAt: new Date(),
         })
         .where(eq(upgradeTask.id, task.id));
@@ -326,19 +322,41 @@ export async function getTaskById(taskId: string) {
 
 export async function markTaskSuccess(
   taskId: string,
-  note?: string
+  input?: {
+    channelId?: string;
+    channelCardkey?: string;
+    note?: string;
+  }
 ) {
   const task = await getTaskById(taskId);
   if (!task) throw new Error('Task not found');
+  if (task.status === UpgradeTaskStatus.SUCCEEDED) {
+    throw new Error('任务已经是成功状态');
+  }
+
+  let channelName: string | undefined;
+  if (input?.channelId) {
+    const channel = await getChannelById(input.channelId);
+    if (!channel) {
+      throw new Error('渠道不存在');
+    }
+    channelName = channel.name;
+  }
 
   await db()
     .update(upgradeTask)
     .set({
       status: UpgradeTaskStatus.SUCCEEDED,
       finishedAt: new Date(),
-      metadata: note
-        ? JSON.stringify({ ...JSON.parse(task.metadata || '{}'), adminNote: note })
-        : task.metadata,
+      lastError: null,
+      successChannelId: input?.channelId || task.successChannelId,
+      resultMessage: '管理员已标记成功',
+      metadata: mergeUpgradeTaskMetadata(task.metadata, {
+        adminNote: input?.note,
+        manualSuccessChannelId: input?.channelId,
+        manualSuccessChannelName: channelName,
+        manualSuccessChannelCardkey: input?.channelCardkey,
+      }),
     })
     .where(eq(upgradeTask.id, taskId));
 
@@ -346,37 +364,108 @@ export async function markTaskSuccess(
 }
 
 export async function retryTask(taskId: string) {
-  await db()
-    .update(upgradeTask)
-    .set({
-      status: UpgradeTaskStatus.PENDING,
-      lastError: null,
-      startedAt: null,
-      finishedAt: null,
-    })
-    .where(
-      and(
-        eq(upgradeTask.id, taskId),
-        sql`${upgradeTask.status} IN ('failed', 'canceled')`
+  await db().transaction(async (tx: any) => {
+    const [task] = await tx
+      .select()
+      .from(upgradeTask)
+      .where(eq(upgradeTask.id, taskId))
+      .limit(1)
+      .for('update');
+
+    if (!task) throw new Error('Task not found');
+    if (
+      ![UpgradeTaskStatus.FAILED, UpgradeTaskStatus.CANCELED].includes(
+        task.status as UpgradeTaskStatus
       )
-    );
+    ) {
+      throw new Error('仅失败或已取消的任务可以重试');
+    }
+
+    const metadata = parseUpgradeTaskMetadata(task.metadata);
+    if (metadata.manualRequired) {
+      throw new Error('该任务需人工处理，不能直接重试');
+    }
+
+    const [code] = await tx
+      .select()
+      .from(redeemCode)
+      .where(eq(redeemCode.id, task.redeemCodeId))
+      .limit(1)
+      .for('update');
+
+    if (!code) throw new Error('Redeem code not found');
+    if (code.status === 'disabled') {
+      throw new Error('该卡密已被禁用，无法重试');
+    }
+    if (code.status === 'consumed' && code.usedByTaskId !== task.id) {
+      throw new Error('该卡密已被其他任务占用，无法重试');
+    }
+
+    await tx
+      .update(redeemCode)
+      .set({
+        status: 'consumed',
+        usedByTaskId: task.id,
+        usedAt: new Date(),
+      })
+      .where(eq(redeemCode.id, code.id));
+
+    await tx
+      .update(upgradeTask)
+      .set({
+        status: UpgradeTaskStatus.PENDING,
+        lastError: null,
+        resultMessage: null,
+        startedAt: null,
+        finishedAt: null,
+        successChannelId: null,
+        successChannelCardkeyId: null,
+      })
+      .where(eq(upgradeTask.id, taskId));
+  });
 }
 
 export async function cancelTask(taskId: string, reason?: string) {
-  const task = await getTaskById(taskId);
-  if (!task) throw new Error('Task not found');
+  await db().transaction(async (tx: any) => {
+    const [task] = await tx
+      .select()
+      .from(upgradeTask)
+      .where(eq(upgradeTask.id, taskId))
+      .limit(1)
+      .for('update');
 
-  await db()
-    .update(upgradeTask)
-    .set({
-      status: UpgradeTaskStatus.CANCELED,
-      lastError: reason || 'Canceled by admin',
-      finishedAt: new Date(),
-    })
-    .where(eq(upgradeTask.id, taskId));
+    if (!task) throw new Error('Task not found');
+    if (task.status === UpgradeTaskStatus.SUCCEEDED) {
+      throw new Error('成功任务不能取消');
+    }
+    if (task.status === UpgradeTaskStatus.CANCELED) {
+      return;
+    }
+    if (
+      ![UpgradeTaskStatus.PENDING, UpgradeTaskStatus.FAILED].includes(
+        task.status as UpgradeTaskStatus
+      )
+    ) {
+      throw new Error('仅排队中或失败任务可以取消');
+    }
 
-  // 回滚卡密
-  if (task.status !== UpgradeTaskStatus.SUCCEEDED) {
-    await rollbackCode(task.redeemCodeId);
-  }
+    await tx
+      .update(upgradeTask)
+      .set({
+        status: UpgradeTaskStatus.CANCELED,
+        lastError: reason || 'Canceled by admin',
+        resultMessage: null,
+        finishedAt: new Date(),
+      })
+      .where(eq(upgradeTask.id, taskId));
+
+    await tx
+      .update(redeemCode)
+      .set({
+        status: 'available',
+        usedByTaskId: null,
+        usedAt: null,
+      })
+      .where(eq(redeemCode.id, task.redeemCodeId));
+  });
 }

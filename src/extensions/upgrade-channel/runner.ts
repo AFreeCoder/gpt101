@@ -7,6 +7,7 @@ import { getAdapter } from './registry';
 import type { UpgradeRequest, UpgradeResult } from './types';
 import {
   acquireCardkey,
+  disableCardkey,
   releaseCardkey,
   markCardkeyUsed,
 } from '@/shared/models/channel-cardkey';
@@ -14,10 +15,12 @@ import {
 // 确保所有 adapter 被注册（side-effect import）
 import './adapters/mock';
 import './adapters/987ai';
+import './adapters/9977ai';
 
 export interface RunTaskInput {
   taskId: string;
-  productCode: 'plus' | 'pro' | 'team';
+  productCode: string;
+  memberType: string;
   sessionToken: string;
   chatgptEmail: string;
 }
@@ -26,7 +29,9 @@ export interface RunTaskResult {
   success: boolean;
   channelId?: string;
   channelCardkeyId?: string;
+  message?: string;
   error?: string;
+  preserveRedeemCode?: boolean;
   attempts: AttemptRecord[];
 }
 
@@ -68,6 +73,8 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
       .map((s: string) => s.trim());
     if (!supported.includes(input.productCode)) continue;
 
+    attemptNo++;
+
     // 获取 adapter
     const adapter = getAdapter(channel.driver);
     if (!adapter) {
@@ -76,7 +83,7 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
         id: noAdapterAttemptId,
         taskId: input.taskId,
         channelId: channel.id,
-        attemptNo: attemptNo,
+        attemptNo,
         status: 'skipped',
         errorMessage: `未找到渠道适配器: ${channel.driver}`,
         durationMs: 0,
@@ -92,15 +99,19 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
       });
       continue;
     }
-
-    attemptNo++;
     let cardkey: any = null;
     let cardkeyId: string | undefined;
 
     // 如果渠道需要卡密，先从库存池获取
     if (channel.requiresCardkey) {
       cardkey = await db().transaction(async (tx: any) => {
-        return acquireCardkey(tx, channel.id, input.productCode, input.taskId);
+        return acquireCardkey(
+          tx,
+          channel.id,
+          input.productCode,
+          input.memberType,
+          input.taskId
+        );
       });
 
       if (!cardkey) {
@@ -134,6 +145,7 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
     const req: UpgradeRequest = {
       taskId: input.taskId,
       productCode: input.productCode,
+      memberType: input.memberType,
       sessionToken: input.sessionToken,
       chatgptEmail: input.chatgptEmail,
       channelCardkey: cardkey?.cardkey,
@@ -188,19 +200,41 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
         success: true,
         channelId: channel.id,
         channelCardkeyId: cardkeyId,
+        message: result.message || '升级成功',
         attempts,
       };
     }
 
-    // 失败：释放渠道卡密回池，继续尝试下一个渠道
+    const failedResult = result as Extract<UpgradeResult, { ok: false }>;
+
     if (cardkeyId) {
-      await releaseCardkey(cardkeyId);
+      switch (failedResult.cardkeyAction || 'release') {
+        case 'consume':
+          await markCardkeyUsed(cardkeyId, attemptId);
+          break;
+        case 'disable':
+          await disableCardkey(cardkeyId, failedResult.message);
+          break;
+        default:
+          await releaseCardkey(cardkeyId);
+      }
+    }
+
+    if (failedResult.stopFallback) {
+      return {
+        success: false,
+        error: failedResult.message,
+        preserveRedeemCode: failedResult.preserveRedeemCode,
+        attempts,
+      };
     }
   }
 
   return {
     success: false,
-    error: `All ${attempts.length} channel attempts failed`,
+    error:
+      attempts[attempts.length - 1]?.message ||
+      '所有渠道尝试都失败了',
     attempts,
   };
 }

@@ -5,6 +5,7 @@ import { upgradeChannel, channelCardkey } from '@/config/db/schema';
 import { respData, respErr } from '@/shared/lib/resp';
 import { requirePermission, PERMISSIONS } from '@/core/rbac';
 import { getTaskList } from '@/shared/services/upgrade-task';
+import { parseUpgradeTaskMetadata } from '@/shared/services/upgrade-task-helpers';
 
 export async function GET(req: Request) {
   try {
@@ -32,7 +33,7 @@ export async function GET(req: Request) {
         .select({ id: upgradeChannel.id, name: upgradeChannel.name })
         .from(upgradeChannel)
         .where(sql`${upgradeChannel.id} IN ${channelIds}`);
-      channels.forEach((c) => channelMap.set(c.id, c.name));
+      channels.forEach((c: { id: string; name: string }) => channelMap.set(c.id, c.name));
     }
 
     const cardkeyMap = new Map<string, string>();
@@ -41,14 +42,23 @@ export async function GET(req: Request) {
         .select({ id: channelCardkey.id, cardkey: channelCardkey.cardkey })
         .from(channelCardkey)
         .where(sql`${channelCardkey.id} IN ${cardkeyIds}`);
-      cardkeys.forEach((c) => cardkeyMap.set(c.id, c.cardkey));
+      cardkeys.forEach((c: { id: string; cardkey: string }) => cardkeyMap.set(c.id, c.cardkey));
     }
 
-    const enriched = result.items.map((t: any) => ({
-      ...t,
-      successChannelName: t.successChannelId ? (channelMap.get(t.successChannelId) || '') : '',
-      successChannelCardkey: t.successChannelCardkeyId ? (cardkeyMap.get(t.successChannelCardkeyId) || '') : '',
-    }));
+    const enriched = result.items.map((t: any) => {
+      const metadata = parseUpgradeTaskMetadata(t.metadata);
+
+      return {
+        ...t,
+        manualRequired: Boolean(metadata.manualRequired),
+        successChannelName: t.successChannelId
+          ? (channelMap.get(t.successChannelId) || metadata.manualSuccessChannelName || '')
+          : (metadata.manualSuccessChannelName || ''),
+        successChannelCardkey: t.successChannelCardkeyId
+          ? (cardkeyMap.get(t.successChannelCardkeyId) || metadata.manualSuccessChannelCardkey || '')
+          : (metadata.manualSuccessChannelCardkey || ''),
+      };
+    });
 
     return respData({ items: enriched, total: result.total });
   } catch (err: any) {

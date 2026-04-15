@@ -63,3 +63,7 @@ src/config/db/migrations*
 
 # SEO 文档
 seo/
+
+# 部署敏感文件和产物
+deploy/.env
+deploy/backups/

@@ -92,7 +92,7 @@ export async function importCardkeys(args: {
     .select({ cardkey: channelCardkey.cardkey })
     .from(channelCardkey)
     .where(eq(channelCardkey.channelId, args.channelId));
-  const existingSet = new Set(existing.map((e) => e.cardkey));
+  const existingSet = new Set(existing.map((e: { cardkey: string }) => e.cardkey));
 
   await db().transaction(async (tx: any) => {
     for (const key of args.cardkeys) {
@@ -130,6 +130,7 @@ export async function acquireCardkey(
   tx: any,
   channelId: string,
   productCode: string,
+  memberType: string,
   taskId: string
 ): Promise<ChannelCardkey | null> {
   const [row] = await tx
@@ -139,6 +140,7 @@ export async function acquireCardkey(
       and(
         eq(channelCardkey.channelId, channelId),
         eq(channelCardkey.productCode, productCode),
+        eq(channelCardkey.memberType, memberType),
         eq(channelCardkey.status, ChannelCardkeyStatus.AVAILABLE)
       )
     )
@@ -183,6 +185,7 @@ export async function markCardkeyUsed(
     .update(channelCardkey)
     .set({
       status: ChannelCardkeyStatus.USED,
+      lockedByTaskId: null,
       usedByAttemptId: attemptId,
       usedAt: new Date(),
     })

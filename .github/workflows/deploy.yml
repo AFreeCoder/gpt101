@@ -1,0 +1,194 @@
+name: Deploy to Silicon
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: '部署分支'
+        required: true
+        default: 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SILICON_HOST }}
+          username: work
+          key: ${{ secrets.SILICON_SSH_PRIVATE_KEY }}
+          command_timeout: 30m
+          envs: DEPLOY_BRANCH
+          script: |
+            set -euo pipefail
+
+            APP_DIR="$HOME/projects/gpt101"
+            DEPLOY_DIR="$APP_DIR/deploy"
+            BACKUP_DIR="$DEPLOY_DIR/backups"
+            REPO_URL="git@github.com:AFreeCoder/gpt101.git"
+            DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+
+            # --- 工具函数 ---
+
+            require_command() {
+              command -v "$1" >/dev/null 2>&1 || {
+                echo "缺少命令: $1" >&2; exit 1
+              }
+            }
+
+            tag_current_image_for_rollback() {
+              local current_commit="$1"
+              local rollback_ts="$(date +%Y%m%d_%H%M%S)"
+              local rollback_tag="gpt101:rollback-${rollback_ts}-${current_commit}"
+
+              if docker image inspect gpt101:latest >/dev/null 2>&1; then
+                docker tag gpt101:latest "$rollback_tag"
+                docker tag gpt101:latest gpt101:rollback-latest
+                {
+                  echo "created_at=$rollback_ts"
+                  echo "source_commit=$current_commit"
+                  echo "rollback_tag=$rollback_tag"
+                  echo "rollback_alias=gpt101:rollback-latest"
+                } > "$BACKUP_DIR/last-rollback-image.txt"
+                echo "已创建回退镜像标签: $rollback_tag"
+              else
+                echo "未发现 gpt101:latest，跳过回退镜像打标"
+              fi
+            }
+
+            wait_for_health() {
+              local name="$1"
+              local timeout="${2:-180}"
+              local elapsed=0
+              while [ "$elapsed" -lt "$timeout" ]; do
+                local state
+                state="$(docker inspect --format \
+                  '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
+                  "$name" 2>/dev/null || true)"
+                case "$state" in
+                  healthy|running) echo "$name 状态正常: $state"; return 0 ;;
+                  unhealthy|exited|dead)
+                    echo "$name 状态异常: $state" >&2
+                    docker logs --tail 200 "$name" || true
+                    return 1 ;;
+                esac
+                sleep 5
+                elapsed=$((elapsed + 5))
+              done
+              echo "等待 $name 健康检查超时" >&2
+              docker logs --tail 200 "$name" || true
+              return 1
+            }
+
+            # --- 前置检查 ---
+
+            require_command git
+            require_command docker
+            require_command gzip
+
+            FREE_KB="$(df -Pk "$HOME" | awk 'NR==2 {print $4}')"
+            if [ -z "$FREE_KB" ] || [ "$FREE_KB" -lt $((5 * 1024 * 1024)) ]; then
+              echo "可用磁盘不足 5GB，停止部署" >&2
+              exit 1
+            fi
+
+            # --- 部署前数据库备份 ---
+
+            mkdir -p "$BACKUP_DIR"
+            if docker ps --filter "name=^gpt101-postgres$" --format '{{.Names}}' | grep -q .; then
+              DB_USER="$(docker exec gpt101-postgres printenv POSTGRES_USER)"
+              DB_NAME="$(docker exec gpt101-postgres printenv POSTGRES_DB)"
+              if [ -z "$DB_USER" ] || [ -z "$DB_NAME" ]; then
+                echo "无法读取数据库用户/库名，停止部署" >&2
+                exit 1
+              fi
+
+              BACKUP_FILE="${BACKUP_DIR}/pre-deploy-$(date +%Y%m%d_%H%M%S).sql.gz"
+              echo "开始部署前备份..."
+              docker exec gpt101-postgres pg_dump -U "$DB_USER" -d "$DB_NAME" --clean --if-exists \
+                | gzip > "$BACKUP_FILE"
+
+              if [ -s "$BACKUP_FILE" ] && gzip -t "$BACKUP_FILE"; then
+                echo "备份成功: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | cut -f1))"
+                find "$BACKUP_DIR" -name "pre-deploy-*.sql.gz" -mtime +7 -delete
+              else
+                echo "备份失败，中止部署！" >&2
+                rm -f "$BACKUP_FILE"
+                exit 1
+              fi
+            else
+              echo "首次部署，跳过数据库备份"
+            fi
+
+            # --- 拉取代码 ---
+
+            if [ -d "$APP_DIR/.git" ]; then
+              echo "检测到已有 Git 仓库: $APP_DIR"
+            elif [ -d "$APP_DIR" ]; then
+              BAK_DIR="${APP_DIR}.bak.$(date +%Y%m%d_%H%M%S)"
+              echo "目录存在但不是 Git 仓库，备份为: $BAK_DIR"
+              mv "$APP_DIR" "$BAK_DIR"
+              git clone "$REPO_URL" "$APP_DIR"
+            else
+              echo "首次部署，克隆仓库..."
+              git clone "$REPO_URL" "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+
+            CURRENT_REMOTE="$(git remote get-url origin 2>/dev/null || true)"
+            if [ "$CURRENT_REMOTE" != "$REPO_URL" ]; then
+              git remote set-url origin "$REPO_URL"
+            fi
+
+            CURRENT_DEPLOY_COMMIT="$(git rev-parse --short=12 HEAD 2>/dev/null || echo unknown)"
+            tag_current_image_for_rollback "$CURRENT_DEPLOY_COMMIT"
+
+            git fetch origin "$DEPLOY_BRANCH"
+            git checkout "$DEPLOY_BRANCH"
+            git reset --hard "origin/$DEPLOY_BRANCH"
+
+            # --- 构建并部署 ---
+
+            cd "$DEPLOY_DIR"
+            if [ ! -f .env ]; then
+              echo "缺少 $DEPLOY_DIR/.env，停止部署" >&2
+              exit 1
+            fi
+
+            APP_COMMIT="$(git rev-parse --short=12 HEAD)"
+            echo "部署提交: ${APP_COMMIT} (分支: ${DEPLOY_BRANCH})"
+
+            docker compose config -q
+            docker compose build
+
+            # 清理残留容器（防 Compose recreate 冲突）
+            for stale in $(docker ps -a --format '{{.Names}}' | grep -E '^[0-9a-f]+_gpt101'); do
+              echo "清理残留容器: $stale"
+              docker rm -f "$stale" 2>/dev/null || true
+            done
+
+            docker compose up -d --remove-orphans
+
+            # --- 健康检查 ---
+
+            wait_for_health gpt101-postgres 180
+            wait_for_health gpt101 300
+
+            # Worker 没有 healthcheck，检查容器是否在运行
+            sleep 5
+            WORKER_STATE="$(docker inspect --format '{{.State.Status}}' gpt101-worker 2>/dev/null || echo unknown)"
+            if [ "$WORKER_STATE" != "running" ]; then
+              echo "gpt101-worker 状态异常: $WORKER_STATE" >&2
+              docker logs --tail 200 gpt101-worker || true
+              exit 1
+            fi
+            echo "gpt101-worker 状态正常: running"
+
+            # --- 清理 ---
+
+            docker image prune -f
+            echo "部署完成！提交: ${APP_COMMIT}，分支: ${DEPLOY_BRANCH}"
+        env:
+          DEPLOY_BRANCH: ${{ github.event.inputs.branch }}

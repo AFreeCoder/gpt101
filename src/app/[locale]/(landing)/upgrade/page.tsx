@@ -120,7 +120,7 @@ export default function UpgradePage() {
         }),
       });
       const data = await res.json();
-      if (data.code !== 0) { setError(data.message); setErrorStep(3); return; }
+      if (data.code !== 0) { setError('充值异常，请联系客服处理'); setErrorStep(3); return; }
       setTaskNo(data.data.taskNo);
       setTaskStatus('pending');
       setTaskMessage('升级任务已提交，正在排队处理...');
@@ -426,7 +426,7 @@ export default function UpgradePage() {
                 {[
                   { icon: '🔒', text: '数据加密传输' },
                   { icon: '⚡', text: '通常 1-2 分钟完成' },
-                  { icon: '🛡️', text: '失败自动退还卡密' },
+                  { icon: '🛡️', text: '异常联系客服处理' },
                 ].map((item) => (
                   <div key={item.text} className="flex items-center gap-2.5 text-sm text-muted-foreground">
                     <span className="text-base">{item.icon}</span>

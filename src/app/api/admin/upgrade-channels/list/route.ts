@@ -14,7 +14,7 @@ export async function GET() {
     const channels = await getChannelList();
 
     const channelsWithStock = await Promise.all(
-      channels.map(async (channel) => {
+      channels.map(async (channel: (typeof channels)[number]) => {
         const availableCount = await getAvailableCount(channel.id);
         return { ...channel, availableCount };
       })

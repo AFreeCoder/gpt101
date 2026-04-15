@@ -9,7 +9,6 @@ export async function POST(req: Request) {
 
     if (!code) return respErr('请输入卡密');
     if (!sessionToken) return respErr('请输入 session token');
-    if (!chatgptEmail) return respErr('缺少 ChatGPT 账号信息');
 
     if (!validateRedeemCodeFormat(code)) {
       return respErr('卡密格式不正确');

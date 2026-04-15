@@ -18,6 +18,7 @@ interface Task {
   successChannelCardkey: string;
   lastError: string | null;
   resultMessage: string | null;
+  manualRequired?: boolean;
   createdAt: string;
   finishedAt: string | null;
 }
@@ -39,7 +40,7 @@ export default function UpgradeTasksPage() {
   const [page, setPage] = useState(1);
   const [viewToken, setViewToken] = useState('');
   const [showMarkSuccess, setShowMarkSuccess] = useState<string | null>(null); // taskId
-  const [msChannelName, setMsChannelName] = useState('');
+  const [msChannelId, setMsChannelId] = useState('');
   const [msChannelCardkey, setMsChannelCardkey] = useState('');
   const [msNote, setMsNote] = useState('');
   const [msSaving, setMsSaving] = useState(false);
@@ -158,9 +159,13 @@ export default function UpgradeTasksPage() {
                     <div className="flex gap-2">
                       {(t.status === 'failed' || t.status === 'canceled') && (
                         <>
-                          <button onClick={() => handleAction(t.id, 'retry')} className="text-xs text-blue-600 hover:underline">重试</button>
-                          <button onClick={() => { setShowMarkSuccess(t.id); setMsChannelName(''); setMsChannelCardkey(''); setMsNote(''); }} className="text-xs text-green-600 hover:underline">标记成功</button>
-                          <button onClick={() => handleAction(t.id, 'cancel')} className="text-xs text-red-600 hover:underline">取消</button>
+                          {!t.manualRequired && (
+                            <button onClick={() => handleAction(t.id, 'retry')} className="text-xs text-blue-600 hover:underline">重试</button>
+                          )}
+                          <button onClick={() => { setShowMarkSuccess(t.id); setMsChannelId(''); setMsChannelCardkey(''); setMsNote(''); }} className="text-xs text-green-600 hover:underline">标记成功</button>
+                          {t.status === 'failed' && (
+                            <button onClick={() => handleAction(t.id, 'cancel')} className="text-xs text-red-600 hover:underline">取消</button>
+                          )}
                         </>
                       )}
                       {t.status === 'pending' && (
@@ -212,11 +217,11 @@ export default function UpgradeTasksPage() {
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-sm font-medium">使用的渠道</label>
-                <select value={msChannelName} onChange={(e) => setMsChannelName(e.target.value)}
+                <select value={msChannelId} onChange={(e) => setMsChannelId(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="">请选择</option>
                   {channels.map((ch) => (
-                    <option key={ch.id} value={ch.name}>{ch.name}</option>
+                    <option key={ch.id} value={ch.id}>{ch.name}</option>
                   ))}
                 </select>
               </div>
@@ -242,7 +247,9 @@ export default function UpgradeTasksPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       taskId: showMarkSuccess,
-                      note: [msChannelName && `渠道: ${msChannelName}`, msChannelCardkey && `卡密: ${msChannelCardkey}`, msNote].filter(Boolean).join('; '),
+                      channelId: msChannelId || undefined,
+                      channelCardkey: msChannelCardkey || undefined,
+                      note: msNote || undefined,
                     }),
                   });
                   const data = await res.json();

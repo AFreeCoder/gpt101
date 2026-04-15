@@ -88,7 +88,7 @@ export default async function BatchDetailPage({
           <div className="rounded-lg border p-3">
             <div className="text-xs text-gray-500">使用进度</div>
             <div className="mt-1 font-medium">
-              {stats.map((s) => (
+              {stats.map((s: { status: string; count: number }) => (
                 <span key={s.status} className={`mr-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[s.status] || ''}`}>
                   {STATUS_LABELS[s.status] || s.status}: {s.count}
                 </span>

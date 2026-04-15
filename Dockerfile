@@ -17,7 +17,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY . .
-RUN pnpm build
+RUN pnpm build && pnpm exec esbuild worker.ts --bundle --platform=node --format=cjs --outfile=worker.js
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -34,6 +34,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Worker entry (same image, different CMD)
 COPY --from=builder --chown=nextjs:nodejs /app/worker.js ./worker.js
+# Worker bundle still loads libsql's platform package at runtime on Alpine.
+# Keep this path aligned with the version pinned in pnpm-lock.yaml.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.pnpm/@libsql+linux-x64-musl@0.5.22/node_modules/@libsql/linux-x64-musl ./node_modules/@libsql/linux-x64-musl
 
 USER nextjs
 

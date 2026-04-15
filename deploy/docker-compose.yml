@@ -9,6 +9,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+    image: gpt101:latest
     container_name: gpt101
     restart: unless-stopped
     stop_grace_period: 30s
@@ -33,16 +34,14 @@ services:
     networks:
       - gpt101-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
 
   gpt101-worker:
-    build:
-      context: ..
-      dockerfile: Dockerfile
+    image: gpt101:latest
     container_name: gpt101-worker
     restart: unless-stopped
     stop_grace_period: 60s
@@ -79,6 +78,20 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  # 一次性运维容器，仅用于 schema 初始化和 RBAC 初始化
+  # 日常 docker compose up -d 不会启动此容器
+  # 使用方式：docker compose --profile ops run --rm gpt101-ops '...'
+  gpt101-ops:
+    image: node:20-alpine
+    profiles: ["ops"]
+    working_dir: /workspace
+    entrypoint: ["sh", "-lc"]
+    volumes:
+      - ..:/workspace
+      - /workspace/node_modules
+    networks:
+      - gpt101-network
 
 networks:
   gpt101-network:
