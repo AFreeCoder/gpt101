@@ -1,6 +1,8 @@
 import { respData, respErr } from '@/shared/lib/resp';
 import { validateRedeemCodeFormat } from '@/shared/lib/redeem-code';
+import { pickAndRunTasks } from '@/shared/services/upgrade-task';
 import { submitUpgradeTask } from '@/shared/services/upgrade-task';
+import { queueUpgradeTaskProcessing } from '@/shared/services/upgrade-worker-trigger';
 
 export async function POST(req: Request) {
   try {
@@ -36,6 +38,8 @@ export async function POST(req: Request) {
       userAgent,
       metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     });
+
+    queueUpgradeTaskProcessing(1, pickAndRunTasks);
 
     return respData({ taskNo: result.taskNo });
   } catch (err: any) {

@@ -124,7 +124,6 @@ export default function UpgradePage() {
       setTaskNo(data.data.taskNo);
       setTaskStatus('pending');
       setTaskMessage('升级任务已提交，正在排队处理...');
-      fetch('/api/upgrade/worker', { method: 'POST' }).catch(() => {});
       setPolling(true);
       pollStatus(data.data.taskNo);
     } catch { setError('网络错误，请重试'); setErrorStep(3); }

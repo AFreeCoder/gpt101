@@ -105,14 +105,28 @@ export async function importCardkeys(args: {
         skippedCount++;
         continue;
       }
-      await tx.insert(channelCardkey).values({
-        id: getUuid(),
-        channelId: args.channelId,
-        cardkey: trimmed,
-        productCode: args.productCode,
-        memberType: args.memberType,
-        status: ChannelCardkeyStatus.AVAILABLE,
-      });
+      const inserted = await tx
+        .insert(channelCardkey)
+        .values({
+          id: getUuid(),
+          channelId: args.channelId,
+          cardkey: trimmed,
+          productCode: args.productCode,
+          memberType: args.memberType,
+          status: ChannelCardkeyStatus.AVAILABLE,
+        })
+        .onConflictDoNothing({
+          target: [channelCardkey.channelId, channelCardkey.cardkey],
+        })
+        .returning({
+          id: channelCardkey.id,
+        });
+
+      if (inserted.length === 0) {
+        skippedCount++;
+        continue;
+      }
+
       existingSet.add(trimmed); // 防止同一批导入内重复
       importedCount++;
     }
@@ -179,14 +193,14 @@ export async function releaseCardkey(cardkeyId: string) {
  */
 export async function markCardkeyUsed(
   cardkeyId: string,
-  attemptId: string
+  attemptId?: string | null
 ) {
   await db()
     .update(channelCardkey)
     .set({
       status: ChannelCardkeyStatus.USED,
       lockedByTaskId: null,
-      usedByAttemptId: attemptId,
+      usedByAttemptId: attemptId ?? null,
       usedAt: new Date(),
     })
     .where(eq(channelCardkey.id, cardkeyId));
@@ -200,6 +214,7 @@ export async function disableCardkey(cardkeyId: string, reason?: string) {
     .update(channelCardkey)
     .set({
       status: ChannelCardkeyStatus.DISABLED,
+      lockedByTaskId: null,
       disabledReason: reason,
     })
     .where(eq(channelCardkey.id, cardkeyId));

@@ -1,7 +1,7 @@
 import { and, count, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
-import { redeemCode, upgradeTask } from '@/config/db/schema';
+import { channelCardkey, redeemCode, upgradeTask } from '@/config/db/schema';
 import { runTask } from '@/extensions/upgrade-channel/runner';
 import { getUuid } from '@/shared/lib/hash';
 import {
@@ -328,10 +328,9 @@ export async function markTaskSuccess(
     note?: string;
   }
 ) {
-  const task = await getTaskById(taskId);
-  if (!task) throw new Error('Task not found');
-  if (task.status === UpgradeTaskStatus.SUCCEEDED) {
-    throw new Error('任务已经是成功状态');
+  const trimmedChannelCardkey = input?.channelCardkey?.trim();
+  if (trimmedChannelCardkey && !input?.channelId) {
+    throw new Error('填写渠道卡密时必须选择渠道');
   }
 
   let channelName: string | undefined;
@@ -343,24 +342,72 @@ export async function markTaskSuccess(
     channelName = channel.name;
   }
 
-  await db()
-    .update(upgradeTask)
-    .set({
-      status: UpgradeTaskStatus.SUCCEEDED,
-      finishedAt: new Date(),
-      lastError: null,
-      successChannelId: input?.channelId || task.successChannelId,
-      resultMessage: '管理员已标记成功',
-      metadata: mergeUpgradeTaskMetadata(task.metadata, {
-        adminNote: input?.note,
-        manualSuccessChannelId: input?.channelId,
-        manualSuccessChannelName: channelName,
-        manualSuccessChannelCardkey: input?.channelCardkey,
-      }),
-    })
-    .where(eq(upgradeTask.id, taskId));
+  await db().transaction(async (tx: any) => {
+    const [task] = await tx
+      .select()
+      .from(upgradeTask)
+      .where(eq(upgradeTask.id, taskId))
+      .limit(1)
+      .for('update');
 
-  await markCodeConsumed(task.redeemCodeId);
+    if (!task) throw new Error('Task not found');
+    if (task.status === UpgradeTaskStatus.SUCCEEDED) {
+      throw new Error('任务已经是成功状态');
+    }
+
+    let successChannelCardkeyId = task.successChannelCardkeyId;
+    if (trimmedChannelCardkey && input?.channelId) {
+      const [cardkey] = await tx
+        .select()
+        .from(channelCardkey)
+        .where(
+          and(
+            eq(channelCardkey.channelId, input.channelId),
+            eq(channelCardkey.cardkey, trimmedChannelCardkey)
+          )
+        )
+        .limit(1)
+        .for('update');
+
+      if (!cardkey) {
+        throw new Error('渠道库存中未找到该卡密');
+      }
+
+      successChannelCardkeyId = cardkey.id;
+      await tx
+        .update(channelCardkey)
+        .set({
+          status: 'used',
+          lockedByTaskId: null,
+          usedByAttemptId: null,
+          usedAt: new Date(),
+        })
+        .where(eq(channelCardkey.id, cardkey.id));
+    }
+
+    await tx
+      .update(upgradeTask)
+      .set({
+        status: UpgradeTaskStatus.SUCCEEDED,
+        finishedAt: new Date(),
+        lastError: null,
+        successChannelId: input?.channelId || task.successChannelId,
+        successChannelCardkeyId,
+        resultMessage: '管理员已标记成功',
+        metadata: mergeUpgradeTaskMetadata(task.metadata, {
+          adminNote: input?.note,
+          manualSuccessChannelId: input?.channelId,
+          manualSuccessChannelName: channelName,
+          manualSuccessChannelCardkey: trimmedChannelCardkey,
+        }),
+      })
+      .where(eq(upgradeTask.id, taskId));
+
+    await tx
+      .update(redeemCode)
+      .set({ status: 'consumed' })
+      .where(eq(redeemCode.id, task.redeemCodeId));
+  });
 }
 
 export async function retryTask(taskId: string) {
@@ -440,6 +487,10 @@ export async function cancelTask(taskId: string, reason?: string) {
     }
     if (task.status === UpgradeTaskStatus.CANCELED) {
       return;
+    }
+    const metadata = parseUpgradeTaskMetadata(task.metadata);
+    if (metadata.manualRequired) {
+      throw new Error('该任务需人工处理，不能取消');
     }
     if (
       ![UpgradeTaskStatus.PENDING, UpgradeTaskStatus.FAILED].includes(

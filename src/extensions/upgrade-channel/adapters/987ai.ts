@@ -56,6 +56,7 @@ const adapter987ai: UpgradeChannelAdapter = {
         return {
           ok: false,
           retryable: false,
+          cardkeyAction: 'disable',
           message: `渠道卡密不可用: ${verifyData.error || '未知原因'}`,
         };
       }

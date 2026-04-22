@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 import { envConfigs } from '@/config';
@@ -639,6 +640,10 @@ export const channelCardkey = table(
       .notNull(),
   },
   (t) => [
+    uniqueIndex('uq_channel_cardkey_channel_cardkey').on(
+      t.channelId,
+      t.cardkey
+    ),
     index('idx_channel_cardkey_channel_status_product').on(
       t.channelId,
       t.status,

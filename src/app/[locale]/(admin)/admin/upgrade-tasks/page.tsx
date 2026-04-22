@@ -163,7 +163,7 @@ export default function UpgradeTasksPage() {
                             <button onClick={() => handleAction(t.id, 'retry')} className="text-xs text-blue-600 hover:underline">重试</button>
                           )}
                           <button onClick={() => { setShowMarkSuccess(t.id); setMsChannelId(''); setMsChannelCardkey(''); setMsNote(''); }} className="text-xs text-green-600 hover:underline">标记成功</button>
-                          {t.status === 'failed' && (
+                          {t.status === 'failed' && !t.manualRequired && (
                             <button onClick={() => handleAction(t.id, 'cancel')} className="text-xs text-red-600 hover:underline">取消</button>
                           )}
                         </>

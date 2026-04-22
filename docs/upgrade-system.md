@@ -189,7 +189,7 @@ Base URL: `https://api.987ai.vip/api`
 - **独立进程**：`worker.ts`，Docker 中用同一镜像、不同入口启动
 - **轮询方式**：`setInterval` 每 30 秒查询 `upgrade_task` 中 status=pending 的任务
 - **并发控制**：PG `SELECT ... FOR UPDATE SKIP LOCKED`
-- **即时触发**：用户提交后、管理员重试后，都会调 `POST /api/upgrade/worker` 立即触发一次
+- **即时触发**：用户提交后由 `POST /api/upgrade/submit` 在服务端异步触发一次 Worker；管理员重试后由后台接口直接触发一次 Worker
 - **优雅退出**：监听 SIGTERM，完成当前任务后退出
 
 ---
@@ -397,13 +397,12 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 - `src/app/[locale]/(landing)/invoice/page.tsx` — 发票申请表单
 - `src/app/[locale]/(landing)/renewal-discount/page.tsx` — 老用户优惠
 
-**前台 API（8 个）**：
+**前台 API（7 个）**：
 
 - `POST /api/upgrade/verify-code` — 验证卡密
 - `POST /api/upgrade/resolve-account` — 解析 Token
 - `POST /api/upgrade/submit` — 提交升级任务
 - `GET /api/upgrade/task/[taskNo]` — 查询任务状态
-- `POST /api/upgrade/worker` — 手动触发 Worker
 - `POST /api/renewal-discount/verify` — 老用户优惠验证
 - `POST /api/invoice/submit` — 发票提交
 - `GET /api/invoice/history` — 发票历史
