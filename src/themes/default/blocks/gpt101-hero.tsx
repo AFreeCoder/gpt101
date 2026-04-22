@@ -8,6 +8,7 @@ import { Button } from '@/shared/components/ui/button';
 import { sendOutboundClick } from '@/shared/lib/gtag';
 import { Section } from '@/shared/types/blocks/landing';
 
+import { getUpgradeButtonAction } from './gpt101-hero-actions';
 import { HeroSideAds } from './hero-side-ads';
 import { PurchaseChannelModal } from './purchase-channel-modal';
 
@@ -17,6 +18,8 @@ export function Gpt101Hero({ section }: { section: Section }) {
   const features = section.features || [];
   const trustMarks = section.trust_marks || [];
   const purchaseChannels = section.purchase_channels || [];
+  const upgradeButton = section.buttons?.[1];
+  const upgradeAction = getUpgradeButtonAction(upgradeButton);
 
   const sideAds = section.side_ads as { left?: any; right?: any } | undefined;
 
@@ -125,18 +128,35 @@ export function Gpt101Hero({ section }: { section: Section }) {
           )}
 
           {/* 立即升级按钮 */}
-          {section.buttons?.[1] && (
+          {upgradeButton && (
             <div className="flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row">
               <div className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 p-[2px] shadow-md transition-all duration-300 hover:shadow-lg sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(true)}
-                  className="group w-full rounded-[10px] bg-white px-10 py-4 text-lg font-bold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600"
-                >
-                  <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
-                    {section.buttons[1].title}
-                  </span>
-                </button>
+                {upgradeAction.type === 'link' ? (
+                  <Link
+                    href={upgradeAction.href}
+                    target={upgradeButton.target || '_self'}
+                    rel={
+                      upgradeButton.target === '_blank'
+                        ? 'noopener noreferrer'
+                        : undefined
+                    }
+                    className="group block w-full rounded-[10px] bg-white px-10 py-4 text-center text-lg font-bold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600"
+                  >
+                    <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
+                      {upgradeButton.title}
+                    </span>
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className="group w-full rounded-[10px] bg-white px-10 py-4 text-lg font-bold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600"
+                  >
+                    <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
+                      {upgradeButton.title}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           )}

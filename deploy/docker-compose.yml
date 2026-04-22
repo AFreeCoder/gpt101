@@ -22,8 +22,10 @@ services:
       - HOSTNAME=0.0.0.0
       - NEXT_PUBLIC_APP_URL=${APP_URL:-https://gpt101.org}
       - NEXT_PUBLIC_APP_NAME=${APP_NAME:-GPT101}
+      - NEXT_PUBLIC_DEFAULT_LOCALE=${NEXT_PUBLIC_DEFAULT_LOCALE:-zh}
       - DATABASE_PROVIDER=postgresql
       - DATABASE_URL=postgresql://${POSTGRES_USER:-gpt101}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@gpt101-postgres:5432/${POSTGRES_DB:-gpt101}
+      - AUTH_URL=${AUTH_URL:-https://gpt101.org}
       - AUTH_SECRET=${AUTH_SECRET:?AUTH_SECRET is required}
       - GOOGLE_ANALYTICS_ID=${GOOGLE_ANALYTICS_ID:-}
       - GOOGLE_ADS_ID=${GOOGLE_ADS_ID:-}

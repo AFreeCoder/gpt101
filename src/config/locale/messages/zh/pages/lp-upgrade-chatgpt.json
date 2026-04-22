@@ -23,9 +23,14 @@
         ],
         "buttons": [
           {
+            "title": "立即购买",
+            "url": "https://fe.dtyuedan.cn/shop/F2OLER91/52wtgh",
+            "variant": "default"
+          },
+          {
             "title": "立即升级",
             "url": "/upgrade?source=ad-plus",
-            "variant": "default"
+            "variant": "outline"
           }
         ],
         "reviews_link": true,

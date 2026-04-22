@@ -23,9 +23,14 @@
         ],
         "buttons": [
           {
-            "title": "Upgrade Now",
+            "title": "Buy Now",
             "url": "https://fe.dtyuedan.cn/shop/F2OLER91/52wtgh",
             "variant": "default"
+          },
+          {
+            "title": "Upgrade Now",
+            "url": "/upgrade?source=ad-plus",
+            "variant": "outline"
           }
         ],
         "reviews_link": true,
