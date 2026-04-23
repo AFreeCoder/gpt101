@@ -50,6 +50,7 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         with:
           host: ${{ secrets.SILICON_HOST }}
+          port: 22222
           username: work
           key: ${{ secrets.SILICON_SSH_PRIVATE_KEY }}
           command_timeout: 30m
