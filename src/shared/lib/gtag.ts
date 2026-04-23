@@ -32,20 +32,27 @@ function ensureGtag() {
 const CONVERSION_SEND_TO =
   process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO || '';
 
-/**
- * 发送 Google Ads 转化事件
- *
- * 对应 Google Ads 官方推荐的 gtag_report_conversion 模式：
- * gtag('event', 'conversion', { send_to: 'AW-xxx/yyy', event_callback: cb })
- *
- * @param url - 出站链接 URL（用于 callback 跳转，当前场景由调用方处理跳转）
- * @param callback - 事件发送完成后的回调
- */
-export function sendOutboundClick(
-  url: string,
-  _label?: string,
-  callback?: () => void,
+export function sendGtagEvent(
+  eventName: string,
+  params?: Record<string, unknown>
 ) {
+  if (typeof window === 'undefined') return;
+
+  ensureGtag();
+  if (!window.gtag) return;
+
+  window.gtag('event', eventName, params || {});
+}
+
+export function sendAdsConversion(
+  callback?: () => void,
+  params?: Record<string, unknown>
+) {
+  if (typeof window === 'undefined') {
+    callback?.();
+    return;
+  }
+
   ensureGtag();
   if (!window.gtag || !CONVERSION_SEND_TO) {
     callback?.();
@@ -59,12 +66,29 @@ export function sendOutboundClick(
     callback?.();
   };
 
-  // 发送 Google Ads 转化事件
   window.gtag('event', 'conversion', {
     send_to: CONVERSION_SEND_TO,
+    ...(params || {}),
     event_callback: safeCallback,
   });
 
-  // 兜底：确保回调一定执行，避免阻塞用户操作
   setTimeout(safeCallback, 1000);
+}
+
+/**
+ * 发送 Google Ads 转化事件
+ *
+ * 对应 Google Ads 官方推荐的 gtag_report_conversion 模式：
+ * gtag('event', 'conversion', { send_to: 'AW-xxx/yyy', event_callback: cb })
+ *
+ * @param url - 出站链接 URL（用于 callback 跳转，当前场景由调用方处理跳转）
+ * @param callback - 事件发送完成后的回调
+ */
+export function sendOutboundClick(
+  url: string,
+  _label?: string,
+  callback?: () => void
+) {
+  void url;
+  sendAdsConversion(callback);
 }

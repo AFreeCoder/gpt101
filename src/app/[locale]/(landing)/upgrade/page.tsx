@@ -1,7 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { getProductMemberLabel, getMemberLabel } from '@/shared/lib/redeem-code';
+
+import {
+  getUpgradeAttributionFromHref,
+  resolveAdPlusSourceFromHref,
+  trackAdPlusFunnelStep,
+} from '@/shared/lib/ad-funnel';
+import { sendAdsConversion, sendGtagEvent } from '@/shared/lib/gtag';
+import {
+  getMemberLabel,
+  getProductMemberLabel,
+} from '@/shared/lib/redeem-code';
 
 export default function UpgradePage() {
   const [code, setCode] = useState('');
@@ -24,16 +34,43 @@ export default function UpgradePage() {
 
   const productLabel = getProductMemberLabel(productCode, memberType);
 
+  const trackAdPlusStep = (step: 'verify_code' | 'verify_token') => {
+    const source =
+      typeof window === 'undefined'
+        ? null
+        : resolveAdPlusSourceFromHref(window.location.href);
+
+    trackAdPlusFunnelStep(source, step, {
+      sendEvent: sendGtagEvent,
+      sendConversion: (params) => {
+        sendAdsConversion(undefined, params);
+      },
+    });
+  };
+
   const resetAll = () => {
-    setCode(''); setSessionToken(''); setProductCode(''); setMemberType('');
-    setAccountEmail(''); setAccountId(''); setCurrentPlan(''); setAccessToken('');
-    setCodeVerified(false); setTokenParsed(false);
-    setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setPolling(false);
-    setError(''); setErrorStep(0); setLoading('');
+    setCode('');
+    setSessionToken('');
+    setProductCode('');
+    setMemberType('');
+    setAccountEmail('');
+    setAccountId('');
+    setCurrentPlan('');
+    setAccessToken('');
+    setCodeVerified(false);
+    setTokenParsed(false);
+    setTaskNo('');
+    setTaskStatus('');
+    setTaskMessage('');
+    setPolling(false);
+    setError('');
+    setErrorStep(0);
+    setLoading('');
   };
 
   const handleVerifyCode = async () => {
-    setError(''); setErrorStep(0);
+    setError('');
+    setErrorStep(0);
     setLoading('code');
     try {
       const res = await fetch('/api/upgrade/verify-code', {
@@ -42,16 +79,25 @@ export default function UpgradePage() {
         body: JSON.stringify({ code: code.trim() }),
       });
       const data = await res.json();
-      if (data.code !== 0) { setError(data.message); setErrorStep(1); return; }
+      if (data.code !== 0) {
+        setError(data.message);
+        setErrorStep(1);
+        return;
+      }
       setProductCode(data.data.productCode);
       setMemberType(data.data.memberType || '');
       setCodeVerified(true);
-    } catch { setError('网络错误，请重试'); setErrorStep(1); }
-    finally { setLoading(''); }
+    } catch {
+      setError('网络错误，请重试');
+      setErrorStep(1);
+    } finally {
+      setLoading('');
+    }
   };
 
   const handleParseToken = async () => {
-    setError(''); setErrorStep(0);
+    setError('');
+    setErrorStep(0);
     setLoading('token');
 
     // 前端预校验 JSON 格式
@@ -86,11 +132,17 @@ export default function UpgradePage() {
         body: JSON.stringify({ sessionToken: trimmed }),
       });
       const data = await res.json();
-      if (data.code !== 0) { setError(data.message); setErrorStep(2); return; }
+      if (data.code !== 0) {
+        setError(data.message);
+        setErrorStep(2);
+        return;
+      }
 
       // 只有 free 用户才能升级 Plus
       if (data.data.currentPlan && data.data.currentPlan !== 'free') {
-        setError(`当前账号为 ${data.data.currentPlan} 会员，请等会员到期后再进行充值升级`);
+        setError(
+          `当前账号为 ${data.data.currentPlan} 会员，请等会员到期后再进行充值升级`
+        );
         setErrorStep(2);
         return;
       }
@@ -100,13 +152,22 @@ export default function UpgradePage() {
       setCurrentPlan(data.data.currentPlan || '');
       setAccessToken(data.data.accessToken || trimmed);
       setTokenParsed(true);
-    } catch { setError('网络错误，请重试'); setErrorStep(2); }
-    finally { setLoading(''); }
+    } catch {
+      setError('网络错误，请重试');
+      setErrorStep(2);
+    } finally {
+      setLoading('');
+    }
   };
 
   const handleSubmit = async () => {
     setError('');
     setLoading('submit');
+    const attribution =
+      typeof window === 'undefined'
+        ? {}
+        : getUpgradeAttributionFromHref(window.location.href);
+
     try {
       const res = await fetch('/api/upgrade/submit', {
         method: 'POST',
@@ -117,30 +178,46 @@ export default function UpgradePage() {
           chatgptEmail: accountEmail,
           chatgptAccountId: accountId,
           chatgptCurrentPlan: currentPlan,
+          ...attribution,
         }),
       });
       const data = await res.json();
-      if (data.code !== 0) { setError('充值异常，请联系客服处理'); setErrorStep(3); return; }
+      if (data.code !== 0) {
+        setError('充值异常，请联系客服处理');
+        setErrorStep(3);
+        return;
+      }
       setTaskNo(data.data.taskNo);
       setTaskStatus('pending');
       setTaskMessage('升级任务已提交，正在排队处理...');
       setPolling(true);
       pollStatus(data.data.taskNo);
-    } catch { setError('网络错误，请重试'); setErrorStep(3); }
-    finally { setLoading(''); }
+    } catch {
+      setError('网络错误，请重试');
+      setErrorStep(3);
+    } finally {
+      setLoading('');
+    }
   };
 
   const pollStatus = async (no: string) => {
     let count = 0;
     const poll = async () => {
-      if (count >= 60) { setTaskMessage('处理中，请稍后刷新页面'); setPolling(false); return; }
+      if (count >= 60) {
+        setTaskMessage('处理中，请稍后刷新页面');
+        setPolling(false);
+        return;
+      }
       try {
         const res = await fetch(`/api/upgrade/task/${no}`);
         const data = await res.json();
         if (data.code === 0) {
           setTaskStatus(data.data.status);
           setTaskMessage(data.data.message);
-          if (['succeeded', 'failed', 'canceled'].includes(data.data.status)) { setPolling(false); return; }
+          if (['succeeded', 'failed', 'canceled'].includes(data.data.status)) {
+            setPolling(false);
+            return;
+          }
         }
       } catch {}
       count++;
@@ -155,21 +232,33 @@ export default function UpgradePage() {
     <div className="relative min-h-[80vh]">
       {/* 背景装饰 */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+        <div className="bg-primary/5 absolute -top-40 -right-40 h-96 w-96 rounded-full blur-3xl" />
+        <div className="bg-primary/5 absolute -bottom-40 -left-40 h-96 w-96 rounded-full blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
         {/* 标题区 */}
         <div className="mb-10 text-center">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <div className="border-primary/20 bg-primary/5 text-primary mb-3 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium">
+            <svg
+              className="h-3.5 w-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
             自助升级服务
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h1 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
             GPT 会员升级
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-2 text-sm">
             全自动处理，通常 1-2 分钟完成升级
           </p>
         </div>
@@ -179,14 +268,38 @@ export default function UpgradePage() {
           <div className="min-w-0 flex-1">
             <div className="space-y-1">
               {/* Step 1 */}
-              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${currentStep === 1 ? 'border-primary/30 bg-card shadow-md' : codeVerified ? 'border-border/50 bg-card/60' : 'border-border/30 bg-muted/30'}`}>
+              <div
+                className={`rounded-2xl border p-5 transition-all duration-300 sm:p-6 ${currentStep === 1 ? 'border-primary/30 bg-card shadow-md' : codeVerified ? 'border-border/50 bg-card/60' : 'border-border/30 bg-muted/30'}`}
+              >
                 <div className="mb-4 flex items-center gap-3">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${codeVerified ? 'bg-emerald-500 text-white' : currentStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {codeVerified ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '1'}
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${codeVerified ? 'bg-emerald-500 text-white' : currentStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                  >
+                    {codeVerified ? (
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    ) : (
+                      '1'
+                    )}
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">核验卡密</h2>
-                    <p className="text-xs text-muted-foreground">输入购买获得的升级卡密</p>
+                    <h2 className="text-foreground text-sm font-semibold">
+                      核验卡密
+                    </h2>
+                    <p className="text-muted-foreground text-xs">
+                      输入购买获得的升级卡密
+                    </p>
                   </div>
                 </div>
 
@@ -194,125 +307,296 @@ export default function UpgradePage() {
                   <input
                     type="text"
                     value={code}
-                    onChange={(e) => { setCode(e.target.value.toUpperCase()); if (codeVerified) { setCodeVerified(false); setTokenParsed(false); } }}
+                    onChange={(e) => {
+                      setCode(e.target.value.toUpperCase());
+                      if (codeVerified) {
+                        setCodeVerified(false);
+                        setTokenParsed(false);
+                      }
+                    }}
                     placeholder="请输入卡密"
                     disabled={!!taskNo && taskStatus !== 'failed'}
-                    className="min-w-0 flex-1 rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
+                    className="border-input bg-background text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:ring-ring/20 min-w-0 flex-1 rounded-xl border px-4 py-2.5 font-mono text-sm focus:ring-2 focus:outline-none disabled:opacity-50"
                   />
                   <button
-                    onClick={handleVerifyCode}
-                    disabled={loading === 'code' || code.trim().length < 10 || codeVerified || !!taskNo}
-                    className="shrink-0 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
+                    onClick={() => {
+                      trackAdPlusStep('verify_code');
+                      void handleVerifyCode();
+                    }}
+                    disabled={
+                      loading === 'code' ||
+                      code.trim().length < 10 ||
+                      codeVerified ||
+                      !!taskNo
+                    }
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 rounded-xl px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
                   >
                     {loading === 'code' ? (
-                      <span className="flex items-center gap-1.5"><span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />验证中</span>
-                    ) : codeVerified ? '已验证' : '立即核验'}
+                      <span className="flex items-center gap-1.5">
+                        <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        验证中
+                      </span>
+                    ) : codeVerified ? (
+                      '已验证'
+                    ) : (
+                      '立即核验'
+                    )}
                   </button>
                 </div>
 
                 {error && errorStep === 1 && (
-                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                  <div className="bg-destructive/10 text-destructive mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
                     {error}
                   </div>
                 )}
                 {codeVerified && (
                   <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      />
+                    </svg>
                     卡密有效
                   </div>
                 )}
               </div>
 
               {/* Step 2 */}
-              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!codeVerified ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : currentStep === 2 || taskStatus === 'failed' ? 'border-primary/30 bg-card shadow-md' : tokenParsed ? 'border-border/50 bg-card/60' : 'border-border/30 bg-card/80'}`}>
+              <div
+                className={`rounded-2xl border p-5 transition-all duration-300 sm:p-6 ${!codeVerified ? 'border-border/20 bg-muted/20 pointer-events-none opacity-40' : currentStep === 2 || taskStatus === 'failed' ? 'border-primary/30 bg-card shadow-md' : tokenParsed ? 'border-border/50 bg-card/60' : 'border-border/30 bg-card/80'}`}
+              >
                 <div className="mb-4 flex items-center gap-3">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${tokenParsed ? 'bg-emerald-500 text-white' : currentStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {tokenParsed ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '2'}
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${tokenParsed ? 'bg-emerald-500 text-white' : currentStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                  >
+                    {tokenParsed ? (
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    ) : (
+                      '2'
+                    )}
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">核验 Token</h2>
-                    <p className="text-xs text-muted-foreground">粘贴您的 ChatGPT Session Token</p>
+                    <h2 className="text-foreground text-sm font-semibold">
+                      核验 Token
+                    </h2>
+                    <p className="text-muted-foreground text-xs">
+                      粘贴您的 ChatGPT Session Token
+                    </p>
                   </div>
                 </div>
 
                 {/* Token 获取教程 */}
-                <div className="mb-3 rounded-lg bg-muted/50 px-3 py-2.5 text-xs text-muted-foreground">
-                  <p className="mb-1 font-medium text-foreground/80">如何获取 Token：</p>
+                <div className="bg-muted/50 text-muted-foreground mb-3 rounded-lg px-3 py-2.5 text-xs">
+                  <p className="text-foreground/80 mb-1 font-medium">
+                    如何获取 Token：
+                  </p>
                   <ol className="list-inside list-decimal space-y-0.5">
-                    <li>登录 ChatGPT 官网：<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com</a></li>
-                    <li>打开 <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">chatgpt.com/api/auth/session</a>，复制页面全部内容</li>
+                    <li>
+                      登录 ChatGPT 官网：
+                      <a
+                        href="https://chatgpt.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        chatgpt.com
+                      </a>
+                    </li>
+                    <li>
+                      打开{' '}
+                      <a
+                        href="https://chatgpt.com/api/auth/session"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        chatgpt.com/api/auth/session
+                      </a>
+                      ，复制页面全部内容
+                    </li>
                   </ol>
                 </div>
 
                 <textarea
                   value={sessionToken}
-                  onChange={(e) => { setSessionToken(e.target.value); if (tokenParsed) setTokenParsed(false); }}
+                  onChange={(e) => {
+                    setSessionToken(e.target.value);
+                    if (tokenParsed) setTokenParsed(false);
+                  }}
                   placeholder="粘贴完整的 Session Token（JSON 格式）"
                   rows={3}
                   disabled={!!taskNo && taskStatus !== 'failed'}
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-xs leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20 disabled:opacity-50"
+                  className="border-input bg-background text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:ring-ring/20 w-full rounded-xl border px-4 py-2.5 font-mono text-xs leading-relaxed focus:ring-2 focus:outline-none disabled:opacity-50"
                 />
 
                 <div className="mt-3 flex justify-between">
                   {tokenParsed ? (
-                    <button onClick={() => { setTokenParsed(false); setTaskNo(''); setTaskStatus(''); setTaskMessage(''); }}
-                      className="rounded-xl border border-border px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50">
+                    <button
+                      onClick={() => {
+                        setTokenParsed(false);
+                        setTaskNo('');
+                        setTaskStatus('');
+                        setTaskMessage('');
+                      }}
+                      className="border-border text-muted-foreground hover:bg-muted/50 rounded-xl border px-4 py-2.5 text-sm"
+                    >
                       返回修改
                     </button>
                   ) : (
-                    <button onClick={() => { setCodeVerified(false); setSessionToken(''); }}
-                      className="rounded-xl border border-border px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50">
+                    <button
+                      onClick={() => {
+                        setCodeVerified(false);
+                        setSessionToken('');
+                      }}
+                      className="border-border text-muted-foreground hover:bg-muted/50 rounded-xl border px-4 py-2.5 text-sm"
+                    >
                       上一步
                     </button>
                   )}
                   <button
-                    onClick={handleParseToken}
-                    disabled={loading === 'token' || !sessionToken.trim() || tokenParsed || !!taskNo}
-                    className="rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
+                    onClick={() => {
+                      trackAdPlusStep('verify_token');
+                      void handleParseToken();
+                    }}
+                    disabled={
+                      loading === 'token' ||
+                      !sessionToken.trim() ||
+                      tokenParsed ||
+                      !!taskNo
+                    }
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
                   >
                     {loading === 'token' ? (
-                      <span className="flex items-center gap-1.5"><span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />解析中</span>
-                    ) : tokenParsed ? '已验证' : '核验 Token'}
+                      <span className="flex items-center gap-1.5">
+                        <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        解析中
+                      </span>
+                    ) : tokenParsed ? (
+                      '已验证'
+                    ) : (
+                      '核验 Token'
+                    )}
                   </button>
                 </div>
 
                 {error && errorStep === 2 && (
-                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                  <div className="bg-destructive/10 text-destructive mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
                     {error}
                   </div>
                 )}
                 {tokenParsed && (
                   <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-                    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      />
+                    </svg>
                     Token 验证通过
                   </div>
                 )}
               </div>
 
               {/* Step 3: 确认升级（样式固定不变） */}
-              <div className={`rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${!tokenParsed ? 'pointer-events-none opacity-40 border-border/20 bg-muted/20' : currentStep === 3 ? 'border-primary/30 bg-card shadow-md' : 'border-border/50 bg-card/60'}`}>
+              <div
+                className={`rounded-2xl border p-5 transition-all duration-300 sm:p-6 ${!tokenParsed ? 'border-border/20 bg-muted/20 pointer-events-none opacity-40' : currentStep === 3 ? 'border-primary/30 bg-card shadow-md' : 'border-border/50 bg-card/60'}`}
+              >
                 <div className="mb-4 flex items-center gap-3">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${taskNo ? 'bg-emerald-500 text-white' : currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {taskNo ? <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '3'}
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${taskNo ? 'bg-emerald-500 text-white' : currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                  >
+                    {taskNo ? (
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    ) : (
+                      '3'
+                    )}
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">确认升级</h2>
-                    <p className="text-xs text-muted-foreground">核对信息后确认提交</p>
+                    <h2 className="text-foreground text-sm font-semibold">
+                      确认升级
+                    </h2>
+                    <p className="text-muted-foreground text-xs">
+                      核对信息后确认提交
+                    </p>
                   </div>
                 </div>
 
                 {/* 确认信息 */}
                 {tokenParsed && (
-                  <div className="mb-4 divide-y divide-border/50 rounded-xl border border-border/50 bg-muted/30">
+                  <div className="divide-border/50 border-border/50 bg-muted/30 mb-4 divide-y rounded-xl border">
                     {[
                       ['ChatGPT 账号', accountEmail],
                       ['升级会员', getMemberLabel(productCode, memberType)],
                     ].map(([label, value]) => (
-                      <div key={label} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                      <div
+                        key={label}
+                        className="flex items-center justify-between px-4 py-2.5 text-sm"
+                      >
                         <span className="text-muted-foreground">{label}</span>
-                        <span className="font-medium text-foreground">{value}</span>
+                        <span className="text-foreground font-medium">
+                          {value}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -322,74 +606,169 @@ export default function UpgradePage() {
                 {tokenParsed && (!taskNo || taskStatus === 'failed') && (
                   <>
                     {error && errorStep === 3 && (
-                      <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                        <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                      <div className="bg-destructive/10 text-destructive mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
+                        <svg
+                          className="h-4 w-4 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="15" y1="9" x2="9" y2="15" />
+                          <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
                         {error}
                       </div>
                     )}
                     <div className="flex gap-3">
-                      <button onClick={() => { setTokenParsed(false); setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setError(''); setErrorStep(0); }}
-                        className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50">
+                      <button
+                        onClick={() => {
+                          setTokenParsed(false);
+                          setTaskNo('');
+                          setTaskStatus('');
+                          setTaskMessage('');
+                          setError('');
+                          setErrorStep(0);
+                        }}
+                        className="border-border text-muted-foreground hover:bg-muted/50 rounded-xl border px-4 py-3 text-sm"
+                      >
                         上一步
                       </button>
                       <button
-                        onClick={() => { setTaskNo(''); setTaskStatus(''); setTaskMessage(''); setError(''); setErrorStep(0); handleSubmit(); }}
+                        onClick={() => {
+                          setTaskNo('');
+                          setTaskStatus('');
+                          setTaskMessage('');
+                          setError('');
+                          setErrorStep(0);
+                          handleSubmit();
+                        }}
                         disabled={loading === 'submit'}
                         className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
                       >
                         {loading === 'submit' ? (
-                          <span className="flex items-center justify-center gap-2"><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />提交中...</span>
-                        ) : taskStatus === 'failed' ? '重试升级' : '确认升级'}
+                          <span className="flex items-center justify-center gap-2">
+                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            提交中...
+                          </span>
+                        ) : taskStatus === 'failed' ? (
+                          '重试升级'
+                        ) : (
+                          '确认升级'
+                        )}
                       </button>
                     </div>
                   </>
                 )}
-
               </div>
 
               {/* 升级结果（独立卡片，在 Step 3 下方） */}
               {taskNo && (
-                <div className={`rounded-2xl border p-4 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : 'border-border/50 bg-card'}`}>
-                    {polling ? (
-                      <div className="flex flex-col items-center gap-4 py-4">
-                        <div className="relative h-12 w-12">
-                          <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" />
-                          <div className="absolute inset-2 animate-spin rounded-full border-[2px] border-primary/10 border-b-primary/50" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-primary">{taskMessage}</p>
-                          <p className="mt-1.5 text-xs text-muted-foreground">一般充值预计 10 分钟左右，请耐心等待</p>
-                        </div>
+                <div
+                  className={`rounded-2xl border p-4 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : 'border-border/50 bg-card'}`}
+                >
+                  {polling ? (
+                    <div className="flex flex-col items-center gap-4 py-4">
+                      <div className="relative h-12 w-12">
+                        <div className="border-primary/20 border-t-primary absolute inset-0 animate-spin rounded-full border-[3px]" />
+                        <div
+                          className="border-primary/10 border-b-primary/50 absolute inset-2 animate-spin rounded-full border-[2px]"
+                          style={{
+                            animationDirection: 'reverse',
+                            animationDuration: '1.5s',
+                          }}
+                        />
                       </div>
-                    ) : taskStatus === 'succeeded' ? (
-                      <div className="flex flex-col items-center gap-3 py-4">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10">
-                          <svg className="h-7 w-7 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        </div>
-                        <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{taskMessage}</p>
-                        <div className="flex gap-3">
-                          <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md">
-                            前往 ChatGPT
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                          </a>
-                          <button onClick={resetAll}
-                            className="rounded-xl border border-border px-5 py-2.5 text-sm text-muted-foreground hover:bg-muted/50">
-                            继续升级
-                          </button>
-                        </div>
+                      <div className="text-center">
+                        <p className="text-primary text-sm font-medium">
+                          {taskMessage}
+                        </p>
+                        <p className="text-muted-foreground mt-1.5 text-xs">
+                          一般充值预计 10 分钟左右，请耐心等待
+                        </p>
                       </div>
-                    ) : taskStatus === 'failed' ? (
-                      <div className="flex items-start gap-2 rounded-lg bg-destructive/5 px-3 py-2.5 text-sm">
-                        <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                        <div>
-                          <p className="text-destructive">充值遇到一点小问题，无需担心</p>
-                          <p className="mt-0.5 text-xs text-muted-foreground">请联系客服协助处理 · 微信：<span className="font-medium text-foreground">AFreeCoder01</span></p>
-                        </div>
+                    </div>
+                  ) : taskStatus === 'succeeded' ? (
+                    <div className="flex flex-col items-center gap-3 py-4">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10">
+                        <svg
+                          className="h-7 w-7 text-emerald-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
                       </div>
-                    ) : (
-                      <p className="py-4 text-sm text-muted-foreground">{taskMessage}</p>
-                    )}
+                      <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                        {taskMessage}
+                      </p>
+                      <div className="flex gap-3">
+                        <a
+                          href="https://chat.openai.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md"
+                        >
+                          前往 ChatGPT
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M14 5l7 7m0 0l-7 7m7-7H3"
+                            />
+                          </svg>
+                        </a>
+                        <button
+                          onClick={resetAll}
+                          className="border-border text-muted-foreground hover:bg-muted/50 rounded-xl border px-5 py-2.5 text-sm"
+                        >
+                          继续升级
+                        </button>
+                      </div>
+                    </div>
+                  ) : taskStatus === 'failed' ? (
+                    <div className="bg-destructive/5 flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm">
+                      <svg
+                        className="text-destructive mt-0.5 h-4 w-4 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <div>
+                        <p className="text-destructive">
+                          充值遇到一点小问题，无需担心
+                        </p>
+                        <p className="text-muted-foreground mt-0.5 text-xs">
+                          请联系客服协助处理 · 微信：
+                          <span className="text-foreground font-medium">
+                            AFreeCoder01
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground py-4 text-sm">
+                      {taskMessage}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -398,21 +777,43 @@ export default function UpgradePage() {
           {/* 右侧：信息面板 */}
           <div className="w-full shrink-0 space-y-4 lg:w-72">
             {/* 流程指引 */}
-            <div className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
-              <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-muted-foreground">充值流程</h3>
+            <div className="border-border/50 bg-card rounded-2xl border p-6 shadow-sm">
+              <h3 className="text-muted-foreground mb-5 text-sm font-bold tracking-wider uppercase">
+                充值流程
+              </h3>
               <div className="space-y-5">
                 {[
-                  { n: '01', title: '核验卡密', desc: '粘贴卡密并核验，系统自动判定是否可用。' },
-                  { n: '02', title: '核验 Token', desc: '输入 Token 确认账号信息和充值条件。' },
-                  { n: '03', title: '确认升级', desc: '确认后自动处理，实时查看升级进度。' },
+                  {
+                    n: '01',
+                    title: '核验卡密',
+                    desc: '粘贴卡密并核验，系统自动判定是否可用。',
+                  },
+                  {
+                    n: '02',
+                    title: '核验 Token',
+                    desc: '输入 Token 确认账号信息和充值条件。',
+                  },
+                  {
+                    n: '03',
+                    title: '确认升级',
+                    desc: '确认后自动处理，实时查看升级进度。',
+                  },
                 ].map((s, i) => (
                   <div key={s.n} className="flex gap-3">
-                    <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentStep > i + 1 ? 'bg-emerald-500 text-white' : currentStep === i + 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    <span
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentStep > i + 1 ? 'bg-emerald-500 text-white' : currentStep === i + 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                    >
                       {currentStep > i + 1 ? '✓' : s.n}
                     </span>
                     <div>
-                      <p className={`text-sm font-medium ${currentStep >= i + 1 ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground/70">{s.desc}</p>
+                      <p
+                        className={`text-sm font-medium ${currentStep >= i + 1 ? 'text-foreground' : 'text-muted-foreground'}`}
+                      >
+                        {s.title}
+                      </p>
+                      <p className="text-muted-foreground/70 mt-0.5 text-xs leading-relaxed">
+                        {s.desc}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -420,14 +821,17 @@ export default function UpgradePage() {
             </div>
 
             {/* 安全保障 */}
-            <div className="rounded-2xl border border-border/50 bg-card p-5">
+            <div className="border-border/50 bg-card rounded-2xl border p-5">
               <div className="space-y-3">
                 {[
                   { icon: '🔒', text: '数据加密传输' },
                   { icon: '⚡', text: '通常 1-2 分钟完成' },
                   { icon: '🛡️', text: '异常联系客服处理' },
                 ].map((item) => (
-                  <div key={item.text} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                  <div
+                    key={item.text}
+                    className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                  >
                     <span className="text-base">{item.icon}</span>
                     {item.text}
                   </div>
@@ -436,9 +840,13 @@ export default function UpgradePage() {
             </div>
 
             {/* 客服 */}
-            <div className="rounded-2xl border border-border/50 bg-card p-5">
-              <p className="text-xs text-muted-foreground">遇到问题？联系客服</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">微信：AFreeCoder01</p>
+            <div className="border-border/50 bg-card rounded-2xl border p-5">
+              <p className="text-muted-foreground text-xs">
+                遇到问题？联系客服
+              </p>
+              <p className="text-foreground mt-1 text-sm font-semibold">
+                微信：AFreeCoder01
+              </p>
             </div>
           </div>
         </div>

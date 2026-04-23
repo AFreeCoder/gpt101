@@ -36,10 +36,12 @@ function extractSessionUser(data: any): UserType | null {
 export function SignUser({
   isScrolled,
   signButtonSize = 'sm',
+  callbackUrl = '/',
   userNav,
 }: {
   isScrolled?: boolean;
   signButtonSize?: 'default' | 'sm' | 'lg' | 'icon';
+  callbackUrl?: string;
   userNav?: UserNav;
 }) {
   const t = useTranslations('common.sign');
@@ -256,7 +258,7 @@ export function SignUser({
           >
             <span>{t('sign_in_title')}</span>
           </Button>
-          <SignModal />
+          <SignModal callbackUrl={callbackUrl} />
         </div>
       )}
     </>

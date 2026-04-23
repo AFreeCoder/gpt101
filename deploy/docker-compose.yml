@@ -9,6 +9,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO: ${NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO:-}
     image: gpt101:latest
     container_name: gpt101
     restart: unless-stopped
@@ -23,6 +25,7 @@ services:
       - NEXT_PUBLIC_APP_URL=${APP_URL:-https://gpt101.org}
       - NEXT_PUBLIC_APP_NAME=${APP_NAME:-GPT101}
       - NEXT_PUBLIC_DEFAULT_LOCALE=${NEXT_PUBLIC_DEFAULT_LOCALE:-zh}
+      - NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO=${NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO:-}
       - DATABASE_PROVIDER=postgresql
       - DATABASE_URL=postgresql://${POSTGRES_USER:-gpt101}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@gpt101-postgres:5432/${POSTGRES_DB:-gpt101}
       - AUTH_URL=${AUTH_URL:-https://gpt101.org}

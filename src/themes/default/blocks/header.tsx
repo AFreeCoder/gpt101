@@ -253,7 +253,7 @@ export function Header({ header }: { header: HeaderType }) {
       >
         <div
           className={cn(
-            'absolute inset-x-0 top-0 z-50 h-15 border-b border-foreground/10 ring-1 ring-transparent transition-all duration-300',
+            'border-foreground/10 absolute inset-x-0 top-0 z-50 h-15 border-b ring-1 ring-transparent transition-all duration-300',
             'in-data-scrolled:border-foreground/5 in-data-scrolled:bg-background/75 in-data-scrolled:backdrop-blur',
             'has-data-[state=open]:ring-foreground/5 has-data-[state=open]:bg-card/75 has-data-[state=open]:h-[calc(var(--navigation-menu-viewport-height)+3.4rem)] has-data-[state=open]:border-b has-data-[state=open]:shadow-lg has-data-[state=open]:shadow-black/10 has-data-[state=open]:backdrop-blur',
             'max-lg:in-data-[state=active]:bg-background/75 max-lg:h-15 max-lg:overflow-hidden max-lg:border-b max-lg:in-data-[state=active]:h-screen max-lg:in-data-[state=active]:backdrop-blur'
@@ -316,7 +316,7 @@ export function Header({ header }: { header: HeaderType }) {
                   {header.show_locale ? <LocaleSelector /> : null}
                   <div className="flex-1 md:hidden"></div>
                   {header.show_sign ? (
-                    <SignUser userNav={header.user_nav} />
+                    <SignUser userNav={header.user_nav} callbackUrl="/admin" />
                   ) : null}
                 </div>
               </div>

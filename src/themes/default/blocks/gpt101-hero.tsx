@@ -2,10 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Check, ChevronRight, Info, Shield, Clock, CircleCheck } from 'lucide-react';
+import {
+  Check,
+  ChevronRight,
+  CircleCheck,
+  Clock,
+  Info,
+  Shield,
+} from 'lucide-react';
 
 import { Button } from '@/shared/components/ui/button';
-import { sendOutboundClick } from '@/shared/lib/gtag';
+import {
+  resolveAdPlusSourceFromHref,
+  trackAdPlusFunnelStep,
+} from '@/shared/lib/ad-funnel';
+import { sendGtagEvent, sendOutboundClick } from '@/shared/lib/gtag';
 import { Section } from '@/shared/types/blocks/landing';
 
 import { getUpgradeButtonAction } from './gpt101-hero-actions';
@@ -24,7 +35,10 @@ export function Gpt101Hero({ section }: { section: Section }) {
   const sideAds = section.side_ads as { left?: any; right?: any } | undefined;
 
   return (
-    <section id={section.id} className="relative pt-[68px] pb-8 md:pt-[76px] md:pb-8">
+    <section
+      id={section.id}
+      className="relative pt-[68px] pb-8 md:pt-[76px] md:pb-8"
+    >
       {sideAds && <HeroSideAds left={sideAds.left} right={sideAds.right} />}
       <div className="mx-auto max-w-4xl px-4 text-center">
         {/* 镜像服务推荐条 */}
@@ -68,7 +82,8 @@ export function Gpt101Hero({ section }: { section: Section }) {
             {section.highlight_text || '一站式 GPT'}
           </span>
           <span className="text-gray-800">
-            {' '}{section.normal_text || '充值服务'}
+            {' '}
+            {section.normal_text || '充值服务'}
           </span>
         </h1>
 
@@ -93,7 +108,10 @@ export function Gpt101Hero({ section }: { section: Section }) {
                   key={idx}
                   className="flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-100 px-3 py-1.5"
                 >
-                  <Check className="h-3.5 w-3.5 flex-shrink-0 text-green-600" strokeWidth={2.5} />
+                  <Check
+                    className="h-3.5 w-3.5 flex-shrink-0 text-green-600"
+                    strokeWidth={2.5}
+                  />
                   <span className="text-xs font-medium text-gray-700 md:text-sm">
                     {feature.text}
                   </span>
@@ -140,6 +158,15 @@ export function Gpt101Hero({ section }: { section: Section }) {
                         ? 'noopener noreferrer'
                         : undefined
                     }
+                    onClick={() => {
+                      trackAdPlusFunnelStep(
+                        resolveAdPlusSourceFromHref(upgradeAction.href),
+                        'upgrade',
+                        {
+                          sendEvent: sendGtagEvent,
+                        }
+                      );
+                    }}
                     className="group block w-full rounded-[10px] bg-white px-10 py-4 text-center text-lg font-bold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600"
                   >
                     <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent transition-colors group-hover:text-white">
@@ -200,15 +227,23 @@ export function Gpt101Hero({ section }: { section: Section }) {
         {/* 信任标记 */}
         {trustMarks.length > 0 && (
           <div className="mb-8 flex flex-wrap items-center justify-center gap-3 text-sm text-gray-600">
-            {trustMarks.map((mark: { text: string; icon: string }, idx: number) => (
-              <div key={idx} className="flex items-center gap-1.5">
-                {idx > 0 && <span className="text-gray-300">·</span>}
-                {mark.icon === 'shield' && <Shield className="h-4 w-4 text-green-600" />}
-                {mark.icon === 'clock' && <Clock className="h-4 w-4 text-green-600" />}
-                {mark.icon === 'check' && <CircleCheck className="h-4 w-4 text-green-600" />}
-                <span>{mark.text}</span>
-              </div>
-            ))}
+            {trustMarks.map(
+              (mark: { text: string; icon: string }, idx: number) => (
+                <div key={idx} className="flex items-center gap-1.5">
+                  {idx > 0 && <span className="text-gray-300">·</span>}
+                  {mark.icon === 'shield' && (
+                    <Shield className="h-4 w-4 text-green-600" />
+                  )}
+                  {mark.icon === 'clock' && (
+                    <Clock className="h-4 w-4 text-green-600" />
+                  )}
+                  {mark.icon === 'check' && (
+                    <CircleCheck className="h-4 w-4 text-green-600" />
+                  )}
+                  <span>{mark.text}</span>
+                </div>
+              )
+            )}
           </div>
         )}
 
@@ -221,20 +256,29 @@ export function Gpt101Hero({ section }: { section: Section }) {
                   <Info className="h-5 w-5 text-blue-600" />
                   <span
                     className="font-medium"
-                    dangerouslySetInnerHTML={{ __html: section.guide_box.text || '' }}
+                    dangerouslySetInnerHTML={{
+                      __html: section.guide_box.text || '',
+                    }}
                   />
                 </span>
               </div>
               {section.guide_box.links && (
                 <div className="flex flex-wrap items-center justify-center gap-2 text-sm md:gap-3">
                   {section.guide_box.links.map(
-                    (link: { title: string; url: string; target?: string }, idx: number) => (
+                    (
+                      link: { title: string; url: string; target?: string },
+                      idx: number
+                    ) => (
                       <span key={idx} className="flex items-center gap-2">
                         {idx > 0 && <span className="text-gray-400">|</span>}
                         <Link
                           href={link.url}
                           target={link.target || '_self'}
-                          rel={link.target === '_blank' ? 'noopener noreferrer' : undefined}
+                          rel={
+                            link.target === '_blank'
+                              ? 'noopener noreferrer'
+                              : undefined
+                          }
                           className="inline-flex items-center gap-1 font-medium text-blue-600 hover:text-blue-700 hover:underline"
                         >
                           {link.title}

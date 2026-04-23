@@ -15,6 +15,9 @@ FROM deps AS builder
 
 WORKDIR /app
 
+ARG NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO=""
+ENV NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO=${NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO}
+
 # Install dependencies based on the preferred package manager
 COPY . .
 RUN pnpm build && pnpm exec esbuild worker.ts --bundle --platform=node --format=cjs --outfile=worker.js
