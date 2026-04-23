@@ -8,7 +8,7 @@ function readButtons(locale: 'zh' | 'en') {
     process.cwd(),
     'src/config/locale/messages',
     locale,
-    'pages/lp-upgrade-chatgpt.json'
+    'pages/index.json'
   );
   const content = readFileSync(filePath, 'utf8');
   const config = JSON.parse(content);
@@ -16,34 +16,34 @@ function readButtons(locale: 'zh' | 'en') {
   return config.page.sections.hero.buttons;
 }
 
-test('中文广告页同时保留购买和升级按钮', () => {
+test('中文首页同时保留购买和升级按钮', () => {
   const buttons = readButtons('zh');
 
   assert.equal(buttons.length, 2);
   assert.deepEqual(buttons[0], {
-    title: '立即购买',
-    url: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj',
+    title: '购买',
+    url: 'https://fe.dtyuedan.cn/item/82hv03',
     variant: 'default',
   });
   assert.deepEqual(buttons[1], {
     title: '立即升级',
-    url: '/upgrade?source=ad-plus',
+    url: '/upgrade?source=home',
     variant: 'outline',
   });
 });
 
-test('英文广告页同时保留购买和升级按钮', () => {
+test('英文首页同时保留购买和升级按钮', () => {
   const buttons = readButtons('en');
 
   assert.equal(buttons.length, 2);
   assert.deepEqual(buttons[0], {
     title: 'Buy Now',
-    url: 'https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj',
+    url: 'https://fe.dtyuedan.cn/item/82hv03',
     variant: 'default',
   });
   assert.deepEqual(buttons[1], {
     title: 'Upgrade Now',
-    url: '/upgrade?source=ad-plus',
+    url: '/upgrade?source=home',
     variant: 'outline',
   });
 });
