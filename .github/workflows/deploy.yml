@@ -65,7 +65,7 @@ jobs:
             DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
             DEPLOY_SHA="${DEPLOY_SHA:?DEPLOY_SHA is required}"
             IMAGE_REPOSITORY="${IMAGE_REPOSITORY:?IMAGE_REPOSITORY is required}"
-            APP_IMAGE="${IMAGE_REPOSITORY}:${DEPLOY_SHA}"
+            APP_IMAGE="${IMAGE_REPOSITORY}:sha-${DEPLOY_SHA}"
 
             # --- 工具函数 ---
 

@@ -25,7 +25,10 @@ test('deploy workflow 只拉取镜像并启动，不再在服务器本地 build'
   assert.doesNotMatch(workflow, /docker compose build/);
   assert.match(workflow, /docker login ghcr\.io/);
   assert.match(workflow, /docker pull "\$APP_IMAGE"/);
-  assert.match(workflow, /APP_IMAGE="\$\{IMAGE_REPOSITORY\}:\$\{DEPLOY_SHA\}"/);
+  assert.match(
+    workflow,
+    /APP_IMAGE="\$\{IMAGE_REPOSITORY\}:sha-\$\{DEPLOY_SHA\}"/
+  );
   assert.match(workflow, /port:\s*22222/);
 });
 
