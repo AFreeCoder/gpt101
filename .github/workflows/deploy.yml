@@ -7,19 +7,53 @@ on:
         description: '部署分支'
         required: true
         default: 'main'
+  workflow_run:
+    workflows: ['Build and Push Docker Image']
+    types: [completed]
+
+concurrency:
+  group: silicon-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout target ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.event.workflow_run.head_sha }}
+
+      - name: Prepare deploy metadata
+        id: prep
+        run: |
+          DEPLOY_BRANCH="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.event.workflow_run.head_branch }}"
+          DEPLOY_SHA="$(git rev-parse HEAD)"
+          IMAGE_REPOSITORY="$(echo "ghcr.io/${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+
+          echo "deploy_branch=$DEPLOY_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "deploy_sha=$DEPLOY_SHA" >> "$GITHUB_OUTPUT"
+          echo "image_repository=$IMAGE_REPOSITORY" >> "$GITHUB_OUTPUT"
+
+          echo "准备部署分支: $DEPLOY_BRANCH"
+          echo "准备部署提交: $DEPLOY_SHA"
+          echo "镜像仓库: $IMAGE_REPOSITORY"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          DEPLOY_BRANCH: ${{ steps.prep.outputs.deploy_branch }}
+          DEPLOY_SHA: ${{ steps.prep.outputs.deploy_sha }}
+          IMAGE_REPOSITORY: ${{ steps.prep.outputs.image_repository }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         with:
           host: ${{ secrets.SILICON_HOST }}
           username: work
           key: ${{ secrets.SILICON_SSH_PRIVATE_KEY }}
           command_timeout: 30m
-          envs: DEPLOY_BRANCH
+          envs: DEPLOY_BRANCH,DEPLOY_SHA,IMAGE_REPOSITORY,GHCR_USERNAME,GHCR_TOKEN
           script: |
             set -euo pipefail
 
@@ -28,6 +62,9 @@ jobs:
             BACKUP_DIR="$DEPLOY_DIR/backups"
             REPO_URL="git@github.com:AFreeCoder/gpt101.git"
             DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+            DEPLOY_SHA="${DEPLOY_SHA:?DEPLOY_SHA is required}"
+            IMAGE_REPOSITORY="${IMAGE_REPOSITORY:?IMAGE_REPOSITORY is required}"
+            APP_IMAGE="${IMAGE_REPOSITORY}:${DEPLOY_SHA}"
 
             # --- 工具函数 ---
 
@@ -37,23 +74,49 @@ jobs:
               }
             }
 
+            require_env() {
+              local name="$1"
+              if [ -z "${!name:-}" ]; then
+                echo "缺少环境变量: $name" >&2
+                exit 1
+              fi
+            }
+
+            upsert_env() {
+              local file="$1"
+              local key="$2"
+              local value="$3"
+              if grep -q "^${key}=" "$file"; then
+                sed -i.bak "s|^${key}=.*|${key}=${value}|" "$file"
+                rm -f "${file}.bak"
+              else
+                printf '\n%s=%s\n' "$key" "$value" >> "$file"
+              fi
+            }
+
             tag_current_image_for_rollback() {
               local current_commit="$1"
               local rollback_ts="$(date +%Y%m%d_%H%M%S)"
               local rollback_tag="gpt101:rollback-${rollback_ts}-${current_commit}"
+              local current_image_id
+              local current_image_ref
 
-              if docker image inspect gpt101:latest >/dev/null 2>&1; then
-                docker tag gpt101:latest "$rollback_tag"
-                docker tag gpt101:latest gpt101:rollback-latest
+              current_image_id="$(docker inspect --format '{{.Image}}' gpt101 2>/dev/null || true)"
+              current_image_ref="$(docker inspect --format '{{.Config.Image}}' gpt101 2>/dev/null || true)"
+
+              if [ -n "$current_image_id" ]; then
+                docker image tag "$current_image_id" "$rollback_tag"
+                docker image tag "$current_image_id" gpt101:rollback-latest
                 {
                   echo "created_at=$rollback_ts"
                   echo "source_commit=$current_commit"
+                  echo "source_image=${current_image_ref:-unknown}"
                   echo "rollback_tag=$rollback_tag"
                   echo "rollback_alias=gpt101:rollback-latest"
                 } > "$BACKUP_DIR/last-rollback-image.txt"
                 echo "已创建回退镜像标签: $rollback_tag"
               else
-                echo "未发现 gpt101:latest，跳过回退镜像打标"
+                echo "未发现正在运行的 gpt101 容器，跳过回退镜像打标"
               fi
             }
 
@@ -86,6 +149,8 @@ jobs:
             require_command git
             require_command docker
             require_command gzip
+            require_env GHCR_USERNAME
+            require_env GHCR_TOKEN
 
             FREE_KB="$(df -Pk "$HOME" | awk 'NR==2 {print $4}')"
             if [ -z "$FREE_KB" ] || [ "$FREE_KB" -lt $((5 * 1024 * 1024)) ]; then
@@ -147,9 +212,9 @@ jobs:
 
             git fetch origin "$DEPLOY_BRANCH"
             git checkout "$DEPLOY_BRANCH"
-            git reset --hard "origin/$DEPLOY_BRANCH"
+            git reset --hard "$DEPLOY_SHA"
 
-            # --- 构建并部署 ---
+            # --- 拉取镜像并部署 ---
 
             cd "$DEPLOY_DIR"
             if [ ! -f .env ]; then
@@ -159,9 +224,15 @@ jobs:
 
             APP_COMMIT="$(git rev-parse --short=12 HEAD)"
             echo "部署提交: ${APP_COMMIT} (分支: ${DEPLOY_BRANCH})"
+            echo "部署镜像: ${APP_IMAGE}"
 
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            docker pull "$APP_IMAGE"
+            docker image tag "$APP_IMAGE" gpt101:latest
+
+            upsert_env "$DEPLOY_DIR/.env" APP_IMAGE "$APP_IMAGE"
+            upsert_env "$DEPLOY_DIR/.env" APP_IMAGE_REPOSITORY "$IMAGE_REPOSITORY"
             docker compose config -q
-            docker compose build
 
             # 清理残留容器（防 Compose recreate 冲突）
             for stale in $(docker ps -a --format '{{.Names}}' | grep -E '^[0-9a-f]+_gpt101'); do
@@ -190,5 +261,3 @@ jobs:
 
             docker image prune -f
             echo "部署完成！提交: ${APP_COMMIT}，分支: ${DEPLOY_BRANCH}"
-        env:
-          DEPLOY_BRANCH: ${{ github.event.inputs.branch }}

@@ -9,8 +9,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  SVR_NAME: ${{ github.event.repository.name }}
 
 jobs:
   build-and-push:
@@ -22,6 +20,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Normalize image repository name
+        run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -45,6 +46,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO=${{ vars.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO || secrets.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO || '' }}

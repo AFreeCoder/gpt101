@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 APP_DIR="$(dirname "$SCRIPT_DIR")"
 DEPLOY_DIR="$SCRIPT_DIR"
 BACKUP_DIR="$DEPLOY_DIR/backups"
+DEFAULT_IMAGE_REPOSITORY="ghcr.io/afreecoder/gpt101"
 
 # --- 工具函数 ---
 
@@ -31,34 +32,66 @@ tag_current() {
   current_commit="$(cd "$APP_DIR" && git rev-parse --short=12 HEAD 2>/dev/null || echo unknown)"
   local rollback_ts="$(date +%Y%m%d_%H%M%S)"
   local rollback_tag="gpt101:rollback-${rollback_ts}-${current_commit}"
+  local current_image_id current_image_ref
 
-  if docker image inspect gpt101:latest >/dev/null 2>&1; then
-    docker tag gpt101:latest "$rollback_tag"
-    docker tag gpt101:latest gpt101:rollback-latest
+  current_image_id="$(docker inspect --format '{{.Image}}' gpt101 2>/dev/null || true)"
+  current_image_ref="$(docker inspect --format '{{.Config.Image}}' gpt101 2>/dev/null || true)"
+
+  if [ -n "$current_image_id" ]; then
+    docker tag "$current_image_id" "$rollback_tag"
+    docker tag "$current_image_id" gpt101:rollback-latest
     mkdir -p "$BACKUP_DIR"
     {
       echo "created_at=$rollback_ts"
       echo "source_commit=$current_commit"
+      echo "source_image=${current_image_ref:-unknown}"
       echo "rollback_tag=$rollback_tag"
       echo "rollback_alias=gpt101:rollback-latest"
     } > "$BACKUP_DIR/last-rollback-image.txt"
     echo "已创建回退镜像: $rollback_tag"
   else
-    echo "未发现 gpt101:latest" >&2
+    echo "未发现正在运行的 gpt101 容器" >&2
     return 1
   fi
+}
+
+upsert_env() {
+  local file="$1" key="$2" value="$3"
+  if grep -q "^${key}=" "$file" 2>/dev/null; then
+    sed -i.bak "s|^${key}=.*|${key}=${value}|" "$file"
+    rm -f "${file}.bak"
+  else
+    printf '\n%s=%s\n' "$key" "$value" >> "$file"
+  fi
+}
+
+resolve_image_repository() {
+  if [ -n "${APP_IMAGE_REPOSITORY:-}" ]; then
+    printf '%s\n' "$APP_IMAGE_REPOSITORY"
+    return 0
+  fi
+  if [ -f "$DEPLOY_DIR/.env" ]; then
+    local env_repo
+    env_repo="$(grep '^APP_IMAGE_REPOSITORY=' "$DEPLOY_DIR/.env" | tail -1 | cut -d= -f2- || true)"
+    if [ -n "$env_repo" ]; then
+      printf '%s\n' "$env_repo"
+      return 0
+    fi
+  fi
+  printf '%s\n' "$DEFAULT_IMAGE_REPOSITORY"
 }
 
 deploy_with_image() {
   local image_tag="$1"
   if ! docker image inspect "$image_tag" >/dev/null 2>&1; then
-    echo "镜像不存在: $image_tag" >&2
-    return 1
+    echo "本地未找到镜像，尝试拉取: $image_tag"
+    docker pull "$image_tag"
   fi
   docker tag "$image_tag" gpt101:latest
   cd "$DEPLOY_DIR"
-  docker compose stop gpt101 gpt101-worker
-  docker compose up -d gpt101 gpt101-worker
+  upsert_env "$DEPLOY_DIR/.env" APP_IMAGE "$image_tag"
+  upsert_env "$DEPLOY_DIR/.env" APP_IMAGE_REPOSITORY "$(resolve_image_repository)"
+  docker compose up -d --remove-orphans gpt101 gpt101-worker
   echo "已使用镜像 $image_tag 重启服务"
 }
 
@@ -108,10 +141,9 @@ case "${1:-help}" in
     echo "=== 源码回滚: $commit ==="
     backup_db
     checkout_source_version "$commit"
-    cd "$DEPLOY_DIR"
-    docker compose build
-    docker compose up -d --remove-orphans
-    echo "源码回滚完成: $commit"
+    image_tag="$(resolve_image_repository):$commit"
+    deploy_with_image "$image_tag"
+    echo "源码回滚完成: $commit ($image_tag)"
     ;;
 
   db-restore)
@@ -138,9 +170,8 @@ case "${1:-help}" in
         commit="${2:?用法: rollback.sh db-restore <file> --with-source <commit>}"
         restore_db "$backup_file"
         checkout_source_version "$commit"
-        cd "$DEPLOY_DIR"
-        docker compose build
-        docker compose up -d --remove-orphans
+        image_tag="$(resolve_image_repository):$commit"
+        deploy_with_image "$image_tag"
         ;;
       *)
         echo "db-restore 必须指定恢复后的应用版本:" >&2
@@ -187,10 +218,10 @@ case "${1:-help}" in
     echo ""
     echo "命令:"
     echo "  image [tag]                          镜像回滚（默认 rollback-latest）"
-    echo "  source <commit>                      源码回滚"
+    echo "  source <commit>                      切换到该 commit 对应的 GHCR 镜像"
     echo "  db-restore [file] --with-image [tag] 数据库恢复 + 镜像回滚"
     echo "  db-restore [file] --with-source <commit>"
-    echo "                                       数据库恢复 + 源码回滚"
+    echo "                                       数据库恢复 + GHCR 镜像回滚"
     echo "  prep                                 打标签 + 备份"
     echo "  tag-current                          仅打镜像标签"
     echo "  backup-db                            仅备份数据库"
