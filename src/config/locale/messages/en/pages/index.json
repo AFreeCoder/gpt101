@@ -51,7 +51,7 @@
         "buttons": [
           {
             "title": "Buy Now",
-            "url": "https://fe.dtyuedan.cn/item/82hv03",
+            "url": "https://fe.dtyuedan.cn/shop/F2OLER91/g2kxdj",
             "variant": "default"
           },
           {
@@ -133,11 +133,7 @@
             "title": "APIPool",
             "description": "Codex & Claude Code ready. GPT-5.4, Claude-Opus-4-6 now available. OpenClaw compatible. One API for all.",
             "highlight": "From 10% of official price!",
-            "tags": [
-              "3-in-1 API",
-              "Pay-as-you-go",
-              "Reliable"
-            ],
+            "tags": ["3-in-1 API", "Pay-as-you-go", "Reliable"],
             "button_text": "Get Started",
             "footer_text": "Sign up to get started",
             "url": "https://apipool.dev/register?ref=gpt101",

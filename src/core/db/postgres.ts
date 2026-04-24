@@ -8,15 +8,42 @@ import { isCloudflareWorker } from '@/shared/lib/env';
 let dbInstance: ReturnType<typeof drizzle> | null = null;
 let client: ReturnType<typeof postgres> | null = null;
 
+export function buildPostgresConnectionOptions(schemaName: string) {
+  const trimmedSchemaName = schemaName.trim();
+
+  if (!trimmedSchemaName || trimmedSchemaName === 'public') {
+    return {};
+  }
+
+  return {
+    connection: {
+      options: `-c search_path=${trimmedSchemaName}`,
+    },
+  };
+}
+
+export function shouldUsePostgresSingleton({
+  isCloudflareWorker,
+  dbSingletonEnabled,
+}: {
+  isCloudflareWorker: boolean;
+  dbSingletonEnabled?: string;
+}) {
+  if (isCloudflareWorker) {
+    return false;
+  }
+
+  // Reuse by default in warm Node runtimes (including Vercel), while keeping
+  // an explicit env escape hatch for incident rollback.
+  return dbSingletonEnabled !== 'false';
+}
+
 export function getPostgresDb() {
   let databaseUrl = envConfigs.database_url;
 
   let isHyperdrive = false;
   const schemaName = (envConfigs.db_schema || 'public').trim();
-  const connectionSchemaOptions =
-    schemaName && schemaName !== 'public'
-      ? { connection: { options: `-c search_path=${schemaName}` } }
-      : {};
+  const connectionOptions = buildPostgresConnectionOptions(schemaName);
 
   if (isCloudflareWorker) {
     const { env }: { env: any } = { env: {} };
@@ -43,14 +70,19 @@ export function getPostgresDb() {
       max: 1, // Limit to 1 connection in Workers
       idle_timeout: 10, // Shorter timeout for Workers
       connect_timeout: 5,
-      ...connectionSchemaOptions,
+      ...connectionOptions,
     });
 
     return drizzle(client);
   }
 
-  // Singleton mode: reuse existing connection (good for traditional servers and serverless warm starts)
-  if (envConfigs.db_singleton_enabled === 'true') {
+  // Singleton mode: reuse existing connection in warm Node runtimes.
+  if (
+    shouldUsePostgresSingleton({
+      isCloudflareWorker,
+      dbSingletonEnabled: envConfigs.db_singleton_enabled,
+    })
+  ) {
     // Return existing instance if already initialized
     if (dbInstance) {
       return dbInstance;
@@ -62,21 +94,20 @@ export function getPostgresDb() {
       max: Number(envConfigs.db_max_connections) || 1, // Maximum connections in pool (default 1)
       idle_timeout: 30, // Idle connection timeout (seconds)
       connect_timeout: 10, // Connection timeout (seconds)
-      ...connectionSchemaOptions,
+      ...connectionOptions,
     });
 
     dbInstance = drizzle({ client });
     return dbInstance;
   }
 
-  // Non-singleton mode: create new connection each time (good for serverless)
-  // In serverless, the connection will be cleaned up when the function instance is destroyed
+  // Non-singleton mode: keep an explicit fallback for incident rollback.
   const serverlessClient = postgres(databaseUrl, {
     prepare: false,
     max: 1, // Use single connection in serverless
     idle_timeout: 20,
     connect_timeout: 10,
-    ...connectionSchemaOptions,
+    ...connectionOptions,
   });
 
   return drizzle({ client: serverlessClient });
@@ -85,7 +116,7 @@ export function getPostgresDb() {
 // Optional: Function to close database connection (useful for testing or graceful shutdown)
 // Note: Only works in singleton mode
 export async function closePostgresDb() {
-  if (envConfigs.db_singleton_enabled && client) {
+  if (client) {
     await client.end();
     client = null;
     dbInstance = null;
