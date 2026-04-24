@@ -1,17 +1,18 @@
-import { asc, eq, and } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { upgradeChannel, upgradeTaskAttempt } from '@/config/db/schema';
+import { dbTimestampFromDate, dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
-import { getAdapter } from './registry';
-import type { UpgradeRequest, UpgradeResult } from './types';
 import {
   acquireCardkey,
   disableCardkey,
-  releaseCardkey,
   markCardkeyUsed,
+  releaseCardkey,
 } from '@/shared/models/channel-cardkey';
 
+import { getAdapter } from './registry';
+import type { UpgradeRequest, UpgradeResult } from './types';
 // 确保所有 adapter 被注册（side-effect import）
 import './adapters/mock';
 import './adapters/987ai';
@@ -79,17 +80,19 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
     const adapter = getAdapter(channel.driver);
     if (!adapter) {
       const noAdapterAttemptId = getUuid();
-      await db().insert(upgradeTaskAttempt).values({
-        id: noAdapterAttemptId,
-        taskId: input.taskId,
-        channelId: channel.id,
-        attemptNo,
-        status: 'skipped',
-        errorMessage: `未找到渠道适配器: ${channel.driver}`,
-        durationMs: 0,
-        startedAt: new Date(),
-        finishedAt: new Date(),
-      });
+      await db()
+        .insert(upgradeTaskAttempt)
+        .values({
+          id: noAdapterAttemptId,
+          taskId: input.taskId,
+          channelId: channel.id,
+          attemptNo,
+          status: 'skipped',
+          errorMessage: `未找到渠道适配器: ${channel.driver}`,
+          durationMs: 0,
+          startedAt: dbTimestampNow(),
+          finishedAt: dbTimestampNow(),
+        });
       attempts.push({
         channelId: channel.id,
         attemptNo,
@@ -125,8 +128,8 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
           status: 'skipped',
           errorMessage: '渠道卡密库存不足',
           durationMs: 0,
-          startedAt: new Date(),
-          finishedAt: new Date(),
+          startedAt: dbTimestampNow(),
+          finishedAt: dbTimestampNow(),
         });
         attempts.push({
           channelId: channel.id,
@@ -169,25 +172,27 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
     const attemptId = getUuid();
 
     // 记录 attempt
-    await db().insert(upgradeTaskAttempt).values({
-      id: attemptId,
-      taskId: input.taskId,
-      channelId: channel.id,
-      channelCardkeyId: cardkeyId,
-      attemptNo,
-      status: result.ok ? 'success' : 'failed',
-      errorMessage: result.ok ? undefined : result.message,
-      durationMs,
-      startedAt: new Date(startTime),
-      finishedAt: new Date(),
-    });
+    await db()
+      .insert(upgradeTaskAttempt)
+      .values({
+        id: attemptId,
+        taskId: input.taskId,
+        channelId: channel.id,
+        channelCardkeyId: cardkeyId,
+        attemptNo,
+        status: result.ok ? 'success' : 'failed',
+        errorMessage: result.ok ? undefined : result.message,
+        durationMs,
+        startedAt: dbTimestampFromDate(new Date(startTime)),
+        finishedAt: dbTimestampNow(),
+      });
 
     attempts.push({
       channelId: channel.id,
       channelCardkeyId: cardkeyId,
       attemptNo,
       ok: result.ok,
-      message: result.ok ? (result.message || 'success') : result.message,
+      message: result.ok ? result.message || 'success' : result.message,
       durationMs,
     });
 
@@ -232,9 +237,7 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
 
   return {
     success: false,
-    error:
-      attempts[attempts.length - 1]?.message ||
-      '所有渠道尝试都失败了',
+    error: attempts[attempts.length - 1]?.message || '所有渠道尝试都失败了',
     attempts,
   };
 }

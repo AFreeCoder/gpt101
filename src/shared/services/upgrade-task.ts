@@ -3,6 +3,7 @@ import { and, count, desc, eq, isNull, lte, sql } from 'drizzle-orm';
 import { db } from '@/core/db';
 import { channelCardkey, redeemCode, upgradeTask } from '@/config/db/schema';
 import { runTask } from '@/extensions/upgrade-channel/runner';
+import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
 import {
   consumeCode,
@@ -190,7 +191,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
         .update(upgradeTask)
         .set({
           status: UpgradeTaskStatus.RUNNING,
-          startedAt: new Date(),
+          startedAt: dbTimestampNow(),
           lastError: null,
           finishedAt: null,
           resultMessage: null,
@@ -221,7 +222,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
             successChannelCardkeyId: result.channelCardkeyId,
             attemptCount: result.attempts.length,
             resultMessage: result.message || '升级成功',
-            finishedAt: new Date(),
+            finishedAt: dbTimestampNow(),
           })
           .where(eq(upgradeTask.id, task.id));
 
@@ -243,7 +244,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
             attemptCount: result.attempts.length,
             resultMessage: null,
             metadata: nextMetadata,
-            finishedAt: new Date(),
+            finishedAt: dbTimestampNow(),
           })
           .where(eq(upgradeTask.id, task.id));
 
@@ -259,7 +260,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
           status: UpgradeTaskStatus.FAILED,
           lastError: err.message,
           resultMessage: null,
-          finishedAt: new Date(),
+          finishedAt: dbTimestampNow(),
         })
         .where(eq(upgradeTask.id, task.id));
 
@@ -380,7 +381,7 @@ export async function markTaskSuccess(
           status: 'used',
           lockedByTaskId: null,
           usedByAttemptId: null,
-          usedAt: new Date(),
+          usedAt: dbTimestampNow(),
         })
         .where(eq(channelCardkey.id, cardkey.id));
     }
@@ -389,7 +390,7 @@ export async function markTaskSuccess(
       .update(upgradeTask)
       .set({
         status: UpgradeTaskStatus.SUCCEEDED,
-        finishedAt: new Date(),
+        finishedAt: dbTimestampNow(),
         lastError: null,
         successChannelId: input?.channelId || task.successChannelId,
         successChannelCardkeyId,
@@ -453,7 +454,7 @@ export async function retryTask(taskId: string) {
       .set({
         status: 'consumed',
         usedByTaskId: task.id,
-        usedAt: new Date(),
+        usedAt: dbTimestampNow(),
       })
       .where(eq(redeemCode.id, code.id));
 
@@ -506,7 +507,7 @@ export async function cancelTask(taskId: string, reason?: string) {
         status: UpgradeTaskStatus.CANCELED,
         lastError: reason || 'Canceled by admin',
         resultMessage: null,
-        finishedAt: new Date(),
+        finishedAt: dbTimestampNow(),
       })
       .where(eq(upgradeTask.id, taskId));
 

@@ -2,6 +2,7 @@ import { and, count, desc, eq, inArray } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { redeemCode, redeemCodeBatch } from '@/config/db/schema';
+import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
 import { generateRedeemCode } from '@/shared/lib/redeem-code';
 
@@ -19,7 +20,9 @@ export enum RedeemCodeStatus {
 function generateBatchId(): string {
   const now = new Date();
   const ts = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
-  const rand = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const rand = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, '0');
   return `B${ts}${rand}`;
 }
 
@@ -134,9 +137,12 @@ export async function getCodeList(args: {
 
   if (args.status) conditions.push(eq(redeemCode.status, args.status));
   if (args.batchId) conditions.push(eq(redeemCode.batchId, args.batchId));
-  if (args.productCode) conditions.push(eq(redeemCode.productCode, args.productCode));
-  if (args.memberType) conditions.push(eq(redeemCode.memberType, args.memberType));
-  if (args.search) conditions.push(eq(redeemCode.code, args.search.toUpperCase()));
+  if (args.productCode)
+    conditions.push(eq(redeemCode.productCode, args.productCode));
+  if (args.memberType)
+    conditions.push(eq(redeemCode.memberType, args.memberType));
+  if (args.search)
+    conditions.push(eq(redeemCode.code, args.search.toUpperCase()));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -184,19 +190,26 @@ export async function consumeCode(
     .for('update');
 
   if (!row) return { ok: false, reason: 'not_found' };
-  if (row.status === RedeemCodeStatus.DISABLED) return { ok: false, reason: 'disabled' };
-  if (row.status === RedeemCodeStatus.CONSUMED) return { ok: false, reason: 'already_consumed' };
+  if (row.status === RedeemCodeStatus.DISABLED)
+    return { ok: false, reason: 'disabled' };
+  if (row.status === RedeemCodeStatus.CONSUMED)
+    return { ok: false, reason: 'already_consumed' };
 
   await tx
     .update(redeemCode)
     .set({
       status: RedeemCodeStatus.CONSUMED,
       usedByTaskId: taskId,
-      usedAt: new Date(),
+      usedAt: dbTimestampNow(),
     })
     .where(eq(redeemCode.id, row.id));
 
-  return { ok: true, codeId: row.id, productCode: row.productCode, memberType: row.memberType };
+  return {
+    ok: true,
+    codeId: row.id,
+    productCode: row.productCode,
+    memberType: row.memberType,
+  };
 }
 
 /**
@@ -231,7 +244,7 @@ export async function disableCode(codeId: string, reason?: string) {
     .update(redeemCode)
     .set({
       status: RedeemCodeStatus.DISABLED,
-      disabledAt: new Date(),
+      disabledAt: dbTimestampNow(),
       disabledReason: reason,
     })
     .where(eq(redeemCode.id, codeId));
@@ -263,7 +276,7 @@ export async function batchDisable(codeIds: string[], reason?: string) {
     .update(redeemCode)
     .set({
       status: RedeemCodeStatus.DISABLED,
-      disabledAt: new Date(),
+      disabledAt: dbTimestampNow(),
       disabledReason: reason,
     })
     .where(
@@ -314,8 +327,10 @@ export async function exportCodesToCsv(args: {
 }): Promise<string> {
   const conditions = [];
   if (args.batchId) conditions.push(eq(redeemCode.batchId, args.batchId));
-  if (args.productCode) conditions.push(eq(redeemCode.productCode, args.productCode));
-  if (args.memberType) conditions.push(eq(redeemCode.memberType, args.memberType));
+  if (args.productCode)
+    conditions.push(eq(redeemCode.productCode, args.productCode));
+  if (args.memberType)
+    conditions.push(eq(redeemCode.memberType, args.memberType));
   if (args.status) conditions.push(eq(redeemCode.status, args.status));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;

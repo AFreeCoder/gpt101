@@ -2,6 +2,7 @@ import { and, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { channelCardkey } from '@/config/db/schema';
+import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
 
 export type ChannelCardkey = typeof channelCardkey.$inferSelect;
@@ -26,11 +27,14 @@ export async function getCardkeyList(args: {
   const { page = 1, pageSize = 20 } = args;
   const offset = (page - 1) * pageSize;
   const conditions = [];
-  if (args.channelId) conditions.push(eq(channelCardkey.channelId, args.channelId));
+  if (args.channelId)
+    conditions.push(eq(channelCardkey.channelId, args.channelId));
 
   if (args.status) conditions.push(eq(channelCardkey.status, args.status));
-  if (args.productCode) conditions.push(eq(channelCardkey.productCode, args.productCode));
-  if (args.memberType) conditions.push(eq(channelCardkey.memberType, args.memberType));
+  if (args.productCode)
+    conditions.push(eq(channelCardkey.productCode, args.productCode));
+  if (args.memberType)
+    conditions.push(eq(channelCardkey.memberType, args.memberType));
 
   const where = and(...conditions);
 
@@ -92,7 +96,9 @@ export async function importCardkeys(args: {
     .select({ cardkey: channelCardkey.cardkey })
     .from(channelCardkey)
     .where(eq(channelCardkey.channelId, args.channelId));
-  const existingSet = new Set(existing.map((e: { cardkey: string }) => e.cardkey));
+  const existingSet = new Set(
+    existing.map((e: { cardkey: string }) => e.cardkey)
+  );
 
   await db().transaction(async (tx: any) => {
     for (const key of args.cardkeys) {
@@ -201,7 +207,7 @@ export async function markCardkeyUsed(
       status: ChannelCardkeyStatus.USED,
       lockedByTaskId: null,
       usedByAttemptId: attemptId ?? null,
-      usedAt: new Date(),
+      usedAt: dbTimestampNow(),
     })
     .where(eq(channelCardkey.id, cardkeyId));
 }
