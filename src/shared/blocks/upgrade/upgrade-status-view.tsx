@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
+
 interface TaskStatus {
   taskNo: string;
   status: string;
@@ -109,12 +111,12 @@ export function UpgradeStatusView({
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">提交时间</span>
-              <span>{new Date(task.createdAt).toLocaleString('zh-CN')}</span>
+              <span>{formatTimestampWithoutTimeZone(task.createdAt)}</span>
             </div>
             {task.finishedAt && (
               <div className="flex justify-between">
                 <span className="text-gray-500">完成时间</span>
-                <span>{new Date(task.finishedAt).toLocaleString('zh-CN')}</span>
+                <span>{formatTimestampWithoutTimeZone(task.finishedAt)}</span>
               </div>
             )}
           </div>

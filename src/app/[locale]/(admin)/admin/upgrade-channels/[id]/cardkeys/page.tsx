@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+
 import {
-  PRODUCT_TYPES,
   getMemberTypes,
   getProductMemberLabel,
+  PRODUCT_TYPES,
 } from '@/shared/lib/redeem-code';
+import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 
 interface Cardkey {
   id: string;
@@ -142,9 +144,7 @@ export default function ChannelCardkeysPage() {
     }
 
     if (
-      !confirm(
-        `确定删除选中的 ${deletableIds.length} 张卡密？此操作不可恢复。`
-      )
+      !confirm(`确定删除选中的 ${deletableIds.length} 张卡密？此操作不可恢复。`)
     )
       return;
 
@@ -361,19 +361,13 @@ export default function ChannelCardkeysPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="px-3 py-8 text-center text-gray-400"
-                >
+                <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
                   加载中...
                 </td>
               </tr>
             ) : cardkeys.length === 0 ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="px-3 py-8 text-center text-gray-400"
-                >
+                <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
                   暂无数据
                 </td>
               </tr>
@@ -392,7 +386,9 @@ export default function ChannelCardkeysPage() {
                         onChange={() => toggleOne(ck.id)}
                       />
                     </td>
-                    <td className="px-3 py-2 font-mono text-xs">{ck.cardkey}</td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      {ck.cardkey}
+                    </td>
                     <td className="px-3 py-2">
                       {getProductMemberLabel(ck.productCode, ck.memberType)}
                     </td>
@@ -404,12 +400,10 @@ export default function ChannelCardkeysPage() {
                       </span>
                     </td>
                     <td className="px-3 py-2 text-xs text-gray-500">
-                      {new Date(ck.createdAt).toLocaleString('zh-CN')}
+                      {formatTimestampWithoutTimeZone(ck.createdAt)}
                     </td>
                     <td className="px-3 py-2 text-xs text-gray-500">
-                      {ck.usedAt
-                        ? new Date(ck.usedAt).toLocaleString('zh-CN')
-                        : '-'}
+                      {formatTimestampWithoutTimeZone(ck.usedAt)}
                     </td>
                   </tr>
                 );

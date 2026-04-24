@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { formatBeijingDateTime } from '@/shared/lib/time';
+import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 
 interface Attempt {
   id: string;
@@ -161,10 +161,10 @@ export default function UpgradeTaskAttemptsPage() {
                       : '-'}
                   </td>
                   <td className="px-3 py-2 text-xs text-gray-500">
-                    {formatBeijingDateTime(a.startedAt)}
+                    {formatTimestampWithoutTimeZone(a.startedAt)}
                   </td>
                   <td className="px-3 py-2 text-xs text-gray-500">
-                    {formatBeijingDateTime(a.finishedAt)}
+                    {formatTimestampWithoutTimeZone(a.finishedAt)}
                   </td>
                 </tr>
               ))

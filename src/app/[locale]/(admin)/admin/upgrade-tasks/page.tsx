@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { getProductMemberLabel } from '@/shared/lib/redeem-code';
-import { formatBeijingDateTime } from '@/shared/lib/time';
+import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 
 interface Task {
   id: string;
@@ -218,7 +218,7 @@ export default function UpgradeTasksPage() {
                     </button>
                   </td>
                   <td className="px-3 py-2 text-xs whitespace-nowrap text-gray-500">
-                    {formatBeijingDateTime(t.createdAt)}
+                    {formatTimestampWithoutTimeZone(t.createdAt)}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex gap-2">

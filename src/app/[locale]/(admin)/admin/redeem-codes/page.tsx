@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import {
-  PRODUCT_TYPES,
   getMemberTypes,
   getProductMemberLabel,
-  STATUS_LABELS,
+  PRODUCT_TYPES,
   STATUS_COLORS,
+  STATUS_LABELS,
 } from '@/shared/lib/redeem-code';
+import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 
 interface RedeemCode {
   id: string;
@@ -72,8 +74,17 @@ export default function RedeemCodesPage() {
   // 构建筛选 URL
   const buildUrl = (overrides: Record<string, string>) => {
     const params = new URLSearchParams();
-    const merged = { status, productCode, memberType, batchId, search, ...overrides };
-    Object.entries(merged).forEach(([k, v]) => { if (v) params.set(k, v); });
+    const merged = {
+      status,
+      productCode,
+      memberType,
+      batchId,
+      search,
+      ...overrides,
+    };
+    Object.entries(merged).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
     return `/admin/redeem-codes?${params}`;
   };
 
@@ -88,7 +99,8 @@ export default function RedeemCodesPage() {
 
   const toggleOne = (id: string) => {
     const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id); else next.add(id);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
     setSelectedIds(next);
   };
 
@@ -135,7 +147,10 @@ export default function RedeemCodesPage() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">卡密列表</h2>
         <div className="flex gap-2">
-          <button onClick={handleExport} className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50">
+          <button
+            onClick={handleExport}
+            className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
+          >
             导出
           </button>
         </div>
@@ -165,7 +180,11 @@ export default function RedeemCodesPage() {
         {PRODUCT_TYPES.map((p) => (
           <a
             key={p.code}
-            href={buildUrl({ productCode: productCode === p.code ? '' : p.code, memberType: '', page: '' })}
+            href={buildUrl({
+              productCode: productCode === p.code ? '' : p.code,
+              memberType: '',
+              page: '',
+            })}
             className={`rounded-full px-3 py-1 text-xs ${productCode === p.code ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
           >
             {p.label}
@@ -175,11 +194,14 @@ export default function RedeemCodesPage() {
         {/* 会员类型筛选（选了产品后显示） */}
         {productCode && memberTypes.length > 0 && (
           <>
-            <span className="text-xs text-gray-400 leading-6">|</span>
+            <span className="text-xs leading-6 text-gray-400">|</span>
             {memberTypes.map((m) => (
               <a
                 key={m.code}
-                href={buildUrl({ memberType: memberType === m.code ? '' : m.code, page: '' })}
+                href={buildUrl({
+                  memberType: memberType === m.code ? '' : m.code,
+                  page: '',
+                })}
                 className={`rounded-full px-3 py-1 text-xs ${memberType === m.code ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
               >
                 {m.label}
@@ -189,7 +211,10 @@ export default function RedeemCodesPage() {
         )}
 
         {(productCode || memberType) && (
-          <a href="/admin/redeem-codes" className="rounded-full px-3 py-1 text-xs bg-red-100 text-red-600 hover:bg-red-200">
+          <a
+            href="/admin/redeem-codes"
+            className="rounded-full bg-red-100 px-3 py-1 text-xs text-red-600 hover:bg-red-200"
+          >
             清除筛选
           </a>
         )}
@@ -198,7 +223,9 @@ export default function RedeemCodesPage() {
       {/* 批量操作栏 */}
       {selectedIds.size > 0 && (
         <div className="mb-4 flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-2">
-          <span className="text-sm text-blue-700">已选 {selectedIds.size} 项</span>
+          <span className="text-sm text-blue-700">
+            已选 {selectedIds.size} 项
+          </span>
           <button
             onClick={() => handleBatchAction('disable')}
             disabled={actionLoading}
@@ -213,7 +240,10 @@ export default function RedeemCodesPage() {
           >
             批量删除
           </button>
-          <button onClick={() => setSelectedIds(new Set())} className="text-xs text-gray-500 hover:text-gray-700">
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="text-xs text-gray-500 hover:text-gray-700"
+          >
             取消选择
           </button>
         </div>
@@ -225,7 +255,13 @@ export default function RedeemCodesPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-3 py-2 text-left">
-                <input type="checkbox" checked={selectedIds.size === codes.length && codes.length > 0} onChange={toggleAll} />
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedIds.size === codes.length && codes.length > 0
+                  }
+                  onChange={toggleAll}
+                />
               </th>
               <th className="px-3 py-2 text-left">卡密</th>
               <th className="px-3 py-2 text-left">产品/会员</th>
@@ -237,25 +273,47 @@ export default function RedeemCodesPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">加载中...</td></tr>
+              <tr>
+                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
+                  加载中...
+                </td>
+              </tr>
             ) : codes.length === 0 ? (
-              <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">暂无数据</td></tr>
+              <tr>
+                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
+                  暂无数据
+                </td>
+              </tr>
             ) : (
               codes.map((c) => (
                 <tr key={c.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2">
-                    <input type="checkbox" checked={selectedIds.has(c.id)} onChange={() => toggleOne(c.id)} />
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(c.id)}
+                      onChange={() => toggleOne(c.id)}
+                    />
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">{c.code}</td>
-                  <td className="px-3 py-2">{getProductMemberLabel(c.productCode, c.memberType)}</td>
                   <td className="px-3 py-2">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600'}`}>
+                    {getProductMemberLabel(c.productCode, c.memberType)}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600'}`}
+                    >
                       {STATUS_LABELS[c.status] || c.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">{c.batchId}</td>
-                  <td className="px-3 py-2 text-xs text-gray-500">{new Date(c.createdAt).toLocaleString('zh-CN')}</td>
-                  <td className="px-3 py-2 text-xs text-gray-500">{c.usedAt ? new Date(c.usedAt).toLocaleString('zh-CN') : '-'}</td>
+                  <td className="px-3 py-2 text-xs text-gray-500">
+                    {c.batchId}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-gray-500">
+                    {formatTimestampWithoutTimeZone(c.createdAt)}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-gray-500">
+                    {formatTimestampWithoutTimeZone(c.usedAt)}
+                  </td>
                 </tr>
               ))
             )}
@@ -266,20 +324,46 @@ export default function RedeemCodesPage() {
       {/* 分页 */}
       {total > 30 && (
         <div className="mt-4 flex justify-center gap-2">
-          {page > 1 && <a href={buildUrl({ page: String(page - 1) })} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">上一页</a>}
-          <span className="px-3 py-1 text-sm text-gray-500">第 {page} 页，共 {Math.ceil(total / 30)} 页</span>
-          {page * 30 < total && <a href={buildUrl({ page: String(page + 1) })} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">下一页</a>}
+          {page > 1 && (
+            <a
+              href={buildUrl({ page: String(page - 1) })}
+              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+            >
+              上一页
+            </a>
+          )}
+          <span className="px-3 py-1 text-sm text-gray-500">
+            第 {page} 页，共 {Math.ceil(total / 30)} 页
+          </span>
+          {page * 30 < total && (
+            <a
+              href={buildUrl({ page: String(page + 1) })}
+              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+            >
+              下一页
+            </a>
+          )}
         </div>
       )}
 
       {/* 导出弹窗 */}
       {showExport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowExport(false)} />
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowExport(false)}
+          />
           <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">导出卡密（{codes.length} 张）</h3>
-              <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+              <h3 className="text-lg font-semibold">
+                导出卡密（{codes.length} 张）
+              </h3>
+              <button
+                onClick={() => setShowExport(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
             </div>
             <textarea
               readOnly

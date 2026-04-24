@@ -21,3 +21,10 @@ test('formatDateForTimestampWithoutTimeZone 将 JS Date 转为北京时间 times
     '2026-04-24 09:43:11'
   );
 });
+
+test('formatTimestampWithoutTimeZone 保留数据库 timestamp 的墙上时间', () => {
+  assert.equal(
+    (time as any).formatTimestampWithoutTimeZone('2026-04-24T09:43:11.755Z'),
+    '2026-04-24 09:43:11'
+  );
+});
