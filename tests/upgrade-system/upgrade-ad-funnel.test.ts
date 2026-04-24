@@ -68,10 +68,15 @@ test('trackAdPlusFunnelStep sends verify token event and Google Ads conversion t
 
 test('upgrade page tracks ad-plus verify clicks on button press instead of waiting for API success', () => {
   const source = readFileSync(
+    path.join(process.cwd(), 'src/shared/blocks/upgrade/upgrade-flow.tsx'),
+    'utf8'
+  );
+  const pageSource = readFileSync(
     path.join(process.cwd(), 'src/app/[locale]/(landing)/upgrade/page.tsx'),
     'utf8'
   );
 
+  assert.match(pageSource, /UpgradeFlow/);
   assert.match(source, /resolveAdPlusSourceFromHref\(window\.location\.href\)/);
   assert.match(source, /trackAdPlusFunnelStep\(source,\s*step,/);
   assert.match(

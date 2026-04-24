@@ -1,12 +1,14 @@
 import '@/config/style/global.css';
 
 import { JetBrains_Mono, Merriweather, Noto_Sans_Mono } from 'next/font/google';
+import { headers } from 'next/headers';
 import { getLocale, setRequestLocale } from 'next-intl/server';
 import NextTopLoader from 'nextjs-toploader';
 
 import { envConfigs } from '@/config';
 import { locales } from '@/config/locale';
 import { UtmCapture } from '@/shared/blocks/common/utm-capture';
+import { shouldSkipGlobalCustomerService } from '@/shared/lib/upgrade-subdomain';
 import { getAllConfigs } from '@/shared/models/config';
 import { getAdsService } from '@/shared/services/ads';
 import { getAffiliateService } from '@/shared/services/affiliate';
@@ -45,6 +47,10 @@ export default async function RootLayout({
 
   const isProduction = process.env.NODE_ENV === 'production';
   const isDebug = process.env.NEXT_PUBLIC_DEBUG === 'true';
+  const headersList = await headers();
+  const skipGlobalCustomerService = shouldSkipGlobalCustomerService(
+    headersList.get('host')
+  );
 
   // app url
   const appUrl = envConfigs.app_url || '';
@@ -77,7 +83,9 @@ export default async function RootLayout({
         getAdsService(configs),
         getAnalyticsService(configs),
         getAffiliateService(configs),
-        getCustomerService(configs),
+        skipGlobalCustomerService
+          ? Promise.resolve(null)
+          : getCustomerService(configs),
       ]);
 
     // get ads components
@@ -95,10 +103,12 @@ export default async function RootLayout({
     affiliateHeadScripts = affiliateService.getHeadScripts();
     affiliateBodyScripts = affiliateService.getBodyScripts();
 
-    // get customer service components
-    customerServiceMetaTags = customerService.getMetaTags();
-    customerServiceHeadScripts = customerService.getHeadScripts();
-    customerServiceBodyScripts = customerService.getBodyScripts();
+    if (customerService) {
+      // get customer service components
+      customerServiceMetaTags = customerService.getMetaTags();
+      customerServiceHeadScripts = customerService.getHeadScripts();
+      customerServiceBodyScripts = customerService.getBodyScripts();
+    }
   }
 
   return (

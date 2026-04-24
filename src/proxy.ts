@@ -3,11 +3,33 @@ import { getSessionCookie } from 'better-auth/cookies';
 import createIntlMiddleware from 'next-intl/middleware';
 
 import { routing } from '@/core/i18n/config';
+import { getUpgradeSubdomainRewritePath } from '@/shared/lib/upgrade-subdomain';
 
 const intlMiddleware = createIntlMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get('host');
+
+  const upgradeSubdomainRewritePath = getUpgradeSubdomainRewritePath(
+    host,
+    pathname
+  );
+  if (upgradeSubdomainRewritePath) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/${routing.defaultLocale}${upgradeSubdomainRewritePath}`;
+
+    const response = NextResponse.rewrite(rewriteUrl);
+    const cacheControl = 'public, s-maxage=3600, stale-while-revalidate=14400';
+
+    response.headers.set('x-pathname', request.nextUrl.pathname);
+    response.headers.set('x-url', request.url);
+    response.headers.set('Cache-Control', cacheControl);
+    response.headers.set('CDN-Cache-Control', cacheControl);
+    response.headers.set('Cloudflare-CDN-Cache-Control', cacheControl);
+
+    return response;
+  }
 
   // Handle internationalization first
   const intlResponse = intlMiddleware(request);

@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
@@ -7,6 +8,7 @@ import { ThemeProvider } from '@/core/theme/provider';
 import { Toaster } from '@/shared/components/ui/sonner';
 import { AppContextProvider } from '@/shared/contexts/app';
 import { getMetadata } from '@/shared/lib/seo';
+import { isUpgradeSubdomainHost } from '@/shared/lib/upgrade-subdomain';
 
 export const generateMetadata = getMetadata();
 
@@ -23,9 +25,13 @@ export default async function LocaleLayout({
   }
 
   setRequestLocale(locale);
+  const headersList = await headers();
+  const useMinimalIntlMessages = isUpgradeSubdomainHost(
+    headersList.get('host')
+  );
 
   return (
-    <NextIntlClientProvider>
+    <NextIntlClientProvider messages={useMinimalIntlMessages ? {} : undefined}>
       <ThemeProvider>
         <AppContextProvider>
           {children}
