@@ -162,11 +162,11 @@ Base URL: `https://api.987ai.vip/api`
 
 9977ai 没有公开 API 文档，实际流程来自页面脚本逆向与真实卡密验证：
 
-| 步骤 | 动作 | 请求方式 |
-| ---- | ---- | -------- |
-| 1 | `verify_code` | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=verify_code&activation_code=...` |
-| 2 | `submit_json` | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=submit_json&json_token=...` |
-| 3 | `reuse_record` | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=reuse_record` |
+| 步骤 | 动作           | 请求方式                                                                             |
+| ---- | -------------- | ------------------------------------------------------------------------------------ |
+| 1    | `verify_code`  | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=verify_code&activation_code=...` |
+| 2    | `submit_json`  | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=submit_json&json_token=...`      |
+| 3    | `reuse_record` | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=reuse_record`                    |
 
 接入策略只对统一流程暴露：
 
@@ -180,7 +180,8 @@ Base URL: `https://api.987ai.vip/api`
 - 3 次仍失败：不再尝试下一个渠道。
 - 对用户前端统一展示：`充值异常，请联系客服处理。`
 - 对后台：
-  - 渠道卡密标记为已占用，不释放回池。
+  - 若 `reuse_record` 明确返回“未找到对应的充值记录”，说明 9977 未建立可复用充值记录，渠道卡密释放回池。
+  - 其他无法确认是否已绑定的失败仍把渠道卡密标记为已占用，不释放回池。
   - 本站卡密保持占用。
   - 任务写入 `manualRequired=true`，禁止后台普通重试。
 
@@ -528,7 +529,7 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
   镜像构建时会额外执行一次 `esbuild`，把 `worker.ts` 打包为 `worker.js`，确保 `gpt101-worker` 容器可以直接以 `node worker.js` 启动。
 
 - **9977ai 渠道终止型失败策略**  
-  9977ai adapter 现在支持 `verify_code` / `submit_json` / 内部 `reuse_record` 自动重试 3 次。只要进入 9977ai 的绑定型失败分支，就不会再切下一个渠道；渠道卡密与本站卡密都会保持占用，任务落为失败并标记人工处理。
+  9977ai adapter 现在支持 `verify_code` / `submit_json` / 内部 `reuse_record` 自动重试 3 次。进入 9977ai 的绑定型失败分支后不会再切下一个渠道，任务落为失败并标记人工处理。若复用记录明确不存在，渠道卡密释放回池；其他无法确认是否已绑定的失败仍保守占用渠道卡密与本站卡密。
 
 - **用户侧失败文案统一收敛**  
   `/upgrade` 提交失败和 `/upgrade/status/[taskNo]` 失败终态统一展示为“充值异常，请联系客服处理。”，不再暴露卡密校验或渠道细节。

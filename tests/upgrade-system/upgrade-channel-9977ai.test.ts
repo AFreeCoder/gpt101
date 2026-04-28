@@ -22,7 +22,12 @@ function jsonResponse(body: unknown, headers?: Record<string, string>) {
 }
 
 test('9977ai 在 submit_json 失败后会自动重试 reuse_record 直到成功', async () => {
-  const calls: Array<{ url: string; method: string; body: string; cookie: string }> = [];
+  const calls: Array<{
+    url: string;
+    method: string;
+    body: string;
+    cookie: string;
+  }> = [];
   const responses = [
     jsonResponse(
       { success: true, status: 'active', is_new: true, email: '' },
@@ -35,12 +40,18 @@ test('9977ai 在 submit_json 失败后会自动重试 reuse_record 直到成功'
 
   const adapter = create9977aiAdapter({
     fetchImpl: (async (input, init) => {
-      const body = init?.body instanceof URLSearchParams ? init.body.toString() : String(init?.body || '');
+      const body =
+        init?.body instanceof URLSearchParams
+          ? init.body.toString()
+          : String(init?.body || '');
       calls.push({
         url: input.toString(),
         method: init?.method || 'GET',
         body,
-        cookie: String(init?.headers && (init.headers as Record<string, string>).Cookie || ''),
+        cookie: String(
+          (init?.headers && (init.headers as Record<string, string>).Cookie) ||
+            ''
+        ),
       });
       const response = responses.shift();
       assert.ok(response, '测试响应已耗尽');
@@ -196,7 +207,13 @@ test('9977ai 在 submit_json 与 3 次 reuse_record 都失败后返回终止型�
     assert.equal(calls.length, 5);
     assert.deepEqual(
       calls.map((body) => body.match(/action=([^&]+)/)?.[1] || ''),
-      ['verify_code', 'submit_json', 'reuse_record', 'reuse_record', 'reuse_record']
+      [
+        'verify_code',
+        'submit_json',
+        'reuse_record',
+        'reuse_record',
+        'reuse_record',
+      ]
     );
     assert.equal(result.stopFallback, true);
     assert.equal(result.preserveRedeemCode, true);
@@ -204,6 +221,47 @@ test('9977ai 在 submit_json 与 3 次 reuse_record 都失败后返回终止型�
     assert.equal(
       result.message,
       '9977 渠道充值异常：submit_json 失败后自动复用 3 次仍未成功：会话失效'
+    );
+  }
+});
+
+test('9977ai 在复用记录明确不存在时终止失败但释放渠道卡密', async () => {
+  const responses = [
+    jsonResponse(
+      { success: true, status: 'active', is_new: true, email: '' },
+      { 'set-cookie': 'PHPSESSID=no-record-session; path=/; HttpOnly' }
+    ),
+    jsonResponse({ success: false, error: '提交失败' }),
+    jsonResponse({ success: false, error: '未找到对应的充值记录' }),
+    jsonResponse({ success: false, error: '未找到对应的充值记录' }),
+    jsonResponse({ success: false, error: '未找到对应的充值记录' }),
+  ];
+
+  const adapter = create9977aiAdapter({
+    fetchImpl: (async () => {
+      const response = responses.shift();
+      assert.ok(response, '测试响应已耗尽');
+      return response;
+    }) as typeof fetch,
+  });
+
+  const result = await adapter.execute({
+    taskId: 'task_9977_no_record',
+    productCode: 'plus',
+    memberType: 'month',
+    sessionToken: buildSessionJson(),
+    chatgptEmail: 'user@example.com',
+    channelCardkey: 'EDVB-NO-RECORD-0001',
+  });
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.stopFallback, true);
+    assert.equal(result.preserveRedeemCode, true);
+    assert.equal(result.cardkeyAction, 'release');
+    assert.equal(
+      result.message,
+      '9977 渠道充值异常：submit_json 失败后自动复用 3 次仍未成功：未找到对应的充值记录'
     );
   }
 });

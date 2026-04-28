@@ -1,5 +1,9 @@
-import type { UpgradeChannelAdapter, UpgradeRequest, UpgradeResult } from '../types';
 import { registerAdapter } from '../registry';
+import type {
+  UpgradeChannelAdapter,
+  UpgradeRequest,
+  UpgradeResult,
+} from '../types';
 
 const BASE_URL = 'https://9977ai.vip/';
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -16,8 +20,8 @@ class CookieJar {
 
   merge(headers: Headers) {
     const setCookies =
-      typeof (headers as Headers & { getSetCookie?: () => string[] }).getSetCookie ===
-      'function'
+      typeof (headers as Headers & { getSetCookie?: () => string[] })
+        .getSetCookie === 'function'
         ? (headers as Headers & { getSetCookie: () => string[] }).getSetCookie()
         : headers.get('set-cookie')
           ? [headers.get('set-cookie') as string]
@@ -44,10 +48,7 @@ class CookieJar {
 
 function extractMessage(payload: any): string {
   const message =
-    payload?.message ||
-    payload?.error ||
-    payload?.msg ||
-    payload?.detail;
+    payload?.message || payload?.error || payload?.msg || payload?.detail;
 
   return typeof message === 'string' && message.trim()
     ? message.trim()
@@ -85,6 +86,10 @@ async function fetchJsonWithTimeout(
 
 function buildAdminFailureMessage(message: string): string {
   return `9977 渠道充值异常：${message}`;
+}
+
+function isMissingRechargeRecordMessage(message: string): boolean {
+  return message.includes('未找到对应的充值记录');
 }
 
 export function create9977aiAdapter(
@@ -137,7 +142,9 @@ export function create9977aiAdapter(
     });
   }
 
-  async function reuseRecordWithRetries(jar: CookieJar): Promise<UpgradeResult> {
+  async function reuseRecordWithRetries(
+    jar: CookieJar
+  ): Promise<UpgradeResult> {
     let lastMessage = '9977 渠道复用记录失败';
 
     for (let index = 0; index < REUSE_RETRY_COUNT; index++) {
@@ -161,7 +168,9 @@ export function create9977aiAdapter(
       retryable: false,
       stopFallback: true,
       preserveRedeemCode: true,
-      cardkeyAction: 'consume',
+      cardkeyAction: isMissingRechargeRecordMessage(lastMessage)
+        ? 'release'
+        : 'consume',
       message: buildAdminFailureMessage(
         `submit_json 失败后自动复用 3 次仍未成功：${lastMessage}`
       ),
@@ -225,9 +234,8 @@ export function create9977aiAdapter(
           stopFallback: true,
           preserveRedeemCode: true,
           cardkeyAction: 'consume',
-          message: buildAdminFailureMessage(
-            '该卡密已存在历史升级记录，需人工处理'
-          ),
+          message:
+            buildAdminFailureMessage('该卡密已存在历史升级记录，需人工处理'),
         };
       }
 
