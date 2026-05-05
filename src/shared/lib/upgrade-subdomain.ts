@@ -1,4 +1,5 @@
 const UPGRADE_SUBDOMAIN_HOST = 'upgrade.gpt101.org';
+const UPGRADE_PATH = '/upgrade';
 const AGENT_UPGRADE_PATH = '/agent-upgrade';
 const SUPPORTED_LOCALE_SEGMENTS = new Set(['en', 'zh']);
 
@@ -12,7 +13,7 @@ export function isUpgradeSubdomainHost(
   return normalizeHost(host) === UPGRADE_SUBDOMAIN_HOST;
 }
 
-export function getUpgradeSubdomainRewritePath(
+export function getUpgradeSubdomainRedirectPath(
   host: string | null | undefined,
   pathname: string
 ): string | null {
@@ -23,19 +24,45 @@ export function getUpgradeSubdomainRewritePath(
   const normalizedPathname = normalizePathname(pathname);
   const pathWithoutLocale = stripLeadingLocale(normalizedPathname);
 
-  if (pathWithoutLocale === '/' || pathWithoutLocale === '/upgrade') {
-    return AGENT_UPGRADE_PATH;
+  if (pathWithoutLocale === '/') {
+    return UPGRADE_PATH;
+  }
+
+  if (
+    normalizedPathname !== pathWithoutLocale &&
+    isCanonicalUpgradePath(pathWithoutLocale)
+  ) {
+    return pathWithoutLocale;
   }
 
   if (pathWithoutLocale.startsWith('/status/')) {
-    return `${AGENT_UPGRADE_PATH}${pathWithoutLocale}`;
+    return `${UPGRADE_PATH}${pathWithoutLocale}`;
   }
 
-  if (pathWithoutLocale.startsWith('/upgrade/status/')) {
-    return `${AGENT_UPGRADE_PATH}${pathWithoutLocale.slice('/upgrade'.length)}`;
+  if (pathWithoutLocale === AGENT_UPGRADE_PATH) {
+    return UPGRADE_PATH;
+  }
+
+  if (pathWithoutLocale.startsWith(`${AGENT_UPGRADE_PATH}/status/`)) {
+    return `${UPGRADE_PATH}${pathWithoutLocale.slice(AGENT_UPGRADE_PATH.length)}`;
   }
 
   return null;
+}
+
+export function shouldServeUpgradeSubdomainPath(
+  host: string | null | undefined,
+  pathname: string
+): boolean {
+  if (!isUpgradeSubdomainHost(host)) {
+    return false;
+  }
+
+  const normalizedPathname = normalizePathname(pathname);
+  return (
+    normalizedPathname === stripLeadingLocale(normalizedPathname) &&
+    isCanonicalUpgradePath(normalizedPathname)
+  );
 }
 
 export function shouldSkipGlobalCustomerService(
@@ -64,4 +91,10 @@ function stripLeadingLocale(pathname: string): string {
 
   const stripped = `/${segments.slice(2).join('/')}`;
   return stripped === '/' ? '/' : normalizePathname(stripped);
+}
+
+function isCanonicalUpgradePath(pathname: string): boolean {
+  return (
+    pathname === UPGRADE_PATH || pathname.startsWith(`${UPGRADE_PATH}/status/`)
+  );
 }

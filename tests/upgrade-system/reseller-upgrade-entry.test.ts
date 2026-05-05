@@ -4,8 +4,9 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
-  getUpgradeSubdomainRewritePath,
+  getUpgradeSubdomainRedirectPath,
   isUpgradeSubdomainHost,
+  shouldServeUpgradeSubdomainPath,
   shouldSkipGlobalCustomerService,
 } from '../../src/shared/lib/upgrade-subdomain';
 
@@ -19,34 +20,71 @@ test('upgrade subdomain host detection accepts only upgrade.gpt101.org', () => {
   assert.equal(isUpgradeSubdomainHost(null), false);
 });
 
-test('upgrade subdomain rewrites clean entry and status paths to internal pages', () => {
+test('upgrade subdomain canonicalizes public paths to /upgrade', () => {
   assert.equal(
-    getUpgradeSubdomainRewritePath('upgrade.gpt101.org', '/'),
-    '/agent-upgrade'
+    getUpgradeSubdomainRedirectPath('upgrade.gpt101.org', '/'),
+    '/upgrade'
   );
   assert.equal(
-    getUpgradeSubdomainRewritePath('upgrade.gpt101.org', '/upgrade'),
-    '/agent-upgrade'
+    getUpgradeSubdomainRedirectPath('upgrade.gpt101.org', '/upgrade'),
+    null
   );
   assert.equal(
-    getUpgradeSubdomainRewritePath('upgrade.gpt101.org', '/zh/upgrade'),
-    '/agent-upgrade'
+    getUpgradeSubdomainRedirectPath('upgrade.gpt101.org', '/zh/upgrade'),
+    '/upgrade'
   );
   assert.equal(
-    getUpgradeSubdomainRewritePath(
+    getUpgradeSubdomainRedirectPath(
       'upgrade.gpt101.org',
       '/status/TS-20260424-0001'
     ),
-    '/agent-upgrade/status/TS-20260424-0001'
+    '/upgrade/status/TS-20260424-0001'
   );
   assert.equal(
-    getUpgradeSubdomainRewritePath(
+    getUpgradeSubdomainRedirectPath(
       'upgrade.gpt101.org',
       '/upgrade/status/TS-20260424-0001'
     ),
-    '/agent-upgrade/status/TS-20260424-0001'
+    null
   );
-  assert.equal(getUpgradeSubdomainRewritePath('gpt101.org', '/'), null);
+  assert.equal(
+    getUpgradeSubdomainRedirectPath('upgrade.gpt101.org', '/agent-upgrade'),
+    '/upgrade'
+  );
+  assert.equal(
+    getUpgradeSubdomainRedirectPath(
+      'upgrade.gpt101.org',
+      '/zh/agent-upgrade/status/TS-20260424-0001'
+    ),
+    '/upgrade/status/TS-20260424-0001'
+  );
+  assert.equal(getUpgradeSubdomainRedirectPath('gpt101.org', '/'), null);
+});
+
+test('upgrade subdomain serves only canonical /upgrade paths directly', () => {
+  assert.equal(
+    shouldServeUpgradeSubdomainPath('upgrade.gpt101.org', '/'),
+    false
+  );
+  assert.equal(
+    shouldServeUpgradeSubdomainPath('upgrade.gpt101.org', '/upgrade'),
+    true
+  );
+  assert.equal(
+    shouldServeUpgradeSubdomainPath('upgrade.gpt101.org', '/zh/upgrade'),
+    false
+  );
+  assert.equal(
+    shouldServeUpgradeSubdomainPath(
+      'upgrade.gpt101.org',
+      '/upgrade/status/TS-20260424-0001'
+    ),
+    true
+  );
+  assert.equal(
+    shouldServeUpgradeSubdomainPath('gpt101.org', '/upgrade'),
+    false
+  );
 });
 
 test('upgrade subdomain skips global customer service injection', () => {
@@ -54,7 +92,12 @@ test('upgrade subdomain skips global customer service injection', () => {
   assert.equal(shouldSkipGlobalCustomerService('gpt101.org'), false);
 });
 
-test('agent upgrade pages are isolated from landing layout and hard-coded GPT101 support id', () => {
+test('top-level upgrade pages serve reseller flow and old agent paths redirect to /upgrade', () => {
+  const upgradePath = path.join(repoRoot, 'src/app/upgrade/page.tsx');
+  const upgradeStatusPath = path.join(
+    repoRoot,
+    'src/app/upgrade/status/[taskNo]/page.tsx'
+  );
   const pagePath = path.join(
     repoRoot,
     'src/app/[locale]/(agent-upgrade)/agent-upgrade/page.tsx'
@@ -64,33 +107,38 @@ test('agent upgrade pages are isolated from landing layout and hard-coded GPT101
     'src/app/[locale]/(agent-upgrade)/agent-upgrade/status/[taskNo]/page.tsx'
   );
 
+  assert.equal(existsSync(upgradePath), true);
+  assert.equal(existsSync(upgradeStatusPath), true);
   assert.equal(existsSync(pagePath), true);
   assert.equal(existsSync(statusPath), true);
 
+  const upgradeSource = readFileSync(upgradePath, 'utf8');
+  const upgradeStatusSource = readFileSync(upgradeStatusPath, 'utf8');
   const pageSource = readFileSync(pagePath, 'utf8');
   const statusSource = readFileSync(statusPath, 'utf8');
 
-  assert.match(pageSource, /UpgradeFlow/);
-  assert.match(statusSource, /UpgradeStatusView/);
+  assert.match(upgradeSource, /showSupportCard=\{false\}/);
+  assert.match(upgradeSource, /supportContact=\{null\}/);
+  assert.match(upgradeStatusSource, /supportContact=\{null\}/);
+  assert.match(pageSource, /redirect\('\/upgrade'\)/);
+  assert.match(statusSource, /redirect\(`\/upgrade\/status\/\$\{taskNo\}`\)/);
   assert.doesNotMatch(
-    pageSource,
+    upgradeSource,
     /AFreeCoder01|联系客服微信|Footer|Header|TopBanner/
   );
   assert.doesNotMatch(
-    statusSource,
+    upgradeStatusSource,
     /AFreeCoder01|联系客服微信|Footer|Header|TopBanner/
   );
 });
 
-test('locale layout avoids serializing site messages on upgrade subdomain', () => {
-  const layoutSource = readFileSync(
-    path.join(repoRoot, 'src/app/[locale]/layout.tsx'),
-    'utf8'
-  );
+test('proxy bypasses intl middleware for canonical upgrade subdomain paths', () => {
+  const proxySource = readFileSync(path.join(repoRoot, 'src/proxy.ts'), 'utf8');
 
-  assert.match(layoutSource, /isUpgradeSubdomainHost/);
-  assert.match(
-    layoutSource,
-    /messages=\{useMinimalIntlMessages \? \{\} : undefined\}/
-  );
+  assert.match(proxySource, /getUpgradeSubdomainRedirectPath/);
+  assert.match(proxySource, /shouldServeUpgradeSubdomainPath/);
+  assert.match(proxySource, /createUpgradeSubdomainRedirectUrl/);
+  assert.match(proxySource, /x-forwarded-host/);
+  assert.match(proxySource, /x-forwarded-proto/);
+  assert.match(proxySource, /NextResponse\.next\(\)/);
 });

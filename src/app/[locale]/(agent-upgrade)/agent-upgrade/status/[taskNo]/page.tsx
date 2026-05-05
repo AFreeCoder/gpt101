@@ -1,4 +1,4 @@
-import { UpgradeStatusView } from '@/shared/blocks/upgrade/upgrade-status-view';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   robots: {
@@ -7,11 +7,11 @@ export const metadata = {
   },
 };
 
-export default function AgentUpgradeStatusPage() {
-  return (
-    <UpgradeStatusView
-      supportContact={null}
-      failedHelpText="请联系购卡渠道处理，并提供任务编号："
-    />
-  );
+export default async function AgentUpgradeStatusPage({
+  params,
+}: {
+  params: Promise<{ taskNo: string }>;
+}) {
+  const { taskNo } = await params;
+  redirect(`/upgrade/status/${taskNo}`);
 }

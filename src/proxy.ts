@@ -3,32 +3,67 @@ import { getSessionCookie } from 'better-auth/cookies';
 import createIntlMiddleware from 'next-intl/middleware';
 
 import { routing } from '@/core/i18n/config';
-import { getUpgradeSubdomainRewritePath } from '@/shared/lib/upgrade-subdomain';
+import {
+  getUpgradeSubdomainRedirectPath,
+  shouldServeUpgradeSubdomainPath,
+} from '@/shared/lib/upgrade-subdomain';
 
 const intlMiddleware = createIntlMiddleware(routing);
+const PUBLIC_CACHE_CONTROL =
+  'public, s-maxage=3600, stale-while-revalidate=14400';
+
+function withPublicCacheHeaders(response: NextResponse, request: NextRequest) {
+  response.headers.set('x-pathname', request.nextUrl.pathname);
+  response.headers.set('x-url', request.url);
+  response.headers.set('Cache-Control', PUBLIC_CACHE_CONTROL);
+  response.headers.set('CDN-Cache-Control', PUBLIC_CACHE_CONTROL);
+  response.headers.set('Cloudflare-CDN-Cache-Control', PUBLIC_CACHE_CONTROL);
+  return response;
+}
+
+function createUpgradeSubdomainRedirectUrl(
+  request: NextRequest,
+  pathname: string
+) {
+  const forwardedHost = getForwardedHeaderValue(request, 'x-forwarded-host');
+  const forwardedProto = getForwardedHeaderValue(request, 'x-forwarded-proto');
+  const host =
+    forwardedHost || request.headers.get('host') || request.nextUrl.host;
+  const protocol = normalizeProtocol(
+    forwardedProto || request.nextUrl.protocol
+  );
+
+  return new URL(
+    `${pathname}${request.nextUrl.search}`,
+    `${protocol}://${host}`
+  );
+}
+
+function getForwardedHeaderValue(request: NextRequest, headerName: string) {
+  const value = request.headers.get(headerName);
+  return value?.split(',')[0]?.trim() || null;
+}
+
+function normalizeProtocol(protocol: string) {
+  return protocol.endsWith(':') ? protocol.slice(0, -1) : protocol;
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = request.headers.get('host');
 
-  const upgradeSubdomainRewritePath = getUpgradeSubdomainRewritePath(
+  const upgradeSubdomainRedirectPath = getUpgradeSubdomainRedirectPath(
     host,
     pathname
   );
-  if (upgradeSubdomainRewritePath) {
-    const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = `/${routing.defaultLocale}${upgradeSubdomainRewritePath}`;
+  if (upgradeSubdomainRedirectPath) {
+    return NextResponse.redirect(
+      createUpgradeSubdomainRedirectUrl(request, upgradeSubdomainRedirectPath)
+    );
+  }
 
-    const response = NextResponse.rewrite(rewriteUrl);
-    const cacheControl = 'public, s-maxage=3600, stale-while-revalidate=14400';
-
-    response.headers.set('x-pathname', request.nextUrl.pathname);
-    response.headers.set('x-url', request.url);
-    response.headers.set('Cache-Control', cacheControl);
-    response.headers.set('CDN-Cache-Control', cacheControl);
-    response.headers.set('Cloudflare-CDN-Cache-Control', cacheControl);
-
-    return response;
+  if (shouldServeUpgradeSubdomainPath(host, pathname)) {
+    return withPublicCacheHeaders(NextResponse.next(), request);
   }
 
   // Handle internationalization first
@@ -84,11 +119,12 @@ export async function proxy(request: NextRequest) {
     intlResponse.headers.delete('Set-Cookie');
 
     // Cache-Control header for public pages
-    const cacheControl = 'public, s-maxage=3600, stale-while-revalidate=14400';
-
-    intlResponse.headers.set('Cache-Control', cacheControl);
-    intlResponse.headers.set('CDN-Cache-Control', cacheControl);
-    intlResponse.headers.set('Cloudflare-CDN-Cache-Control', cacheControl);
+    intlResponse.headers.set('Cache-Control', PUBLIC_CACHE_CONTROL);
+    intlResponse.headers.set('CDN-Cache-Control', PUBLIC_CACHE_CONTROL);
+    intlResponse.headers.set(
+      'Cloudflare-CDN-Cache-Control',
+      PUBLIC_CACHE_CONTROL
+    );
   }
 
   // For all other routes (including /, /sign-in, /sign-up, /sign-out), just return the intl response

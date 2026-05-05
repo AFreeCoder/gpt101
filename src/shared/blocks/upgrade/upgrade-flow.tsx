@@ -12,6 +12,7 @@ import {
   getMemberLabel,
   getProductMemberLabel,
 } from '@/shared/lib/redeem-code';
+import { isOutlookEmail } from '@/shared/lib/upgrade-email-warning';
 
 export type UpgradeFlowProps = {
   showSupportCard?: boolean;
@@ -49,6 +50,8 @@ export function UpgradeFlow({
   const [polling, setPolling] = useState(false);
 
   const productLabel = getProductMemberLabel(productCode, memberType);
+  const shouldShowOutlookEmailWarning =
+    tokenParsed && isOutlookEmail(accountEmail);
 
   const trackAdPlusStep = (step: 'verify_code' | 'verify_token') => {
     const source =
@@ -543,22 +546,36 @@ export function UpgradeFlow({
                   </div>
                 )}
                 {tokenParsed && (
-                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-                    <svg
-                      className="h-4 w-4 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                      />
-                    </svg>
-                    Token 验证通过
-                  </div>
+                  <>
+                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+                      <svg
+                        className="h-4 w-4 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                      Token 验证通过
+                    </div>
+                    {shouldShowOutlookEmailWarning && (
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
+                        <p className="font-medium text-amber-800 dark:text-amber-300">
+                          由于特殊原因，outlook 邮箱账号存在封号风险， 请修改。
+                        </p>
+                        <p className="mt-1 text-sky-700 dark:text-sky-300">
+                          {
+                            '修改步骤：网页登录 ChatGPT，点击【头像—>设置—>账户—>电子邮件】，进行修改'
+                          }
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
