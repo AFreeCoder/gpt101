@@ -18,6 +18,7 @@ import './adapters/mock';
 import './adapters/987ai';
 import './adapters/9977ai';
 import './adapters/aifadian';
+import './adapters/dnscon';
 
 export interface RunTaskInput {
   taskId: string;

@@ -62,7 +62,8 @@ Worker 取任务执行：
     │   │       ├─ submit_json 失败 → reuse_record 自动重试 3 次
     │   │       ├─ verify_code 返回 used / is_new=false → 直接人工处理
     │   │       └─ 失败后不切换后续渠道
-    │   │   └─ cdk.aifadian.org: verify/cdk → recharge，充值结果不确定时二次验卡
+    │   │   ├─ cdk.aifadian.org: verify/cdk → recharge，充值结果不确定时二次验卡
+    │   │   └─ dnscon.xyz: redeem/verify → redeem/submit，充值结果不确定时二次验卡
     │   ├─ 成功 → 渠道卡密 used，任务 succeeded
     │   ├─ 普通失败 → 释放渠道卡密，尝试下一个渠道
     │   └─ 结果不确定的终止型失败 → 渠道卡密 consumed，任务 failed，保留本站卡密占用并标记人工处理
@@ -212,7 +213,34 @@ Base URL: `https://api.afadian.org/api`
   - 二次验卡仍为 `valid`：说明卡密未被上游消耗，渠道卡密释放回池，并允许尝试后续渠道。
   - 二次验卡不是 `valid`，或二次验卡自身失败：充值结果无法确认，渠道卡密保守标记为已占用，本站卡密保持占用，任务转人工处理。
 
-### 2.8 Worker 机制
+### 2.8 dnscon.xyz 渠道对接
+
+dnscon.xyz 的前端是 Nuxt 应用，实际 API base 从运行时配置读取为 `https://ht.gptai.vip/api`，接入流程如下：
+
+| 步骤 | API                     | 说明                                                                  |
+| ---- | ----------------------- | --------------------------------------------------------------------- |
+| 1    | `POST /redeem/verify`   | 验证渠道卡密，body: `{ cardCode }`                                    |
+| 2    | `POST /redeem/submit`   | 发起充值，body: `{ cardCode, tokenContent }`                          |
+| 3    | `POST /card/batchQuery` | 仅供人工批量查卡，body: `{ cardCodes: string[] }`，自动充值流程不依赖 |
+
+Base URL: `https://ht.gptai.vip/api`
+
+渠道配置：
+
+- 后台渠道代码 / driver 使用 `dnscon.xyz`。
+- `requiresCardkey=true`，每个产品和会员档位按现有渠道卡密库存池导入。
+
+关键规则：
+
+- `tokenContent` 使用用户提交的完整 Session JSON。Adapter 会先校验 `user.email`、`account.id`、`account.planType` 存在，并要求 `account.structure=personal`。
+- 首次 `redeem/verify` 返回非有效：视为坏卡，渠道卡密标记 `disabled`。
+- `redeem/submit` 成功：渠道卡密标记 `used`，任务成功。
+- `redeem/submit` 明确返回卡密不存在 / 未启用 / 无效 / 已使用：渠道卡密标记 `disabled`。
+- `redeem/submit` 返回无法识别的异常或网络异常：立即二次调用 `redeem/verify`。
+  - 二次验卡仍有效：说明卡密未被上游消耗，渠道卡密释放回池，并允许尝试后续渠道。
+  - 二次验卡无效，或二次验卡自身失败：充值结果无法确认，渠道卡密保守标记为已占用，本站卡密保持占用，任务转人工处理。
+
+### 2.9 Worker 机制
 
 - **独立进程**：`worker.ts`，Docker 中用同一镜像、不同入口启动
 - **轮询方式**：`setInterval` 每 30 秒查询 `upgrade_task` 中 status=pending 的任务
@@ -417,6 +445,7 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 - `src/extensions/upgrade-channel/runner.ts` — 任务编排（按优先级遍历渠道）
 - `src/extensions/upgrade-channel/adapters/987ai.ts` — 987ai 渠道 adapter
 - `src/extensions/upgrade-channel/adapters/aifadian.ts` — cdk.aifadian.org 渠道 adapter
+- `src/extensions/upgrade-channel/adapters/dnscon.ts` — dnscon.xyz 渠道 adapter
 - `src/extensions/upgrade-channel/adapters/mock.ts` — 测试用 mock adapter
 
 **前台页面**：
@@ -493,7 +522,7 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 
 ### Phase 2 — 全渠道接入
 
-- 9977ai、aifadian 已接入，后续渠道按 adapter 机制逐个接入
+- 9977ai、aifadian、dnscon.xyz 已接入，后续渠道按 adapter 机制逐个接入
 - 每个渠道按需导入渠道卡密
 
 ### Phase 3 — 发票系统
@@ -562,6 +591,8 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 - **987ai 排队任务等待策略**：987ai adapter 不再使用固定轮询次数超时，改为与前台逻辑一致，每 3 秒持续查询任务状态，直到上游返回 `completed` / `failed` / `unknown`。状态查询连续失败 5 次时，才按充值结果不确定转人工保守处理。
 
 - **cdk.aifadian.org 二次验卡策略**：aifadian adapter 接入 `verify/cdk` 与 `recharge`。当充值结果无法识别时，会二次校验渠道卡密；二次仍有效则释放回池并允许后续渠道，不再误占用；二次不可用或校验失败时才占用渠道卡密并转人工。
+
+- **dnscon.xyz 二次验卡策略**：dnscon adapter 接入 `redeem/verify` 与 `redeem/submit`。当充值结果无法识别时，会二次校验渠道卡密；二次仍有效则释放回池并允许后续渠道，二次无效或校验失败时才占用渠道卡密并转人工。
 
 - **用户侧失败文案统一收敛**  
   `/upgrade` 提交失败和 `/upgrade/status/[taskNo]` 失败终态统一展示为“充值异常，请联系客服处理。”，不再暴露卡密校验或渠道细节。
