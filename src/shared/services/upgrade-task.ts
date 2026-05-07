@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { channelCardkey, redeemCode, upgradeTask } from '@/config/db/schema';
@@ -7,8 +7,8 @@ import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
 import { ChannelCardkeyStatus as ChannelInventoryStatus } from '@/shared/models/channel-cardkey';
 import {
-  consumeCode,
   markCodeConsumed,
+  RedeemCodeStatus,
   rollbackCode,
 } from '@/shared/models/redeem-code';
 import { getChannelById } from '@/shared/models/upgrade-channel';
@@ -16,6 +16,7 @@ import { resolveVerifiedSessionAccount } from '@/shared/services/upgrade-account
 import {
   mergeUpgradeTaskMetadata,
   parseUpgradeTaskMetadata,
+  type ResolvedSessionAccount,
 } from '@/shared/services/upgrade-task-helpers';
 
 export type UpgradeTask = typeof upgradeTask.$inferSelect;
@@ -98,35 +99,117 @@ export async function resolveAccount(sessionToken: string): Promise<{
 
 // --- Step 3: 提交升级任务 ---
 
-export async function submitUpgradeTask(req: {
-  code: string;
-  sessionToken: string;
-  chatgptEmail: string;
-  chatgptAccountId?: string;
-  chatgptCurrentPlan?: string;
-  clientIp?: string;
-  userAgent?: string;
-  metadata?: Record<string, string>;
-}): Promise<{ taskNo: string }> {
-  const taskId = getUuid();
-  const taskNo = generateTaskNo();
-  const account = await resolveVerifiedSessionAccount(req.sessionToken);
+export async function submitUpgradeTask(
+  req: {
+    code: string;
+    sessionToken: string;
+    chatgptEmail: string;
+    chatgptAccountId?: string;
+    chatgptCurrentPlan?: string;
+    clientIp?: string;
+    userAgent?: string;
+    metadata?: Record<string, string>;
+  },
+  options?: {
+    accountResolver?: (sessionToken: string) => Promise<ResolvedSessionAccount>;
+  }
+): Promise<{ taskNo: string }> {
+  const newTaskId = getUuid();
+  const newTaskNo = generateTaskNo();
+  const accountResolver =
+    options?.accountResolver || resolveVerifiedSessionAccount;
+  const account = await accountResolver(req.sessionToken);
+  let taskNo = newTaskNo;
 
   await db().transaction(async (tx: any) => {
-    // 锁定卡密
-    const result = await consumeCode(tx, req.code, taskId);
-    if (!result.ok) {
-      throw new Error(getRedeemCodeErrorMessage(result.reason));
+    const normalizedCode = req.code.toUpperCase();
+    const [code] = await tx
+      .select()
+      .from(redeemCode)
+      .where(eq(redeemCode.code, normalizedCode))
+      .limit(1)
+      .for('update');
+
+    if (!code) throw new Error(getRedeemCodeErrorMessage('not_found'));
+    if (code.status === RedeemCodeStatus.DISABLED) {
+      throw new Error(getRedeemCodeErrorMessage('disabled'));
+    }
+    if (code.status === RedeemCodeStatus.CONSUMED) {
+      throw new Error(getRedeemCodeErrorMessage('already_consumed'));
     }
 
-    // 创建任务
+    const [reusableTask] = await tx
+      .select()
+      .from(upgradeTask)
+      .where(
+        and(
+          eq(upgradeTask.redeemCodeId, code.id),
+          inArray(upgradeTask.status, [
+            UpgradeTaskStatus.FAILED,
+            UpgradeTaskStatus.CANCELED,
+          ])
+        )
+      )
+      .orderBy(desc(upgradeTask.createdAt), desc(upgradeTask.updatedAt))
+      .limit(1)
+      .for('update');
+
+    if (reusableTask) {
+      const metadata = parseUpgradeTaskMetadata(reusableTask.metadata);
+      if (metadata.manualRequired) {
+        throw new Error('该任务需人工处理，不能直接重试');
+      }
+
+      await tx
+        .update(redeemCode)
+        .set({
+          status: RedeemCodeStatus.CONSUMED,
+          usedByTaskId: reusableTask.id,
+          usedAt: dbTimestampNow(),
+        })
+        .where(eq(redeemCode.id, code.id));
+
+      await tx
+        .update(upgradeTask)
+        .set({
+          sessionToken: req.sessionToken,
+          chatgptEmail: account.email,
+          chatgptAccountId: account.accountId,
+          chatgptCurrentPlan: account.currentPlan,
+          status: UpgradeTaskStatus.PENDING,
+          attemptCount: 0,
+          lastError: null,
+          resultMessage: null,
+          startedAt: null,
+          finishedAt: null,
+          successChannelId: null,
+          successChannelCardkeyId: null,
+          clientIp: req.clientIp,
+          userAgent: req.userAgent,
+          metadata: req.metadata ? JSON.stringify(req.metadata) : null,
+        })
+        .where(eq(upgradeTask.id, reusableTask.id));
+
+      taskNo = reusableTask.taskNo;
+      return;
+    }
+
+    await tx
+      .update(redeemCode)
+      .set({
+        status: RedeemCodeStatus.CONSUMED,
+        usedByTaskId: newTaskId,
+        usedAt: dbTimestampNow(),
+      })
+      .where(eq(redeemCode.id, code.id));
+
     await tx.insert(upgradeTask).values({
-      id: taskId,
-      taskNo,
-      redeemCodeId: result.codeId,
-      redeemCodePlain: req.code.toUpperCase(),
-      productCode: result.productCode,
-      memberType: result.memberType,
+      id: newTaskId,
+      taskNo: newTaskNo,
+      redeemCodeId: code.id,
+      redeemCodePlain: normalizedCode,
+      productCode: code.productCode,
+      memberType: code.memberType,
       sessionToken: req.sessionToken,
       chatgptEmail: account.email,
       chatgptAccountId: account.accountId,
@@ -374,9 +457,9 @@ export async function getTaskList(args: {
 
   if (args.status) conditions.push(eq(upgradeTask.status, args.status));
   if (args.search) {
-    // 支持按卡密或邮箱搜索
+    const search = args.search.trim();
     conditions.push(
-      sql`(${upgradeTask.redeemCodePlain} = ${args.search} OR ${upgradeTask.chatgptEmail} = ${args.search} OR ${upgradeTask.taskNo} = ${args.search})`
+      sql`(${upgradeTask.redeemCodePlain} = ${search} OR ${upgradeTask.chatgptEmail} = ${search} OR ${upgradeTask.taskNo} = ${search})`
     );
   }
 

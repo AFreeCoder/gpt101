@@ -1,4 +1,4 @@
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { upgradeChannel, upgradeTaskAttempt } from '@/config/db/schema';
@@ -66,8 +66,14 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
     };
   }
 
+  const [{ maxAttemptNo }] = await db()
+    .select({
+      maxAttemptNo: sql<number>`coalesce(max(${upgradeTaskAttempt.attemptNo}), 0)`,
+    })
+    .from(upgradeTaskAttempt)
+    .where(eq(upgradeTaskAttempt.taskId, input.taskId));
   const attempts: AttemptRecord[] = [];
-  let attemptNo = 0;
+  let attemptNo = Number(maxAttemptNo) || 0;
 
   for (const channel of channels) {
     // 检查渠道是否支持该产品

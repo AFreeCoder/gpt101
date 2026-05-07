@@ -22,6 +22,7 @@ interface Task {
   lastError: string | null;
   resultMessage: string | null;
   manualRequired?: boolean;
+  manualRequiredReason?: string;
   createdAt: string;
   finishedAt: string | null;
 }
@@ -279,6 +280,18 @@ export default function UpgradeTasksPage() {
                             >
                               重试
                             </button>
+                          )}
+                          {t.manualRequired && (
+                            <span
+                              className="text-xs text-gray-400"
+                              title={
+                                t.manualRequiredReason ||
+                                t.lastError ||
+                                '该任务需人工处理，不能直接重试'
+                              }
+                            >
+                              需人工处理
+                            </span>
                           )}
                           <button
                             onClick={() => {

@@ -18,6 +18,19 @@ test('upgrade tasks admin page exposes a rebind channel cardkey action', () => {
   assert.match(source, /\/api\/admin\/upgrade-tasks\/rebindCardkey/);
 });
 
+test('upgrade tasks admin page explains manual-required failures', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/upgrade-tasks/page.tsx'
+  );
+  const routeSource = readSource(
+    'src/app/api/admin/upgrade-tasks/list/route.ts'
+  );
+
+  assert.match(pageSource, /需人工处理/);
+  assert.match(pageSource, /manualRequiredReason/);
+  assert.match(routeSource, /manualRequiredReason/);
+});
+
 test('channel cardkeys admin page shows channel and offers batch disable', () => {
   const source = readSource(
     'src/app/[locale]/(admin)/admin/channel-cardkeys/page.tsx'
