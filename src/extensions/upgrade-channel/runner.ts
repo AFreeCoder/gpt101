@@ -156,8 +156,23 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
       channelCardkey: cardkey?.cardkey,
     };
 
-    // 执行升级
     const startTime = Date.now();
+    const attemptId = getUuid();
+
+    // 先记录 running attempt，便于后台实时看到当前渠道和已锁定卡密。
+    await db()
+      .insert(upgradeTaskAttempt)
+      .values({
+        id: attemptId,
+        taskId: input.taskId,
+        channelId: channel.id,
+        channelCardkeyId: cardkeyId,
+        attemptNo,
+        status: 'running',
+        startedAt: dbTimestampFromDate(new Date(startTime)),
+      });
+
+    // 执行升级
     let result: UpgradeResult;
 
     try {
@@ -171,23 +186,17 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
     }
 
     const durationMs = Date.now() - startTime;
-    const attemptId = getUuid();
 
-    // 记录 attempt
+    // 更新已创建的 attempt
     await db()
-      .insert(upgradeTaskAttempt)
-      .values({
-        id: attemptId,
-        taskId: input.taskId,
-        channelId: channel.id,
-        channelCardkeyId: cardkeyId,
-        attemptNo,
+      .update(upgradeTaskAttempt)
+      .set({
         status: result.ok ? 'success' : 'failed',
-        errorMessage: result.ok ? undefined : result.message,
+        errorMessage: result.ok ? null : result.message,
         durationMs,
-        startedAt: dbTimestampFromDate(new Date(startTime)),
         finishedAt: dbTimestampNow(),
-      });
+      })
+      .where(eq(upgradeTaskAttempt.id, attemptId));
 
     attempts.push({
       channelId: channel.id,

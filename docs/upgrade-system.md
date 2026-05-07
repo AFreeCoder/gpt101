@@ -56,6 +56,7 @@ Worker 取任务执行：
     ├─ 查 upgrade_channel 表，按 priority ASC 排序
     ├─ 遍历每个 active 渠道：
     │   ├─ requiresCardkey=true → 从 channel_cardkey 池锁一张
+    │   ├─ 写入 upgrade_task_attempt(status=running)，记录当前渠道与已选渠道卡密
     │   ├─ 调用 adapter.execute()
     │   │   ├─ 987ai: 验卡密 → 验Token → 创建任务 → 轮询直到任务终态
     │   │   ├─ 9977ai: verify_code → submit_json
@@ -76,17 +77,17 @@ Worker 取任务执行：
 
 共新增 9 张表：
 
-| 表名                      | 用途               | 核心字段                                                                             |
-| ------------------------- | ------------------ | ------------------------------------------------------------------------------------ |
-| `redeem_code_batch`       | 本站卡密批次       | id, title(unique), productCode, memberType, count, unitPrice                         |
-| `redeem_code`             | 本站卡密           | id, batchId, code(unique), productCode, memberType, status                           |
-| `upgrade_channel`         | 上游升级渠道       | id, code(unique), name, driver, supportedProducts, status, priority, requiresCardkey |
-| `channel_cardkey`         | 渠道卡密库存池     | id, channelId, cardkey, productCode, memberType, status                              |
-| `upgrade_task`            | 升级任务           | id, taskNo(unique), redeemCodeId, sessionToken, chatgptEmail, status                 |
-| `upgrade_task_attempt`    | 渠道尝试记录       | id, taskId, channelId, channelCardkeyId, attemptNo, status, errorMessage, durationMs |
-| `renewal_discount`        | 老用户优惠验证记录 | id, verifyType, verifyValue(unique), discountResult                                  |
-| `renewal_discount_coupon` | 发卡网优惠码池     | id, couponCode(unique), status, issuedToId                                           |
-| `invoice_request`         | 发票申请           | id, recipientEmail, buyerName, buyerTaxId, status                                    |
+| 表名                      | 用途               | 核心字段                                                                                                             |
+| ------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `redeem_code_batch`       | 本站卡密批次       | id, title(unique), productCode, memberType, count, unitPrice                                                         |
+| `redeem_code`             | 本站卡密           | id, batchId, code(unique), productCode, memberType, status                                                           |
+| `upgrade_channel`         | 上游升级渠道       | id, code(unique), name, driver, supportedProducts, status, priority, requiresCardkey                                 |
+| `channel_cardkey`         | 渠道卡密库存池     | id, channelId, cardkey, productCode, memberType, status                                                              |
+| `upgrade_task`            | 升级任务           | id, taskNo(unique), redeemCodeId, sessionToken, chatgptEmail, status                                                 |
+| `upgrade_task_attempt`    | 渠道尝试记录       | id, taskId, channelId, channelCardkeyId, attemptNo, status(running/success/failed/skipped), errorMessage, durationMs |
+| `renewal_discount`        | 老用户优惠验证记录 | id, verifyType, verifyValue(unique), discountResult                                                                  |
+| `renewal_discount_coupon` | 发卡网优惠码池     | id, couponCode(unique), status, issuedToId                                                                           |
+| `invoice_request`         | 发票申请           | id, recipientEmail, buyerName, buyerTaxId, status                                                                    |
 
 ### 2.3 卡密状态机
 
