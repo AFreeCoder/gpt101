@@ -163,14 +163,14 @@ export function create9977aiAdapter(
       }
     }
 
+    const missingRechargeRecord = isMissingRechargeRecordMessage(lastMessage);
+
     return {
       ok: false,
       retryable: false,
       stopFallback: true,
-      preserveRedeemCode: true,
-      cardkeyAction: isMissingRechargeRecordMessage(lastMessage)
-        ? 'release'
-        : 'consume',
+      preserveRedeemCode: missingRechargeRecord ? undefined : true,
+      cardkeyAction: missingRechargeRecord ? 'release' : 'consume',
       message: buildAdminFailureMessage(
         `submit_json 失败后自动复用 3 次仍未成功：${lastMessage}`
       ),

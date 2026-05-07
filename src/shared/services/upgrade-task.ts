@@ -55,14 +55,27 @@ export async function verifyRedeemCode(code: string): Promise<{
   productCode?: string;
   memberType?: string;
   reason?: string;
+  task?: PublicTaskStatus;
 }> {
   const { getCodeByCode } = await import('@/shared/models/redeem-code');
   const row = await getCodeByCode(code);
 
   if (!row) return { valid: false, reason: 'not_found' };
   if (row.status === 'disabled') return { valid: false, reason: 'disabled' };
-  if (row.status === 'consumed')
-    return { valid: false, reason: 'already_used' };
+  if (row.status === 'consumed') {
+    const task = await getPublicTaskStatusForRedeemCode(
+      row.id,
+      row.usedByTaskId
+    );
+
+    return {
+      valid: false,
+      productCode: row.productCode,
+      memberType: row.memberType,
+      reason: getConsumedRedeemCodeReason(task),
+      task: task || undefined,
+    };
+  }
 
   return {
     valid: true,
@@ -133,8 +146,91 @@ export interface PublicTaskStatus {
   taskNo: string;
   status: string;
   message: string;
+  productCode: string;
+  memberType: string;
+  chatgptEmail: string;
+  chatgptCurrentPlan?: string | null;
+  manualRequired: boolean;
   createdAt: Date;
   finishedAt?: Date | null;
+}
+
+const PUBLIC_TASK_MESSAGES: Record<string, string> = {
+  pending: '升级任务已提交，正在排队处理...',
+  running: '正在为您升级，请稍候...',
+  succeeded: '升级成功！请刷新您的 ChatGPT 页面查看。',
+  failed: '充值异常，请联系客服处理。',
+  canceled: '任务已取消。',
+};
+
+function toPublicTaskStatus(task: {
+  taskNo: string;
+  status: string;
+  productCode: string;
+  memberType: string;
+  chatgptEmail: string;
+  chatgptCurrentPlan: string | null;
+  metadata: string | null;
+  createdAt: Date;
+  finishedAt: Date | null;
+}): PublicTaskStatus {
+  const metadata = parseUpgradeTaskMetadata(task.metadata);
+
+  return {
+    taskNo: task.taskNo,
+    status: task.status,
+    message: PUBLIC_TASK_MESSAGES[task.status] || '未知状态',
+    productCode: task.productCode,
+    memberType: task.memberType,
+    chatgptEmail: task.chatgptEmail,
+    chatgptCurrentPlan: task.chatgptCurrentPlan,
+    manualRequired: Boolean(metadata.manualRequired),
+    createdAt: task.createdAt,
+    finishedAt: task.finishedAt,
+  };
+}
+
+function getConsumedRedeemCodeReason(task: PublicTaskStatus | null): string {
+  if (!task) return 'already_used';
+  if (task.status === UpgradeTaskStatus.SUCCEEDED) return 'already_succeeded';
+  if (
+    task.status === UpgradeTaskStatus.PENDING ||
+    task.status === UpgradeTaskStatus.RUNNING
+  ) {
+    return 'processing';
+  }
+  if (task.status === UpgradeTaskStatus.FAILED && task.manualRequired) {
+    return 'manual_required';
+  }
+  return 'occupied';
+}
+
+async function getPublicTaskStatusForRedeemCode(
+  redeemCodeId: string,
+  usedByTaskId?: string | null
+): Promise<PublicTaskStatus | null> {
+  const conditions = usedByTaskId
+    ? eq(upgradeTask.id, usedByTaskId)
+    : eq(upgradeTask.redeemCodeId, redeemCodeId);
+
+  const [task] = await db()
+    .select({
+      taskNo: upgradeTask.taskNo,
+      status: upgradeTask.status,
+      productCode: upgradeTask.productCode,
+      memberType: upgradeTask.memberType,
+      chatgptEmail: upgradeTask.chatgptEmail,
+      chatgptCurrentPlan: upgradeTask.chatgptCurrentPlan,
+      metadata: upgradeTask.metadata,
+      createdAt: upgradeTask.createdAt,
+      finishedAt: upgradeTask.finishedAt,
+    })
+    .from(upgradeTask)
+    .where(conditions)
+    .orderBy(desc(upgradeTask.createdAt))
+    .limit(1);
+
+  return task ? toPublicTaskStatus(task) : null;
 }
 
 export async function queryTaskStatus(
@@ -144,7 +240,11 @@ export async function queryTaskStatus(
     .select({
       taskNo: upgradeTask.taskNo,
       status: upgradeTask.status,
-      lastError: upgradeTask.lastError,
+      productCode: upgradeTask.productCode,
+      memberType: upgradeTask.memberType,
+      chatgptEmail: upgradeTask.chatgptEmail,
+      chatgptCurrentPlan: upgradeTask.chatgptCurrentPlan,
+      metadata: upgradeTask.metadata,
       createdAt: upgradeTask.createdAt,
       finishedAt: upgradeTask.finishedAt,
     })
@@ -153,21 +253,7 @@ export async function queryTaskStatus(
 
   if (!task) return null;
 
-  const messages: Record<string, string> = {
-    pending: '升级任务已提交，正在排队处理...',
-    running: '正在为您升级，请稍候...',
-    succeeded: '升级成功！请刷新您的 ChatGPT 页面查看。',
-    failed: '充值异常，请联系客服处理。',
-    canceled: '任务已取消。',
-  };
-
-  return {
-    taskNo: task.taskNo,
-    status: task.status,
-    message: messages[task.status] || '未知状态',
-    createdAt: task.createdAt,
-    finishedAt: task.finishedAt,
-  };
+  return toPublicTaskStatus(task);
 }
 
 // --- Worker: 拉取和执行任务 ---

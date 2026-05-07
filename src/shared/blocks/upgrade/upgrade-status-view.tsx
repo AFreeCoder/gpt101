@@ -3,14 +3,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
+import {
+  UpgradeTaskSummary,
+  type UpgradeTaskSummaryData,
+} from '@/shared/blocks/upgrade/upgrade-task-summary';
 
-interface TaskStatus {
+interface TaskStatus extends UpgradeTaskSummaryData {
   taskNo: string;
   status: string;
   message: string;
+  productCode: string;
+  memberType: string;
+  chatgptEmail: string;
+  chatgptCurrentPlan?: string | null;
+  manualRequired: boolean;
   createdAt: string;
-  finishedAt?: string;
+  finishedAt?: string | null;
 }
 
 export type UpgradeStatusViewProps = {
@@ -104,22 +112,7 @@ export function UpgradeStatusView({
             </p>
           </div>
 
-          <div className="space-y-2 rounded-lg bg-gray-50 p-4 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-500">任务编号</span>
-              <span className="font-mono">{task.taskNo}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">提交时间</span>
-              <span>{formatTimestampWithoutTimeZone(task.createdAt)}</span>
-            </div>
-            {task.finishedAt && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">完成时间</span>
-                <span>{formatTimestampWithoutTimeZone(task.finishedAt)}</span>
-              </div>
-            )}
-          </div>
+          <UpgradeTaskSummary task={task} />
 
           {polling && (
             <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">

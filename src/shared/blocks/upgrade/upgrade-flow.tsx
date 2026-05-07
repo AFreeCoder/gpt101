@@ -3,6 +3,10 @@
 import { useState } from 'react';
 
 import {
+  UpgradeTaskSummary,
+  type UpgradeTaskSummaryData,
+} from '@/shared/blocks/upgrade/upgrade-task-summary';
+import {
   getUpgradeAttributionFromHref,
   resolveAdPlusSourceFromHref,
   trackAdPlusFunnelStep,
@@ -48,6 +52,8 @@ export function UpgradeFlow({
   const [taskStatus, setTaskStatus] = useState('');
   const [taskMessage, setTaskMessage] = useState('');
   const [polling, setPolling] = useState(false);
+  const [redeemCodeTask, setRedeemCodeTask] =
+    useState<UpgradeTaskSummaryData | null>(null);
 
   const productLabel = getProductMemberLabel(productCode, memberType);
   const shouldShowOutlookEmailWarning =
@@ -82,6 +88,7 @@ export function UpgradeFlow({
     setTaskStatus('');
     setTaskMessage('');
     setPolling(false);
+    setRedeemCodeTask(null);
     setError('');
     setErrorStep(0);
     setLoading('');
@@ -103,6 +110,17 @@ export function UpgradeFlow({
         setErrorStep(1);
         return;
       }
+
+      if (data.data.task) {
+        setProductCode(data.data.productCode || data.data.task.productCode);
+        setMemberType(data.data.memberType || data.data.task.memberType || '');
+        setRedeemCodeTask(data.data.task);
+        setCodeVerified(false);
+        setTokenParsed(false);
+        return;
+      }
+
+      setRedeemCodeTask(null);
       setProductCode(data.data.productCode);
       setMemberType(data.data.memberType || '');
       setCodeVerified(true);
@@ -246,6 +264,35 @@ export function UpgradeFlow({
   };
 
   const currentStep = taskNo ? 4 : tokenParsed ? 3 : codeVerified ? 2 : 1;
+  const redeemCodeTaskStatus = redeemCodeTask?.status || '';
+  const redeemCodeTaskNotice =
+    redeemCodeTaskStatus === 'succeeded'
+      ? {
+          title: '该卡密已使用，升级已成功',
+          tone: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300',
+          help: '你可以核对以下升级信息，或前往 ChatGPT 刷新查看会员状态。',
+        }
+      : redeemCodeTaskStatus === 'pending' || redeemCodeTaskStatus === 'running'
+        ? {
+            title: '该卡密已有升级任务处理中',
+            tone: 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300',
+            help: '系统正在处理这张卡密，请不要重复提交。',
+          }
+        : redeemCodeTaskStatus === 'failed'
+          ? {
+              title: redeemCodeTask?.manualRequired
+                ? '该卡密已提交升级，当前充值异常待客服处理'
+                : '该卡密已提交升级，请联系客服处理',
+              tone: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300',
+              help: supportContact
+                ? `请联系客服协助处理 · ${supportContactLabel}：${supportContact}`
+                : '请联系客服协助处理。',
+            }
+          : {
+              title: '该卡密已提交升级',
+              tone: 'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200',
+              help: '请核对下方任务信息。',
+            };
 
   return (
     <div className="relative min-h-[80vh]">
@@ -328,6 +375,7 @@ export function UpgradeFlow({
                     value={code}
                     onChange={(e) => {
                       setCode(e.target.value.toUpperCase());
+                      setRedeemCodeTask(null);
                       if (codeVerified) {
                         setCodeVerified(false);
                         setTokenParsed(false);
@@ -377,6 +425,39 @@ export function UpgradeFlow({
                       <line x1="9" y1="9" x2="15" y2="15" />
                     </svg>
                     {error}
+                  </div>
+                )}
+                {redeemCodeTask && (
+                  <div
+                    className={`mt-3 rounded-xl border px-3 py-3 text-sm ${redeemCodeTaskNotice.tone}`}
+                  >
+                    <p className="font-semibold">
+                      {redeemCodeTaskNotice.title}
+                    </p>
+                    <p className="mt-1 text-xs opacity-80">
+                      {redeemCodeTaskNotice.help}
+                    </p>
+                    <div className="mt-3">
+                      <UpgradeTaskSummary task={redeemCodeTask} />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <a
+                        href={`/upgrade/status/${redeemCodeTask.taskNo}`}
+                        className="rounded-lg border border-current px-3 py-1.5 text-xs font-medium hover:bg-white/40"
+                      >
+                        查看升级进度
+                      </a>
+                      {redeemCodeTask.status === 'succeeded' && (
+                        <a
+                          href="https://chat.openai.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                        >
+                          前往 ChatGPT
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
                 {codeVerified && (
