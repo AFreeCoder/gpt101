@@ -27,6 +27,9 @@ export type UpgradeFlowProps = {
   safetyIssueText?: string;
 };
 
+const MEMBERSHIP_REFRESH_HINT =
+  '如未生效，登录 ChatGPT 账号后，点击升级 Plus 即可触发状态更新';
+
 export function UpgradeFlow({
   showSupportCard = true,
   supportContact = 'AFreeCoder01',
@@ -270,7 +273,7 @@ export function UpgradeFlow({
       ? {
           title: '该卡密已使用，升级已成功',
           tone: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300',
-          help: '你可以核对以下升级信息，或前往 ChatGPT 刷新查看会员状态。',
+          help: MEMBERSHIP_REFRESH_HINT,
         }
       : redeemCodeTaskStatus === 'pending' || redeemCodeTaskStatus === 'running'
         ? {
@@ -439,24 +442,6 @@ export function UpgradeFlow({
                     </p>
                     <div className="mt-3">
                       <UpgradeTaskSummary task={redeemCodeTask} />
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <a
-                        href={`/upgrade/status/${redeemCodeTask.taskNo}`}
-                        className="rounded-lg border border-current px-3 py-1.5 text-xs font-medium hover:bg-white/40"
-                      >
-                        查看升级进度
-                      </a>
-                      {redeemCodeTask.status === 'succeeded' && (
-                        <a
-                          href="https://chat.openai.com"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
-                        >
-                          前往 ChatGPT
-                        </a>
-                      )}
                     </div>
                   </div>
                 )}
@@ -822,6 +807,9 @@ export function UpgradeFlow({
                       </div>
                       <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
                         {taskMessage}
+                      </p>
+                      <p className="max-w-md text-center text-sm text-emerald-700/80 dark:text-emerald-300/80">
+                        {MEMBERSHIP_REFRESH_HINT}
                       </p>
                       <div className="flex gap-3">
                         <a

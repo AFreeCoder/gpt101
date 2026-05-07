@@ -13,20 +13,6 @@ export interface UpgradeTaskSummaryData {
   finishedAt?: string | Date | null;
 }
 
-function formatPlan(plan?: string | null): string {
-  const normalized = String(plan || '')
-    .trim()
-    .toLowerCase();
-  const labels: Record<string, string> = {
-    free: 'Free',
-    plus: 'Plus',
-    pro: 'Pro',
-    team: 'Team',
-  };
-
-  return labels[normalized] || plan || '-';
-}
-
 export function UpgradeTaskSummary({ task }: { task: UpgradeTaskSummaryData }) {
   const rows = [
     ['任务编号', task.taskNo],
@@ -37,8 +23,6 @@ export function UpgradeTaskSummary({ task }: { task: UpgradeTaskSummaryData }) {
         ? getProductMemberLabel(task.productCode, task.memberType)
         : '-',
     ],
-    ['提交前会员状态', formatPlan(task.chatgptCurrentPlan)],
-    ['提交时间', formatTimestampWithoutTimeZone(task.createdAt)],
     ['完成时间', formatTimestampWithoutTimeZone(task.finishedAt)],
   ].filter((row) => row[1] !== '-');
 
