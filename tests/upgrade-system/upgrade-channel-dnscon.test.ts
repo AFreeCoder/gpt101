@@ -26,6 +26,8 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+const FIXED_NOW = new Date('2026-05-07T06:41:18Z');
+
 test('dnscon 充值成功时会先验卡再提交完整 Session JSON', async () => {
   const calls: Array<{ url: string; body: any }> = [];
   const adapter = createDnsconAdapter({
@@ -70,6 +72,52 @@ test('dnscon 充值成功时会先验卡再提交完整 Session JSON', async () 
     cardCode: 'DNSCON-GOOD-CARD',
     tokenContent: sessionToken,
   });
+});
+
+test('dnscon submit 返回操作成功时按官方前端成功态处理', async () => {
+  const calls: string[] = [];
+  const adapter = createDnsconAdapter({
+    fetchImpl: (async (input) => {
+      const url = String(input);
+      calls.push(url);
+
+      if (url.endsWith('/redeem/verify')) {
+        return jsonResponse({
+          code: 200,
+          msg: '操作成功',
+          data: { exists: true, valid: true },
+        });
+      }
+
+      if (url.endsWith('/redeem/submit')) {
+        return jsonResponse({
+          code: 200,
+          msg: '操作成功',
+          data: [],
+        });
+      }
+
+      throw new Error(`unexpected request: ${url}`);
+    }) as typeof fetch,
+  });
+
+  const result = await adapter.execute({
+    taskId: 'task_dnscon_success_msg',
+    productCode: 'plus',
+    memberType: 'month',
+    sessionToken: buildSessionJson(),
+    chatgptEmail: 'user@example.com',
+    channelCardkey: 'DNSCON-SUCCESS-MSG-CARD',
+  });
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.message, '操作成功');
+  }
+  assert.deepEqual(
+    calls.map((url) => new URL(url).pathname),
+    ['/api/redeem/verify', '/api/redeem/submit']
+  );
 });
 
 test('dnscon 首次验卡无效时禁用渠道卡密', async () => {
@@ -232,6 +280,226 @@ test('dnscon submit 异常后二次验卡无效时占用渠道卡密并转人工
     assert.match(result.message, /二次验卡无效，需人工处理/);
   }
   assert.equal(verifyResponses.length, 0);
+});
+
+test('dnscon submit 不确定且二次验卡已兑换时用 batchQuery 确认同邮箱后判成功', async () => {
+  const calls: string[] = [];
+  const verifyResponses = [
+    { code: 200, data: { exists: true, valid: true } },
+    {
+      code: 200,
+      data: { exists: true, valid: false, message: '卡密已兑换' },
+    },
+  ];
+  const adapter = createDnsconAdapter({
+    now: () => FIXED_NOW,
+    fetchImpl: (async (input) => {
+      const url = String(input);
+      calls.push(url);
+
+      if (url.endsWith('/redeem/verify')) {
+        const body = verifyResponses.shift();
+        assert.ok(body, 'verify 响应已耗尽');
+        return jsonResponse(body);
+      }
+
+      if (url.endsWith('/redeem/submit')) {
+        return jsonResponse({
+          success: false,
+          msg: '上游返回临时异常',
+        });
+      }
+
+      if (url.endsWith('/card/batchQuery')) {
+        return jsonResponse({
+          code: 200,
+          msg: '操作成功',
+          data: [
+            {
+              cardCode: 'DNSCON-BATCH-SUCCESS-CARD',
+              status: '1',
+              redeemEmail: 'USER@example.com',
+              redeemTime: '2026-05-07 14:41:18',
+            },
+          ],
+        });
+      }
+
+      throw new Error(`unexpected request: ${url}`);
+    }) as typeof fetch,
+  });
+
+  const result = await adapter.execute({
+    taskId: 'task_dnscon_batch_success',
+    productCode: 'plus',
+    memberType: 'month',
+    sessionToken: buildSessionJson(),
+    chatgptEmail: 'user@example.com',
+    channelCardkey: 'DNSCON-BATCH-SUCCESS-CARD',
+  });
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.match(result.message || '', /批量查卡确认渠道卡密已兑换/);
+  }
+  assert.deepEqual(
+    calls.map((url) => new URL(url).pathname),
+    [
+      '/api/redeem/verify',
+      '/api/redeem/submit',
+      '/api/redeem/verify',
+      '/api/card/batchQuery',
+    ]
+  );
+  assert.equal(verifyResponses.length, 0);
+});
+
+test('dnscon batchQuery 兑换邮箱不匹配时仍转人工处理', async () => {
+  const calls: string[] = [];
+  const verifyResponses = [
+    { code: 200, data: { exists: true, valid: true } },
+    {
+      code: 200,
+      data: { exists: true, valid: false, message: '卡密已兑换' },
+    },
+  ];
+  const adapter = createDnsconAdapter({
+    now: () => FIXED_NOW,
+    fetchImpl: (async (input) => {
+      const url = String(input);
+      calls.push(url);
+
+      if (url.endsWith('/redeem/verify')) {
+        const body = verifyResponses.shift();
+        assert.ok(body, 'verify 响应已耗尽');
+        return jsonResponse(body);
+      }
+
+      if (url.endsWith('/redeem/submit')) {
+        return jsonResponse({
+          success: false,
+          msg: '上游返回临时异常',
+        });
+      }
+
+      if (url.endsWith('/card/batchQuery')) {
+        return jsonResponse({
+          code: 200,
+          msg: '操作成功',
+          data: [
+            {
+              cardCode: 'DNSCON-BATCH-MISMATCH-CARD',
+              status: '1',
+              redeemEmail: 'other@example.com',
+              redeemTime: '2026-05-07 14:41:18',
+            },
+          ],
+        });
+      }
+
+      throw new Error(`unexpected request: ${url}`);
+    }) as typeof fetch,
+  });
+
+  const result = await adapter.execute({
+    taskId: 'task_dnscon_batch_mismatch',
+    productCode: 'plus',
+    memberType: 'month',
+    sessionToken: buildSessionJson(),
+    chatgptEmail: 'user@example.com',
+    channelCardkey: 'DNSCON-BATCH-MISMATCH-CARD',
+  });
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.cardkeyAction, 'consume');
+    assert.equal(result.stopFallback, true);
+    assert.equal(result.preserveRedeemCode, true);
+    assert.match(result.message, /二次验卡无效，需人工处理/);
+  }
+  assert.deepEqual(
+    calls.map((url) => new URL(url).pathname),
+    [
+      '/api/redeem/verify',
+      '/api/redeem/submit',
+      '/api/redeem/verify',
+      '/api/card/batchQuery',
+    ]
+  );
+});
+
+test('dnscon batchQuery 兑换时间不在本次尝试附近时仍转人工处理', async () => {
+  const calls: string[] = [];
+  const verifyResponses = [
+    { code: 200, data: { exists: true, valid: true } },
+    {
+      code: 200,
+      data: { exists: true, valid: false, message: '卡密已兑换' },
+    },
+  ];
+  const adapter = createDnsconAdapter({
+    now: () => FIXED_NOW,
+    fetchImpl: (async (input) => {
+      const url = String(input);
+      calls.push(url);
+
+      if (url.endsWith('/redeem/verify')) {
+        const body = verifyResponses.shift();
+        assert.ok(body, 'verify 响应已耗尽');
+        return jsonResponse(body);
+      }
+
+      if (url.endsWith('/redeem/submit')) {
+        return jsonResponse({
+          success: false,
+          msg: '上游返回临时异常',
+        });
+      }
+
+      if (url.endsWith('/card/batchQuery')) {
+        return jsonResponse({
+          code: 200,
+          msg: '操作成功',
+          data: [
+            {
+              cardCode: 'DNSCON-BATCH-OLD-CARD',
+              status: '1',
+              redeemEmail: 'user@example.com',
+              redeemTime: '2026-05-07 13:41:18',
+            },
+          ],
+        });
+      }
+
+      throw new Error(`unexpected request: ${url}`);
+    }) as typeof fetch,
+  });
+
+  const result = await adapter.execute({
+    taskId: 'task_dnscon_batch_old',
+    productCode: 'plus',
+    memberType: 'month',
+    sessionToken: buildSessionJson(),
+    chatgptEmail: 'user@example.com',
+    channelCardkey: 'DNSCON-BATCH-OLD-CARD',
+  });
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.cardkeyAction, 'consume');
+    assert.equal(result.stopFallback, true);
+    assert.equal(result.preserveRedeemCode, true);
+    assert.match(result.message, /二次验卡无效，需人工处理/);
+  }
+  assert.deepEqual(
+    calls.map((url) => new URL(url).pathname),
+    [
+      '/api/redeem/verify',
+      '/api/redeem/submit',
+      '/api/redeem/verify',
+      '/api/card/batchQuery',
+    ]
+  );
 });
 
 test('dnscon 二次验卡失败时保守占用渠道卡密并转人工处理', async () => {

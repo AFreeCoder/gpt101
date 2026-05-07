@@ -217,11 +217,11 @@ Base URL: `https://api.afadian.org/api`
 
 dnscon.xyz 的前端是 Nuxt 应用，实际 API base 从运行时配置读取为 `https://ht.gptai.vip/api`，接入流程如下：
 
-| 步骤 | API                     | 说明                                                                  |
-| ---- | ----------------------- | --------------------------------------------------------------------- |
-| 1    | `POST /redeem/verify`   | 验证渠道卡密，body: `{ cardCode }`                                    |
-| 2    | `POST /redeem/submit`   | 发起充值，body: `{ cardCode, tokenContent }`                          |
-| 3    | `POST /card/batchQuery` | 仅供人工批量查卡，body: `{ cardCodes: string[] }`，自动充值流程不依赖 |
+| 步骤 | API                     | 说明                                                                      |
+| ---- | ----------------------- | ------------------------------------------------------------------------- |
+| 1    | `POST /redeem/verify`   | 验证渠道卡密，body: `{ cardCode }`                                        |
+| 2    | `POST /redeem/submit`   | 发起充值，body: `{ cardCode, tokenContent }`                              |
+| 3    | `POST /card/batchQuery` | 批量查卡，body: `{ cardCodes: string[] }`；人工查询和自动兜底确认都会使用 |
 
 Base URL: `https://ht.gptai.vip/api`
 
@@ -234,10 +234,11 @@ Base URL: `https://ht.gptai.vip/api`
 
 - `tokenContent` 使用用户提交的完整 Session JSON。Adapter 会先校验 `user.email`、`account.id`、`account.planType` 存在，并要求 `account.structure=personal`。
 - 首次 `redeem/verify` 返回非有效：视为坏卡，渠道卡密标记 `disabled`。
-- `redeem/submit` 成功：渠道卡密标记 `used`，任务成功。
+- `redeem/submit` 成功：渠道卡密标记 `used`，任务成功。成功判定跟随 dnscon 官方前端：`success=true` 或返回文案包含“成功”。
 - `redeem/submit` 明确返回卡密不存在 / 未启用 / 无效 / 已使用：渠道卡密标记 `disabled`。
 - `redeem/submit` 返回无法识别的异常或网络异常：立即二次调用 `redeem/verify`。
   - 二次验卡仍有效：说明卡密未被上游消耗，渠道卡密释放回池，并允许尝试后续渠道。
+  - 二次验卡显示已兑换：调用 `card/batchQuery` 查卡；若 `redeemEmail` 匹配当前 ChatGPT 邮箱，且 `redeemTime` 落在本次尝试时间附近，则直接判定任务成功。
   - 二次验卡无效，或二次验卡自身失败：充值结果无法确认，渠道卡密保守标记为已占用，本站卡密保持占用，任务转人工处理。
 
 ### 2.9 Worker 机制

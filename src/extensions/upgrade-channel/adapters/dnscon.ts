@@ -7,11 +7,14 @@ import type {
 
 const BASE_URL = 'https://ht.gptai.vip/api';
 const REQUEST_TIMEOUT_MS = 30_000;
+const REDEEM_CONFIRMATION_WINDOW_MS = 10 * 60 * 1000;
+const DNSCON_TIMEZONE_OFFSET_HOURS = 8;
 
 interface AdapterOptions {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   requestTimeoutMs?: number;
+  now?: () => Date;
 }
 
 function trimTrailingSlash(value: string): string {
@@ -68,6 +71,17 @@ function isVerifyValid(payload: any): boolean {
   return payload?.data?.exists === true && payload?.data?.valid === true;
 }
 
+function isSubmitSuccess(payload: any): boolean {
+  const officialMessage =
+    typeof payload?.msg === 'string' && payload.msg.trim()
+      ? payload.msg.trim()
+      : typeof payload?.message === 'string' && payload.message.trim()
+        ? payload.message.trim()
+        : '';
+
+  return payload?.success === true || officialMessage.includes('成功');
+}
+
 function isKnownCardkeyFailure(message: string): boolean {
   return (
     message.includes('卡密不存在') ||
@@ -77,6 +91,100 @@ function isKnownCardkeyFailure(message: string): boolean {
     message.includes('卡密无效') ||
     message.includes('已使用')
   );
+}
+
+function isRedeemedVerifyResult(payload: any): boolean {
+  const data = payload?.data || {};
+  return (
+    data?.cardStatus === '1' ||
+    String(data?.message || '').includes('已兑换') ||
+    extractMessage(payload).includes('已兑换')
+  );
+}
+
+function normalizeEmail(value: string): string {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
+function parseDnsconRedeemTime(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value > 1e12 ? value : value * 1000;
+  }
+
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^\d+$/.test(trimmed)) {
+    const numeric = Number(trimmed);
+    return numeric > 1e12 ? numeric : numeric * 1000;
+  }
+
+  const match = trimmed.match(
+    /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/
+  );
+  if (match) {
+    const [, year, month, day, hour, minute, second] = match;
+    return Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour) - DNSCON_TIMEZONE_OFFSET_HOURS,
+      Number(minute),
+      Number(second)
+    );
+  }
+
+  const parsed = Date.parse(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function findBatchQueryCard(payload: any, channelCardkey: string): any | null {
+  const rows = Array.isArray(payload?.data) ? payload.data : [];
+  const target = String(channelCardkey || '')
+    .trim()
+    .toLowerCase();
+  return (
+    rows.find(
+      (row: any) =>
+        String(row?.cardCode || '')
+          .trim()
+          .toLowerCase() === target
+    ) || null
+  );
+}
+
+function isConfirmedCurrentRedemption(args: {
+  row: any;
+  chatgptEmail: string;
+  attemptStartedAt: Date;
+  checkedAt: Date;
+}): boolean {
+  if (!args.row || String(args.row.status || '') !== '1') {
+    return false;
+  }
+
+  if (
+    normalizeEmail(args.row.redeemEmail) !== normalizeEmail(args.chatgptEmail)
+  ) {
+    return false;
+  }
+
+  const redeemTime = parseDnsconRedeemTime(args.row.redeemTime);
+  if (!redeemTime) {
+    return false;
+  }
+
+  const start = args.attemptStartedAt.getTime() - REDEEM_CONFIRMATION_WINDOW_MS;
+  const end = args.checkedAt.getTime() + REDEEM_CONFIRMATION_WINDOW_MS;
+  return redeemTime >= start && redeemTime <= end;
 }
 
 async function fetchJsonWithTimeout(
@@ -117,6 +225,7 @@ export function createDnsconAdapter(
   const fetchImpl = options.fetchImpl || fetch;
   const baseUrl = trimTrailingSlash(options.baseUrl || BASE_URL);
   const requestTimeoutMs = options.requestTimeoutMs || REQUEST_TIMEOUT_MS;
+  const now = options.now || (() => new Date());
 
   async function requestJson(path: string, body: Record<string, any>) {
     return fetchJsonWithTimeout(
@@ -134,9 +243,44 @@ export function createDnsconAdapter(
     return requestJson('/redeem/verify', { cardCode: channelCardkey });
   }
 
+  async function batchQueryCard(channelCardkey: string): Promise<any> {
+    return requestJson('/card/batchQuery', { cardCodes: [channelCardkey] });
+  }
+
+  async function confirmRedeemedCard(
+    channelCardkey: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date
+  ): Promise<UpgradeResult | null> {
+    try {
+      const batchData = await batchQueryCard(channelCardkey);
+      const row = findBatchQueryCard(batchData, channelCardkey);
+
+      if (
+        isConfirmedCurrentRedemption({
+          row,
+          chatgptEmail,
+          attemptStartedAt,
+          checkedAt: now(),
+        })
+      ) {
+        return {
+          ok: true,
+          message: '批量查卡确认渠道卡密已兑换到当前账号',
+        };
+      }
+    } catch {
+      // 无法确认时继续走原有人工处理兜底。
+    }
+
+    return null;
+  }
+
   async function classifyUncertainSubmit(
     channelCardkey: string,
-    lastMessage: string
+    lastMessage: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date
   ): Promise<UpgradeResult> {
     try {
       const verifyData = await verifyCard(channelCardkey);
@@ -150,6 +294,15 @@ export function createDnsconAdapter(
             `充值结果无法确认，二次验卡仍有效，释放渠道卡密：${lastMessage}`
           ),
         };
+      }
+
+      if (isRedeemedVerifyResult(verifyData)) {
+        const confirmed = await confirmRedeemedCard(
+          channelCardkey,
+          chatgptEmail,
+          attemptStartedAt
+        );
+        if (confirmed) return confirmed;
       }
 
       return {
@@ -179,6 +332,7 @@ export function createDnsconAdapter(
   return {
     async execute(req: UpgradeRequest): Promise<UpgradeResult> {
       const { channelCardkey, sessionToken } = req;
+      const attemptStartedAt = now();
 
       if (!channelCardkey) {
         return {
@@ -236,7 +390,7 @@ export function createDnsconAdapter(
           tokenContent: sessionToken,
         });
 
-        if (submitData?.success === true) {
+        if (isSubmitSuccess(submitData)) {
           return {
             ok: true,
             message: extractMessage(submitData),
@@ -253,11 +407,18 @@ export function createDnsconAdapter(
           };
         }
 
-        return classifyUncertainSubmit(channelCardkey, message);
+        return classifyUncertainSubmit(
+          channelCardkey,
+          message,
+          req.chatgptEmail,
+          attemptStartedAt
+        );
       } catch (error: any) {
         return classifyUncertainSubmit(
           channelCardkey,
-          error?.message || 'redeem/submit 请求失败'
+          error?.message || 'redeem/submit 请求失败',
+          req.chatgptEmail,
+          attemptStartedAt
         );
       }
     },
