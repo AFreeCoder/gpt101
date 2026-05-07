@@ -1,9 +1,14 @@
 import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
-import { upgradeTaskAttempt, upgradeTask, upgradeChannel, channelCardkey } from '@/config/db/schema';
+import { PERMISSIONS, requirePermission } from '@/core/rbac';
+import {
+  channelCardkey,
+  upgradeChannel,
+  upgradeTask,
+  upgradeTaskAttempt,
+} from '@/config/db/schema';
 import { respData, respErr } from '@/shared/lib/resp';
-import { requirePermission, PERMISSIONS } from '@/core/rbac';
 
 export async function GET(req: Request) {
   try {
@@ -23,9 +28,9 @@ export async function GET(req: Request) {
     const conditions = [];
     if (status) conditions.push(eq(upgradeTaskAttempt.status, status));
     if (search) {
-      // 搜索任务编号：先查 taskId
+      // 搜索任务编号或本站卡密：先查 taskId
       conditions.push(
-        sql`${upgradeTaskAttempt.taskId} IN (SELECT id FROM upgrade_task WHERE task_no = ${search})`
+        sql`${upgradeTaskAttempt.taskId} IN (SELECT id FROM upgrade_task WHERE task_no = ${search} OR redeem_code_plain = ${search})`
       );
     }
 
@@ -55,17 +60,34 @@ export async function GET(req: Request) {
       .from(upgradeTaskAttempt)
       .where(where);
 
-    // 批量补充 taskNo 和 channelName
-    const taskIds = [...new Set(items.map((i: { taskId: string }) => i.taskId))];
-    const channelIds = [...new Set(items.map((i: { channelId: string }) => i.channelId))];
+    // 批量补充 taskNo、本站卡密和 channelName
+    const taskIds = [
+      ...new Set(items.map((i: { taskId: string }) => i.taskId)),
+    ];
+    const channelIds = [
+      ...new Set(items.map((i: { channelId: string }) => i.channelId)),
+    ];
 
-    const taskMap = new Map<string, string>();
+    const taskMap = new Map<
+      string,
+      { taskNo: string; redeemCodePlain: string }
+    >();
     if (taskIds.length > 0) {
       const tasks = await db()
-        .select({ id: upgradeTask.id, taskNo: upgradeTask.taskNo })
+        .select({
+          id: upgradeTask.id,
+          taskNo: upgradeTask.taskNo,
+          redeemCodePlain: upgradeTask.redeemCodePlain,
+        })
         .from(upgradeTask)
         .where(sql`${upgradeTask.id} IN ${taskIds}`);
-      tasks.forEach((t: { id: string; taskNo: string }) => taskMap.set(t.id, t.taskNo));
+      tasks.forEach(
+        (t: { id: string; taskNo: string; redeemCodePlain: string }) =>
+          taskMap.set(t.id, {
+            taskNo: t.taskNo,
+            redeemCodePlain: t.redeemCodePlain,
+          })
+      );
     }
 
     const channelMap = new Map<string, string>();
@@ -74,30 +96,49 @@ export async function GET(req: Request) {
         .select({ id: upgradeChannel.id, name: upgradeChannel.name })
         .from(upgradeChannel)
         .where(sql`${upgradeChannel.id} IN ${channelIds}`);
-      channels.forEach((c: { id: string; name: string }) => channelMap.set(c.id, c.name));
+      channels.forEach((c: { id: string; name: string }) =>
+        channelMap.set(c.id, c.name)
+      );
     }
 
     // 批量补充渠道卡密
-    const cardkeyIds = [...new Set(items.map((i: { channelCardkeyId: string | null }) => i.channelCardkeyId).filter(Boolean))];
+    const cardkeyIds = [
+      ...new Set(
+        items
+          .map((i: { channelCardkeyId: string | null }) => i.channelCardkeyId)
+          .filter(Boolean)
+      ),
+    ];
     const cardkeyMap = new Map<string, string>();
     if (cardkeyIds.length > 0) {
       const cardkeys = await db()
         .select({ id: channelCardkey.id, cardkey: channelCardkey.cardkey })
         .from(channelCardkey)
         .where(sql`${channelCardkey.id} IN ${cardkeyIds}`);
-      cardkeys.forEach((c: { id: string; cardkey: string }) => cardkeyMap.set(c.id, c.cardkey));
+      cardkeys.forEach((c: { id: string; cardkey: string }) =>
+        cardkeyMap.set(c.id, c.cardkey)
+      );
     }
 
-    const enriched = items.map((i: {
-      taskId: string;
-      channelId: string;
-      channelCardkeyId: string | null;
-    }) => ({
-      ...i,
-      taskNo: taskMap.get(i.taskId) || '',
-      channelName: channelMap.get(i.channelId) || '',
-      channelCardkeyValue: i.channelCardkeyId ? (cardkeyMap.get(i.channelCardkeyId) || '') : '',
-    }));
+    const enriched = items.map(
+      (i: {
+        taskId: string;
+        channelId: string;
+        channelCardkeyId: string | null;
+      }) => {
+        const taskInfo = taskMap.get(i.taskId);
+
+        return {
+          ...i,
+          taskNo: taskInfo?.taskNo || '',
+          redeemCodePlain: taskInfo?.redeemCodePlain || '',
+          channelName: channelMap.get(i.channelId) || '',
+          channelCardkeyValue: i.channelCardkeyId
+            ? cardkeyMap.get(i.channelCardkeyId) || ''
+            : '',
+        };
+      }
+    );
 
     return respData({ items: enriched, total });
   } catch (err: any) {

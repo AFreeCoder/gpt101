@@ -12,6 +12,8 @@ import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 interface CardKey {
   id: string;
   channelId: string;
+  channelName?: string | null;
+  channelCode?: string | null;
   cardkey: string;
   productCode: string;
   memberType: string;
@@ -66,6 +68,12 @@ export default function ChannelCardkeysPage() {
   const importMemberTypes = importProductCode
     ? getMemberTypes(importProductCode)
     : [];
+
+  const getChannelLabel = (cardkey: CardKey) => {
+    if (cardkey.channelName) return cardkey.channelName;
+    const channel = channels.find((ch) => ch.id === cardkey.channelId);
+    return channel?.name || cardkey.channelId.slice(0, 8);
+  };
 
   // 加载渠道列表
   useEffect(() => {
@@ -141,6 +149,37 @@ export default function ChannelCardkeysPage() {
       } else alert(data.message);
     } catch {
       alert('删除失败');
+    }
+    setActionLoading(false);
+  };
+
+  const handleBatchDisable = async () => {
+    const disableable = cardkeys.filter(
+      (c) => selectedIds.has(c.id) && c.status === 'available'
+    );
+    if (disableable.length === 0) {
+      alert('选中的卡密中没有可禁用的（仅可禁用可用状态）');
+      return;
+    }
+    if (!confirm(`确定禁用 ${disableable.length} 张可用卡密？`)) return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/channel-cardkeys/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: disableable.map((c) => c.id),
+          reason: '管理员批量禁用',
+        }),
+      });
+      const data = await res.json();
+      if (data.code === 0) {
+        setSelectedIds(new Set());
+        fetchData();
+      } else alert(data.message);
+    } catch {
+      alert('禁用失败');
     }
     setActionLoading(false);
   };
@@ -318,6 +357,13 @@ export default function ChannelCardkeysPage() {
             批量删除
           </button>
           <button
+            onClick={handleBatchDisable}
+            disabled={actionLoading}
+            className="rounded bg-amber-500 px-3 py-1 text-xs text-white hover:bg-amber-600 disabled:opacity-50"
+          >
+            批量禁用
+          </button>
+          <button
             onClick={() => setSelectedIds(new Set())}
             className="text-xs text-gray-500 hover:text-gray-700"
           >
@@ -340,6 +386,7 @@ export default function ChannelCardkeysPage() {
                 />
               </th>
               <th className="px-3 py-2 text-left">卡密</th>
+              <th className="px-3 py-2 text-left">渠道</th>
               <th className="px-3 py-2 text-left">产品/会员</th>
               <th className="px-3 py-2 text-left">状态</th>
               <th className="px-3 py-2 text-left">创建时间</th>
@@ -349,13 +396,13 @@ export default function ChannelCardkeysPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
+                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
                   加载中...
                 </td>
               </tr>
             ) : cardkeys.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
+                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
                   暂无卡密
                 </td>
               </tr>
@@ -371,6 +418,14 @@ export default function ChannelCardkeysPage() {
                     />
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">{ck.cardkey}</td>
+                  <td className="px-3 py-2 text-xs">
+                    <div>{getChannelLabel(ck)}</div>
+                    {ck.channelCode && (
+                      <div className="font-mono text-gray-400">
+                        {ck.channelCode}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-xs">
                     {getProductMemberLabel(ck.productCode, ck.memberType)}
                   </td>

@@ -8,6 +8,7 @@ interface Attempt {
   id: string;
   taskId: string;
   taskNo?: string;
+  redeemCodePlain?: string;
   channelId: string;
   channelName?: string;
   channelCardkeyId: string | null;
@@ -96,7 +97,7 @@ export default function UpgradeTaskAttemptsPage() {
               fetchData();
             }
           }}
-          placeholder="搜索任务编号"
+          placeholder="搜索任务编号、本站卡密"
           className="w-80 rounded-lg border px-3 py-1.5 text-sm"
         />
       </div>
@@ -106,6 +107,7 @@ export default function UpgradeTaskAttemptsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-3 py-2 text-left">任务编号</th>
+              <th className="px-3 py-2 text-left">本站卡密</th>
               <th className="px-3 py-2 text-left">渠道</th>
               <th className="px-3 py-2 text-left">渠道卡密</th>
               <th className="px-3 py-2 text-left">尝试序号</th>
@@ -119,13 +121,19 @@ export default function UpgradeTaskAttemptsPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-gray-400">
+                <td
+                  colSpan={10}
+                  className="px-3 py-8 text-center text-gray-400"
+                >
                   加载中...
                 </td>
               </tr>
             ) : attempts.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-gray-400">
+                <td
+                  colSpan={10}
+                  className="px-3 py-8 text-center text-gray-400"
+                >
                   暂无记录
                 </td>
               </tr>
@@ -134,6 +142,9 @@ export default function UpgradeTaskAttemptsPage() {
                 <tr key={a.id} className="border-t hover:bg-gray-50">
                   <td className="px-3 py-2 font-mono text-xs">
                     {a.taskNo || a.taskId.slice(0, 8)}
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs">
+                    {a.redeemCodePlain || '-'}
                   </td>
                   <td className="px-3 py-2 text-xs">
                     {a.channelName || a.channelId.slice(0, 8)}

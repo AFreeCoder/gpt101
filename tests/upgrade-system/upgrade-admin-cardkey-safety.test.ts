@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-
 import { eq, inArray, like } from 'drizzle-orm';
 
 import {
@@ -13,8 +12,13 @@ import {
 } from '../../src/config/db/schema';
 import { db } from '../../src/core/db';
 import {
+  batchDisableCardkeys,
+  ChannelCardkeyStatus,
+} from '../../src/shared/models/channel-cardkey';
+import {
   cancelTask,
   markTaskSuccess,
+  rebindTaskChannelCardkey,
   UpgradeTaskStatus,
 } from '../../src/shared/services/upgrade-task';
 
@@ -48,11 +52,11 @@ async function cleanupByPrefix(prefix: string) {
         .where(like(channelCardkey.cardkey, `${prefix}%`)),
     ]);
 
-  const taskIds = taskRows.map((row) => row.id);
-  const channelIds = channelRows.map((row) => row.id);
-  const batchIds = batchRows.map((row) => row.id);
-  const codeIds = codeRows.map((row) => row.id);
-  const cardkeyIds = cardkeyRows.map((row) => row.id);
+  const taskIds = taskRows.map((row: { id: string }) => row.id);
+  const channelIds = channelRows.map((row: { id: string }) => row.id);
+  const batchIds = batchRows.map((row: { id: string }) => row.id);
+  const codeIds = codeRows.map((row: { id: string }) => row.id);
+  const cardkeyIds = cardkeyRows.map((row: { id: string }) => row.id);
 
   if (taskIds.length > 0) {
     await tx
@@ -86,44 +90,51 @@ async function seedManualRequiredFailedTask(prefix: string) {
   const batchId = `${prefix}-BATCH`;
   const redeemCodeId = uid(`${prefix}_code`);
 
-  await db().insert(redeemCodeBatch).values({
-    id: batchId,
-    title: `${prefix}-batch-title`,
-    productCode: 'plus',
-    memberType: 'month',
-    count: 1,
-    unitPrice: '0.00',
-  });
+  await db()
+    .insert(redeemCodeBatch)
+    .values({
+      id: batchId,
+      title: `${prefix}-batch-title`,
+      productCode: 'plus',
+      memberType: 'month',
+      count: 1,
+      unitPrice: '0.00',
+    });
 
-  await db().insert(redeemCode).values({
-    id: redeemCodeId,
-    batchId,
-    code: `${prefix}-SITE-CODE`,
-    productCode: 'plus',
-    memberType: 'month',
-    status: 'consumed',
-    usedByTaskId: taskId,
-    usedAt: new Date(),
-  });
+  await db()
+    .insert(redeemCode)
+    .values({
+      id: redeemCodeId,
+      batchId,
+      code: `${prefix}-SITE-CODE`,
+      productCode: 'plus',
+      memberType: 'month',
+      status: 'consumed',
+      usedByTaskId: taskId,
+      usedAt: new Date(),
+    });
 
-  await db().insert(upgradeTask).values({
-    id: taskId,
-    taskNo,
-    redeemCodeId,
-    redeemCodePlain: `${prefix}-SITE-CODE`,
-    productCode: 'plus',
-    memberType: 'month',
-    sessionToken: '{}',
-    chatgptEmail: 'user@example.com',
-    chatgptAccountId: 'account_123',
-    chatgptCurrentPlan: 'free',
-    status: UpgradeTaskStatus.FAILED,
-    lastError: '9977 渠道充值异常：该卡密已存在历史升级记录，需人工处理',
-    metadata: JSON.stringify({
-      manualRequired: true,
-      manualRequiredReason: '9977 渠道充值异常：该卡密已存在历史升级记录，需人工处理',
-    }),
-  });
+  await db()
+    .insert(upgradeTask)
+    .values({
+      id: taskId,
+      taskNo,
+      redeemCodeId,
+      redeemCodePlain: `${prefix}-SITE-CODE`,
+      productCode: 'plus',
+      memberType: 'month',
+      sessionToken: '{}',
+      chatgptEmail: 'user@example.com',
+      chatgptAccountId: 'account_123',
+      chatgptCurrentPlan: 'free',
+      status: UpgradeTaskStatus.FAILED,
+      lastError: '9977 渠道充值异常：该卡密已存在历史升级记录，需人工处理',
+      metadata: JSON.stringify({
+        manualRequired: true,
+        manualRequiredReason:
+          '9977 渠道充值异常：该卡密已存在历史升级记录，需人工处理',
+      }),
+    });
 
   return { taskId, redeemCodeId };
 }
@@ -137,51 +148,59 @@ async function seedManualSuccessCase(prefix: string) {
   const channelCardkeyId = uid(`${prefix}_card`);
   const manualCardkey = `${prefix}-CHANNEL-CARD`;
 
-  await db().insert(redeemCodeBatch).values({
-    id: batchId,
-    title: `${prefix}-batch-title`,
-    productCode: 'plus',
-    memberType: 'month',
-    count: 1,
-    unitPrice: '0.00',
-  });
+  await db()
+    .insert(redeemCodeBatch)
+    .values({
+      id: batchId,
+      title: `${prefix}-batch-title`,
+      productCode: 'plus',
+      memberType: 'month',
+      count: 1,
+      unitPrice: '0.00',
+    });
 
-  await db().insert(redeemCode).values({
-    id: redeemCodeId,
-    batchId,
-    code: `${prefix}-SITE-CODE`,
-    productCode: 'plus',
-    memberType: 'month',
-    status: 'consumed',
-    usedByTaskId: taskId,
-    usedAt: new Date(),
-  });
+  await db()
+    .insert(redeemCode)
+    .values({
+      id: redeemCodeId,
+      batchId,
+      code: `${prefix}-SITE-CODE`,
+      productCode: 'plus',
+      memberType: 'month',
+      status: 'consumed',
+      usedByTaskId: taskId,
+      usedAt: new Date(),
+    });
 
-  await db().insert(upgradeTask).values({
-    id: taskId,
-    taskNo,
-    redeemCodeId,
-    redeemCodePlain: `${prefix}-SITE-CODE`,
-    productCode: 'plus',
-    memberType: 'month',
-    sessionToken: '{}',
-    chatgptEmail: 'user@example.com',
-    chatgptAccountId: 'account_123',
-    chatgptCurrentPlan: 'free',
-    status: UpgradeTaskStatus.FAILED,
-    lastError: '需要人工补单',
-  });
+  await db()
+    .insert(upgradeTask)
+    .values({
+      id: taskId,
+      taskNo,
+      redeemCodeId,
+      redeemCodePlain: `${prefix}-SITE-CODE`,
+      productCode: 'plus',
+      memberType: 'month',
+      sessionToken: '{}',
+      chatgptEmail: 'user@example.com',
+      chatgptAccountId: 'account_123',
+      chatgptCurrentPlan: 'free',
+      status: UpgradeTaskStatus.FAILED,
+      lastError: '需要人工补单',
+    });
 
-  await db().insert(upgradeChannel).values({
-    id: channelId,
-    code: `${prefix}-manual-channel`,
-    name: `${prefix} manual channel`,
-    driver: 'mock',
-    supportedProducts: 'plus',
-    status: 'disabled',
-    priority: 1,
-    requiresCardkey: true,
-  });
+  await db()
+    .insert(upgradeChannel)
+    .values({
+      id: channelId,
+      code: `${prefix}-manual-channel`,
+      name: `${prefix} manual channel`,
+      driver: 'mock',
+      supportedProducts: 'plus',
+      status: 'disabled',
+      priority: 1,
+      requiresCardkey: true,
+    });
 
   await db().insert(channelCardkey).values({
     id: channelCardkeyId,
@@ -203,16 +222,18 @@ async function seedManualSuccessCase(prefix: string) {
 async function seedChannelOnly(prefix: string) {
   const channelId = uid(`${prefix}_channel`);
 
-  await db().insert(upgradeChannel).values({
-    id: channelId,
-    code: `${prefix}-channel`,
-    name: `${prefix} channel`,
-    driver: 'mock',
-    supportedProducts: 'plus',
-    status: 'disabled',
-    priority: 1,
-    requiresCardkey: true,
-  });
+  await db()
+    .insert(upgradeChannel)
+    .values({
+      id: channelId,
+      code: `${prefix}-channel`,
+      name: `${prefix} channel`,
+      driver: 'mock',
+      supportedProducts: 'plus',
+      status: 'disabled',
+      priority: 1,
+      requiresCardkey: true,
+    });
 
   return { channelId };
 }
@@ -224,10 +245,7 @@ test('manualRequired 失败任务不能取消，且本站卡密继续保持占�
   const seeded = await seedManualRequiredFailedTask(prefix);
 
   try {
-    await assert.rejects(
-      cancelTask(seeded.taskId),
-      /需人工处理/
-    );
+    await assert.rejects(cancelTask(seeded.taskId), /需人工处理/);
 
     const [taskRow] = await db()
       .select()
@@ -278,6 +296,123 @@ test('人工标记成功时，会把选中的渠道卡密标记为已使用并�
   }
 });
 
+test('成功任务可更换手工绑定错的渠道卡密，并释放旧的手工绑定卡密', async () => {
+  const prefix = `rebindcard${Date.now()}`;
+  await cleanupByPrefix(prefix);
+
+  const seeded = await seedManualSuccessCase(prefix);
+  const correctCardkeyId = uid(`${prefix}_correct_card`);
+  const correctCardkey = `${prefix}-CORRECT-CHANNEL-CARD`;
+
+  try {
+    await db().insert(channelCardkey).values({
+      id: correctCardkeyId,
+      channelId: seeded.channelId,
+      cardkey: correctCardkey,
+      productCode: 'plus',
+      memberType: 'month',
+      status: ChannelCardkeyStatus.AVAILABLE,
+    });
+
+    await markTaskSuccess(seeded.taskId, {
+      channelId: seeded.channelId,
+      channelCardkey: seeded.manualCardkey,
+      note: 'wrong manual binding',
+    });
+
+    await rebindTaskChannelCardkey(seeded.taskId, {
+      channelId: seeded.channelId,
+      channelCardkey: correctCardkey,
+      note: 'fix wrong manual binding',
+    });
+
+    const [taskRow] = await db()
+      .select()
+      .from(upgradeTask)
+      .where(eq(upgradeTask.id, seeded.taskId));
+    const [oldCardkeyRow] = await db()
+      .select()
+      .from(channelCardkey)
+      .where(eq(channelCardkey.id, seeded.channelCardkeyId));
+    const [correctCardkeyRow] = await db()
+      .select()
+      .from(channelCardkey)
+      .where(eq(channelCardkey.id, correctCardkeyId));
+
+    assert.equal(taskRow.status, UpgradeTaskStatus.SUCCEEDED);
+    assert.equal(taskRow.successChannelId, seeded.channelId);
+    assert.equal(taskRow.successChannelCardkeyId, correctCardkeyId);
+    assert.equal(oldCardkeyRow.status, ChannelCardkeyStatus.AVAILABLE);
+    assert.equal(oldCardkeyRow.usedAt, null);
+    assert.equal(correctCardkeyRow.status, ChannelCardkeyStatus.USED);
+    assert.ok(correctCardkeyRow.usedAt instanceof Date);
+  } finally {
+    await cleanupByPrefix(prefix);
+  }
+});
+
+test('批量禁用渠道卡密只处理可用卡密，不改动已使用和锁定卡密', async () => {
+  const prefix = `batchdisable${Date.now()}`;
+  await cleanupByPrefix(prefix);
+
+  const seeded = await seedChannelOnly(prefix);
+  const availableId = uid(`${prefix}_available_card`);
+  const usedId = uid(`${prefix}_used_card`);
+  const lockedId = uid(`${prefix}_locked_card`);
+
+  try {
+    await db()
+      .insert(channelCardkey)
+      .values([
+        {
+          id: availableId,
+          channelId: seeded.channelId,
+          cardkey: `${prefix}-AVAILABLE-CARD`,
+          productCode: 'plus',
+          memberType: 'month',
+          status: ChannelCardkeyStatus.AVAILABLE,
+        },
+        {
+          id: usedId,
+          channelId: seeded.channelId,
+          cardkey: `${prefix}-USED-CARD`,
+          productCode: 'plus',
+          memberType: 'month',
+          status: ChannelCardkeyStatus.USED,
+          usedAt: new Date(),
+        },
+        {
+          id: lockedId,
+          channelId: seeded.channelId,
+          cardkey: `${prefix}-LOCKED-CARD`,
+          productCode: 'plus',
+          memberType: 'month',
+          status: ChannelCardkeyStatus.LOCKED,
+          lockedByTaskId: uid(`${prefix}_other_task`),
+        },
+      ]);
+
+    const result = await batchDisableCardkeys(
+      [availableId, usedId, lockedId],
+      'admin batch disable'
+    );
+
+    const rows = await db()
+      .select()
+      .from(channelCardkey)
+      .where(inArray(channelCardkey.id, [availableId, usedId, lockedId]));
+    const byId = new Map<string, any>(rows.map((row: any) => [row.id, row]));
+
+    assert.equal(result.disabledCount, 1);
+    assert.equal(byId.get(availableId)?.status, ChannelCardkeyStatus.DISABLED);
+    assert.equal(byId.get(availableId)?.disabledReason, 'admin batch disable');
+    assert.equal(byId.get(usedId)?.status, ChannelCardkeyStatus.USED);
+    assert.equal(byId.get(lockedId)?.status, ChannelCardkeyStatus.LOCKED);
+  } finally {
+    await cleanupByPrefix(prefix);
+  }
+});
+
 test('同一渠道下重复插入相同卡密会被数据库唯一约束拒绝', async () => {
   const prefix = `dupcard${Date.now()}`;
   await cleanupByPrefix(prefix);
@@ -286,24 +421,28 @@ test('同一渠道下重复插入相同卡密会被数据库唯一约束拒绝',
   const duplicatedCardkey = `${prefix}-DUPLICATED-CARD`;
 
   try {
-    await db().insert(channelCardkey).values({
-      id: uid(`${prefix}_card1`),
-      channelId: seeded.channelId,
-      cardkey: duplicatedCardkey,
-      productCode: 'plus',
-      memberType: 'month',
-      status: 'available',
-    });
-
-    await assert.rejects(
-      db().insert(channelCardkey).values({
-        id: uid(`${prefix}_card2`),
+    await db()
+      .insert(channelCardkey)
+      .values({
+        id: uid(`${prefix}_card1`),
         channelId: seeded.channelId,
         cardkey: duplicatedCardkey,
         productCode: 'plus',
         memberType: 'month',
         status: 'available',
-      })
+      });
+
+    await assert.rejects(
+      db()
+        .insert(channelCardkey)
+        .values({
+          id: uid(`${prefix}_card2`),
+          channelId: seeded.channelId,
+          cardkey: duplicatedCardkey,
+          productCode: 'plus',
+          memberType: 'month',
+          status: 'available',
+        })
     );
   } finally {
     await cleanupByPrefix(prefix);

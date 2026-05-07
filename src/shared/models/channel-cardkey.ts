@@ -1,7 +1,7 @@
-import { and, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, count, desc, eq, inArray } from 'drizzle-orm';
 
 import { db } from '@/core/db';
-import { channelCardkey } from '@/config/db/schema';
+import { channelCardkey, upgradeChannel } from '@/config/db/schema';
 import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
 
@@ -39,8 +39,24 @@ export async function getCardkeyList(args: {
   const where = and(...conditions);
 
   const items = await db()
-    .select()
+    .select({
+      id: channelCardkey.id,
+      channelId: channelCardkey.channelId,
+      channelName: upgradeChannel.name,
+      channelCode: upgradeChannel.code,
+      cardkey: channelCardkey.cardkey,
+      productCode: channelCardkey.productCode,
+      memberType: channelCardkey.memberType,
+      status: channelCardkey.status,
+      lockedByTaskId: channelCardkey.lockedByTaskId,
+      usedByAttemptId: channelCardkey.usedByAttemptId,
+      usedAt: channelCardkey.usedAt,
+      disabledReason: channelCardkey.disabledReason,
+      createdAt: channelCardkey.createdAt,
+      updatedAt: channelCardkey.updatedAt,
+    })
     .from(channelCardkey)
+    .leftJoin(upgradeChannel, eq(channelCardkey.channelId, upgradeChannel.id))
     .where(where)
     .orderBy(desc(channelCardkey.createdAt))
     .limit(pageSize)
@@ -243,4 +259,33 @@ export async function batchDeleteCardkeys(cardkeyIds: string[]) {
         ])
       )
     );
+}
+
+/**
+ * 批量禁用（仅可用库存）。
+ */
+export async function batchDisableCardkeys(
+  cardkeyIds: string[],
+  reason: string = '管理员批量禁用'
+): Promise<{ disabledCount: number }> {
+  const eligibleWhere = and(
+    inArray(channelCardkey.id, cardkeyIds),
+    eq(channelCardkey.status, ChannelCardkeyStatus.AVAILABLE)
+  );
+
+  const [{ total }] = await db()
+    .select({ total: count() })
+    .from(channelCardkey)
+    .where(eligibleWhere);
+
+  await db()
+    .update(channelCardkey)
+    .set({
+      status: ChannelCardkeyStatus.DISABLED,
+      lockedByTaskId: null,
+      disabledReason: reason,
+    })
+    .where(eligibleWhere);
+
+  return { disabledCount: total };
 }

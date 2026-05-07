@@ -1,10 +1,11 @@
-import { and, count, desc, eq, isNull, lte, sql } from 'drizzle-orm';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { channelCardkey, redeemCode, upgradeTask } from '@/config/db/schema';
 import { runTask } from '@/extensions/upgrade-channel/runner';
 import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
+import { ChannelCardkeyStatus as ChannelInventoryStatus } from '@/shared/models/channel-cardkey';
 import {
   consumeCode,
   markCodeConsumed,
@@ -494,6 +495,142 @@ export async function markTaskSuccess(
       .update(redeemCode)
       .set({ status: 'consumed' })
       .where(eq(redeemCode.id, task.redeemCodeId));
+  });
+}
+
+export async function rebindTaskChannelCardkey(
+  taskId: string,
+  input: {
+    channelId: string;
+    channelCardkey: string;
+    note?: string;
+  }
+) {
+  const channelId = input.channelId?.trim();
+  const trimmedChannelCardkey = input.channelCardkey?.trim();
+
+  if (!channelId) {
+    throw new Error('请选择渠道');
+  }
+  if (!trimmedChannelCardkey) {
+    throw new Error('请输入渠道卡密');
+  }
+
+  const channel = await getChannelById(channelId);
+  if (!channel) {
+    throw new Error('渠道不存在');
+  }
+
+  await db().transaction(async (tx: any) => {
+    const [task] = await tx
+      .select()
+      .from(upgradeTask)
+      .where(eq(upgradeTask.id, taskId))
+      .limit(1)
+      .for('update');
+
+    if (!task) throw new Error('Task not found');
+    if (task.status !== UpgradeTaskStatus.SUCCEEDED) {
+      throw new Error('仅成功任务可以更换渠道卡密');
+    }
+
+    const [nextCardkey] = await tx
+      .select()
+      .from(channelCardkey)
+      .where(
+        and(
+          eq(channelCardkey.channelId, channelId),
+          eq(channelCardkey.cardkey, trimmedChannelCardkey)
+        )
+      )
+      .limit(1)
+      .for('update');
+
+    if (!nextCardkey) {
+      throw new Error('渠道库存中未找到该卡密');
+    }
+    if (nextCardkey.lockedByTaskId && nextCardkey.lockedByTaskId !== task.id) {
+      throw new Error('该渠道卡密正被其他任务锁定');
+    }
+
+    const previousCardkeyId = task.successChannelCardkeyId;
+    const [{ total: targetOtherTaskCount }] = await tx
+      .select({ total: count() })
+      .from(upgradeTask)
+      .where(
+        and(
+          eq(upgradeTask.successChannelCardkeyId, nextCardkey.id),
+          sql`${upgradeTask.id} <> ${task.id}`
+        )
+      );
+
+    if (targetOtherTaskCount > 0) {
+      throw new Error('该渠道卡密已绑定其他成功任务');
+    }
+
+    if (previousCardkeyId && previousCardkeyId !== nextCardkey.id) {
+      const [previousCardkey] = await tx
+        .select()
+        .from(channelCardkey)
+        .where(eq(channelCardkey.id, previousCardkeyId))
+        .limit(1)
+        .for('update');
+
+      const [{ total: otherTaskCount }] = await tx
+        .select({ total: count() })
+        .from(upgradeTask)
+        .where(
+          and(
+            eq(upgradeTask.successChannelCardkeyId, previousCardkeyId),
+            sql`${upgradeTask.id} <> ${task.id}`
+          )
+        );
+
+      if (
+        previousCardkey &&
+        otherTaskCount === 0 &&
+        previousCardkey.status === ChannelInventoryStatus.USED &&
+        !previousCardkey.usedByAttemptId
+      ) {
+        await tx
+          .update(channelCardkey)
+          .set({
+            status: ChannelInventoryStatus.AVAILABLE,
+            lockedByTaskId: null,
+            usedByAttemptId: null,
+            usedAt: null,
+          })
+          .where(eq(channelCardkey.id, previousCardkey.id));
+      }
+    }
+
+    const nextCardkeyUpdate: Record<string, unknown> = {
+      status: ChannelInventoryStatus.USED,
+      lockedByTaskId: null,
+    };
+    if (!nextCardkey.usedAt) {
+      nextCardkeyUpdate.usedAt = dbTimestampNow();
+    }
+
+    await tx
+      .update(channelCardkey)
+      .set(nextCardkeyUpdate)
+      .where(eq(channelCardkey.id, nextCardkey.id));
+
+    await tx
+      .update(upgradeTask)
+      .set({
+        successChannelId: channelId,
+        successChannelCardkeyId: nextCardkey.id,
+        resultMessage: '管理员已更正渠道卡密绑定',
+        metadata: mergeUpgradeTaskMetadata(task.metadata, {
+          adminNote: input.note,
+          manualSuccessChannelId: channelId,
+          manualSuccessChannelName: channel.name,
+          manualSuccessChannelCardkey: trimmedChannelCardkey,
+        }),
+      })
+      .where(eq(upgradeTask.id, taskId));
   });
 }
 

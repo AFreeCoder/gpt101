@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { getProductMemberLabel } from '@/shared/lib/redeem-code';
 import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 
 interface Task {
@@ -16,6 +15,8 @@ interface Task {
   sessionToken: string;
   status: string;
   attemptCount: number;
+  successChannelId: string | null;
+  successChannelCardkeyId: string | null;
   successChannelName: string;
   successChannelCardkey: string;
   lastError: string | null;
@@ -47,6 +48,11 @@ export default function UpgradeTasksPage() {
   const [msNote, setMsNote] = useState('');
   const [msSaving, setMsSaving] = useState(false);
   const [channels, setChannels] = useState<{ id: string; name: string }[]>([]);
+  const [showRebind, setShowRebind] = useState<Task | null>(null);
+  const [rbChannelId, setRbChannelId] = useState('');
+  const [rbChannelCardkey, setRbChannelCardkey] = useState('');
+  const [rbNote, setRbNote] = useState('');
+  const [rbSaving, setRbSaving] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -99,6 +105,48 @@ export default function UpgradeTasksPage() {
     } catch {
       alert('操作失败');
     }
+  };
+
+  const openRebindModal = (task: Task) => {
+    setShowRebind(task);
+    setRbChannelId(task.successChannelId || '');
+    setRbChannelCardkey(task.successChannelCardkey || '');
+    setRbNote('');
+  };
+
+  const handleRebind = async () => {
+    if (!showRebind) return;
+    if (!rbChannelId) {
+      alert('请选择渠道');
+      return;
+    }
+    if (!rbChannelCardkey.trim()) {
+      alert('请输入渠道卡密');
+      return;
+    }
+
+    setRbSaving(true);
+    try {
+      const res = await fetch('/api/admin/upgrade-tasks/rebindCardkey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: showRebind.id,
+          channelId: rbChannelId,
+          channelCardkey: rbChannelCardkey,
+          note: rbNote || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.code !== 0) alert(data.message);
+      else {
+        setShowRebind(null);
+        fetchData();
+      }
+    } catch {
+      alert('操作失败');
+    }
+    setRbSaving(false);
   };
 
   return (
@@ -259,6 +307,14 @@ export default function UpgradeTasksPage() {
                           className="text-xs text-red-600 hover:underline"
                         >
                           取消
+                        </button>
+                      )}
+                      {t.status === 'succeeded' && (
+                        <button
+                          onClick={() => openRebindModal(t)}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          更换卡密
                         </button>
                       )}
                     </div>
@@ -426,6 +482,75 @@ export default function UpgradeTasksPage() {
                 className="flex-1 rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
               >
                 {msSaving ? '处理中...' : '确认标记成功'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 更换渠道卡密弹窗 */}
+      {showRebind && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowRebind(null)}
+          />
+          <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+            <h3 className="mb-4 text-lg font-semibold">更换绑定渠道卡密</h3>
+            <div className="mb-3 rounded-lg bg-yellow-50 p-3 text-xs text-yellow-800">
+              当前任务：{showRebind.taskNo}
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium">渠道</label>
+                <select
+                  value={rbChannelId}
+                  onChange={(e) => setRbChannelId(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                >
+                  <option value="">请选择</option>
+                  {channels.map((ch) => (
+                    <option key={ch.id} value={ch.id}>
+                      {ch.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  新渠道卡密
+                </label>
+                <input
+                  type="text"
+                  value={rbChannelCardkey}
+                  onChange={(e) => setRbChannelCardkey(e.target.value)}
+                  placeholder="输入正确的渠道卡密"
+                  className="w-full rounded-lg border px-3 py-2 font-mono text-sm"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">备注</label>
+                <input
+                  type="text"
+                  value={rbNote}
+                  onChange={(e) => setRbNote(e.target.value)}
+                  placeholder="可选"
+                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowRebind(null)}
+                className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
+              >
+                取消
+              </button>
+              <button
+                disabled={rbSaving}
+                onClick={handleRebind}
+                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {rbSaving ? '保存中...' : '确认更换'}
               </button>
             </div>
           </div>
