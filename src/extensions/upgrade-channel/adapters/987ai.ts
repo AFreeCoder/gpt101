@@ -51,7 +51,15 @@ async function fetchJSON(
         ...options.headers,
       },
     });
-    return await res.json();
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(
+        data?.error ||
+          data?.message ||
+          `request failed with status: ${res.status}`
+      );
+    }
+    return data;
   } finally {
     clearTimeout(timer);
   }
@@ -340,7 +348,20 @@ export function create987aiAdapter(
           );
           consecutivePollErrors = 0;
 
-          switch (String(pollData.status || '').toLowerCase()) {
+          const taskStatus = String(pollData.status || '')
+            .trim()
+            .toLowerCase();
+          if (!taskStatus) {
+            throw new Error(
+              `任务状态响应缺少 status: ${
+                pollData.error ||
+                pollData.message ||
+                JSON.stringify(pollData).slice(0, 200)
+              }`
+            );
+          }
+
+          switch (taskStatus) {
             case 'completed':
               return { ok: true, message: pollData.result || '升级成功' };
 
