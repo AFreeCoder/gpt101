@@ -145,12 +145,13 @@ interface UpgradeChannelAdapter {
 
 987ai 渠道的完整 API 流程（通过前端代码逆向确认）：
 
-| 步骤 | API                        | 说明                                    |
-| ---- | -------------------------- | --------------------------------------- |
-| 1    | `GET /api/card-keys/{key}` | 验证渠道卡密                            |
-| 2    | `POST /api/parse-token`    | 验证 accessToken                        |
-| 3    | `POST /api/tasks`          | 创建升级任务（含 force_recharge=false） |
-| 4    | `GET /api/tasks/{id}`      | 轮询结果（3秒/次，直到任务终态）        |
+| 步骤 | API                               | 说明                                    |
+| ---- | --------------------------------- | --------------------------------------- |
+| 1    | `GET /api/card-keys/{key}`        | 验证渠道卡密                            |
+| 2    | `POST /api/parse-token`           | 验证 accessToken                        |
+| 3    | `POST /api/tasks`                 | 创建升级任务（含 force_recharge=false） |
+| 4    | `GET /api/tasks/{id}`             | 轮询结果（3秒/次，直到任务终态）        |
+| 5    | `POST /api/card-keys/batch-query` | 批量查卡；结果不确定后的自动兜底确认    |
 
 Base URL: `https://api.987ai.vip/api`
 
@@ -160,7 +161,8 @@ Base URL: `https://api.987ai.vip/api`
 - `idp` 传空字符串
 - Adapter 内部从完整 JSON 中提取 `accessToken` 再传给 987ai API
 - 任务状态 `pending` / `processing` / 排队类非终态持续等待；只有 `completed`、`failed`、`unknown` 结束流程
-- 状态查询连续失败 5 次才转人工保守处理，并占用渠道卡密与本站卡密，避免充值结果不明时误释放
+- 状态查询连续失败 5 次、创建任务结果无法确认时，会先二次验卡；二次验卡仍有效则释放渠道卡密，二次验卡显示已用时调用 `card-keys/batch-query` 查卡，若 `user_id` 匹配当前 ChatGPT 邮箱，且 `used_at` 落在本次尝试时间附近，则直接判定任务成功。
+- 无法通过邮箱和时间确认本次兑换时，才转人工保守处理，并占用渠道卡密与本站卡密，避免充值结果不明时误释放。
 
 ### 2.6 9977ai 渠道对接
 
@@ -185,6 +187,7 @@ Base URL: `https://api.987ai.vip/api`
 - 对用户前端统一展示：`充值异常，请联系客服处理。`
 - 对后台：
   - 若 `reuse_record` 明确返回“未找到对应的充值记录”，说明 9977 未建立可复用充值记录，渠道卡密和本站卡密都释放，不进入人工占用态。
+  - 其他 `reuse_record` 失败会再次 `verify_code`；若二次验卡显示已用，且返回的邮箱匹配当前 ChatGPT 邮箱、兑换/更新时间落在本次尝试时间附近，则直接判定任务成功。
   - 其他无法确认是否已绑定的失败仍把渠道卡密标记为已占用，不释放回池；本站卡密保持占用。
   - 仅结果不确定的人工处理任务写入 `manualRequired=true`，禁止后台普通重试。
 
@@ -211,6 +214,7 @@ Base URL: `https://api.afadian.org/api`
 - `recharge` 明确返回卡密不存在 / 无效：渠道卡密标记 `disabled`。
 - `recharge` 返回无法识别的异常或网络异常：立即二次调用 `verify/cdk`。
   - 二次验卡仍为 `valid`：说明卡密未被上游消耗，渠道卡密释放回池，并允许尝试后续渠道。
+  - 二次验卡为 `used`：若返回的 `email` 匹配当前 ChatGPT 邮箱，且 `updated_at` / `used_at` / `timestamp` 落在本次尝试时间附近，则直接判定任务成功。
   - 二次验卡不是 `valid`，或二次验卡自身失败：充值结果无法确认，渠道卡密保守标记为已占用，本站卡密保持占用，任务转人工处理。
 
 ### 2.8 dnscon.xyz 渠道对接

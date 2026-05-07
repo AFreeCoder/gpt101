@@ -1,3 +1,7 @@
+import {
+  isConfirmedCurrentRedemption,
+  pickFirstPresentField,
+} from '../redeemed-card-confirmation';
 import { registerAdapter } from '../registry';
 import type {
   UpgradeChannelAdapter,
@@ -13,6 +17,7 @@ interface AdapterOptions {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   requestTimeoutMs?: number;
+  now?: () => Date;
 }
 
 class CookieJar {
@@ -92,12 +97,29 @@ function isMissingRechargeRecordMessage(message: string): boolean {
   return message.includes('未找到对应的充值记录');
 }
 
+function normalizeStatus(payload: any): string {
+  return String(payload?.status || '')
+    .trim()
+    .toLowerCase();
+}
+
+function isUsedVerifyResult(payload: any): boolean {
+  const message = extractMessage(payload);
+  return (
+    payload?.is_new === false ||
+    normalizeStatus(payload) === 'used' ||
+    message.includes('已使用') ||
+    message.includes('已兑换')
+  );
+}
+
 export function create9977aiAdapter(
   options: AdapterOptions = {}
 ): UpgradeChannelAdapter {
   const fetchImpl = options.fetchImpl || fetch;
   const baseUrl = options.baseUrl || BASE_URL;
   const requestTimeoutMs = options.requestTimeoutMs || REQUEST_TIMEOUT_MS;
+  const now = options.now || (() => new Date());
 
   async function requestAction(
     jar: CookieJar,
@@ -143,7 +165,10 @@ export function create9977aiAdapter(
   }
 
   async function reuseRecordWithRetries(
-    jar: CookieJar
+    jar: CookieJar,
+    channelCardkey: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date
   ): Promise<UpgradeResult> {
     let lastMessage = '9977 渠道复用记录失败';
 
@@ -164,6 +189,15 @@ export function create9977aiAdapter(
     }
 
     const missingRechargeRecord = isMissingRechargeRecordMessage(lastMessage);
+    if (!missingRechargeRecord) {
+      const confirmed = await confirmUsedCode(
+        jar,
+        channelCardkey,
+        chatgptEmail,
+        attemptStartedAt
+      );
+      if (confirmed) return confirmed;
+    }
 
     return {
       ok: false,
@@ -177,9 +211,53 @@ export function create9977aiAdapter(
     };
   }
 
+  async function confirmUsedCode(
+    jar: CookieJar,
+    channelCardkey: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date
+  ): Promise<UpgradeResult | null> {
+    try {
+      const verifyData = await verifyCode(jar, channelCardkey);
+      if (
+        isConfirmedCurrentRedemption({
+          isRedeemed: isUsedVerifyResult(verifyData),
+          redeemEmail: pickFirstPresentField(verifyData, [
+            'email',
+            'userEmail',
+            'redeemEmail',
+            'user_id',
+          ]),
+          redeemTime: pickFirstPresentField(verifyData, [
+            'updated_at',
+            'updatedAt',
+            'used_at',
+            'usedAt',
+            'redeemTime',
+            'timestamp',
+            'time',
+          ]),
+          chatgptEmail,
+          attemptStartedAt,
+          checkedAt: now(),
+        })
+      ) {
+        return {
+          ok: true,
+          message: '二次验卡确认渠道卡密已兑换到当前账号',
+        };
+      }
+    } catch {
+      // 无法确认时继续走原有人工处理兜底。
+    }
+
+    return null;
+  }
+
   return {
     async execute(req: UpgradeRequest): Promise<UpgradeResult> {
       const { channelCardkey, sessionToken } = req;
+      const attemptStartedAt = now();
 
       if (!channelCardkey) {
         return {
@@ -251,9 +329,19 @@ export function create9977aiAdapter(
           };
         }
 
-        return reuseRecordWithRetries(jar);
+        return reuseRecordWithRetries(
+          jar,
+          channelCardkey,
+          req.chatgptEmail,
+          attemptStartedAt
+        );
       } catch (error: any) {
-        return reuseRecordWithRetries(jar);
+        return reuseRecordWithRetries(
+          jar,
+          channelCardkey,
+          req.chatgptEmail,
+          attemptStartedAt
+        );
       }
     },
   };

@@ -1,3 +1,7 @@
+import {
+  isConfirmedCurrentRedemption,
+  pickFirstPresentField,
+} from '../redeemed-card-confirmation';
 import { registerAdapter } from '../registry';
 import type {
   UpgradeChannelAdapter,
@@ -12,6 +16,7 @@ interface AdapterOptions {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   requestTimeoutMs?: number;
+  now?: () => Date;
 }
 
 function trimTrailingSlash(value: string): string {
@@ -88,6 +93,10 @@ function isKnownRechargeCardkeyFailure(message: string): boolean {
   );
 }
 
+function isUsedStatus(status: string): boolean {
+  return status === 'used' || status === '1';
+}
+
 async function fetchJsonWithTimeout(
   fetchImpl: typeof fetch,
   url: string,
@@ -123,6 +132,7 @@ export function createAifadianAdapter(
   const fetchImpl = options.fetchImpl || fetch;
   const baseUrl = trimTrailingSlash(options.baseUrl || BASE_URL);
   const requestTimeoutMs = options.requestTimeoutMs || REQUEST_TIMEOUT_MS;
+  const now = options.now || (() => new Date());
 
   async function requestJson(path: string, body: Record<string, any>) {
     return fetchJsonWithTimeout(
@@ -142,7 +152,9 @@ export function createAifadianAdapter(
 
   async function classifyUncertainRecharge(
     channelCardkey: string,
-    lastMessage: string
+    lastMessage: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date
   ): Promise<UpgradeResult> {
     try {
       const verifyData = await verifyCdk(channelCardkey);
@@ -156,6 +168,35 @@ export function createAifadianAdapter(
           message: buildFailureMessage(
             `充值结果无法确认，二次验卡仍有效，释放渠道卡密：${lastMessage}`
           ),
+        };
+      }
+
+      if (
+        isUsedStatus(status) &&
+        isConfirmedCurrentRedemption({
+          isRedeemed: true,
+          redeemEmail: pickFirstPresentField(verifyData, [
+            'email',
+            'userEmail',
+            'redeemEmail',
+            'user_id',
+          ]),
+          redeemTime: pickFirstPresentField(verifyData, [
+            'updated_at',
+            'updatedAt',
+            'used_at',
+            'usedAt',
+            'redeemTime',
+            'timestamp',
+          ]),
+          chatgptEmail,
+          attemptStartedAt,
+          checkedAt: now(),
+        })
+      ) {
+        return {
+          ok: true,
+          message: '二次验卡确认渠道卡密已兑换到当前账号',
         };
       }
 
@@ -186,6 +227,7 @@ export function createAifadianAdapter(
   return {
     async execute(req: UpgradeRequest): Promise<UpgradeResult> {
       const { channelCardkey, sessionToken } = req;
+      const attemptStartedAt = now();
 
       if (!channelCardkey) {
         return {
@@ -263,11 +305,18 @@ export function createAifadianAdapter(
           };
         }
 
-        return classifyUncertainRecharge(channelCardkey, message);
+        return classifyUncertainRecharge(
+          channelCardkey,
+          message,
+          req.chatgptEmail,
+          attemptStartedAt
+        );
       } catch (error: any) {
         return classifyUncertainRecharge(
           channelCardkey,
-          error?.message || 'recharge 请求失败'
+          error?.message || 'recharge 请求失败',
+          req.chatgptEmail,
+          attemptStartedAt
         );
       }
     },

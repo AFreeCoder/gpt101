@@ -1,3 +1,8 @@
+import {
+  findCardRecord,
+  isConfirmedCurrentRedemption,
+  pickFirstPresentField,
+} from '../redeemed-card-confirmation';
 import { registerAdapter } from '../registry';
 import type {
   UpgradeChannelAdapter,
@@ -17,6 +22,7 @@ interface AdapterOptions {
   requestTimeoutMs?: number;
   pollIntervalMs?: number;
   maxConsecutivePollErrors?: number;
+  now?: () => Date;
 }
 
 function trimTrailingSlash(value: string): string {
@@ -60,6 +66,7 @@ export function create987aiAdapter(
   const pollIntervalMs = options.pollIntervalMs ?? POLL_INTERVAL_MS;
   const maxConsecutivePollErrors =
     options.maxConsecutivePollErrors ?? MAX_CONSECUTIVE_POLL_ERRORS;
+  const now = options.now || (() => new Date());
 
   async function requestJSON(
     path: string,
@@ -73,9 +80,155 @@ export function create987aiAdapter(
     );
   }
 
+  async function verifyCard(channelCardkey: string): Promise<any> {
+    return requestJSON(`/card-keys/${encodeURIComponent(channelCardkey)}`);
+  }
+
+  async function batchQueryCard(channelCardkey: string): Promise<any> {
+    return requestJSON('/card-keys/batch-query', {
+      method: 'POST',
+      body: JSON.stringify({ card_keys: [channelCardkey] }),
+    });
+  }
+
+  function isVerifyAvailable(payload: any): boolean {
+    const status = String(payload?.status || payload?.data?.status || '')
+      .trim()
+      .toLowerCase();
+    return payload?.available === true || status === 'normal' || status === '0';
+  }
+
+  function isVerifyUsed(payload: any): boolean {
+    const status = String(payload?.status || payload?.data?.status || '')
+      .trim()
+      .toLowerCase();
+    const message = String(payload?.error || payload?.message || '');
+    return (
+      payload?.available === false ||
+      status === 'used' ||
+      status === '1' ||
+      message.includes('已使用') ||
+      message.includes('已兑换')
+    );
+  }
+
+  function isBatchQueryRowUsed(row: any): boolean {
+    const status = pickFirstPresentField(row, ['status', 'cardStatus']);
+    return (
+      Number(status) === 1 ||
+      String(status || '')
+        .trim()
+        .toLowerCase() === 'used'
+    );
+  }
+
+  function isConfirmed987aiRedemption(args: {
+    row: any;
+    chatgptEmail: string;
+    attemptStartedAt: Date;
+  }): boolean {
+    return isConfirmedCurrentRedemption({
+      isRedeemed: isBatchQueryRowUsed(args.row),
+      redeemEmail: pickFirstPresentField(args.row, [
+        'user_id',
+        'userId',
+        'email',
+        'userEmail',
+        'redeemEmail',
+      ]),
+      redeemTime: pickFirstPresentField(args.row, [
+        'used_at',
+        'usedAt',
+        'updated_at',
+        'updatedAt',
+        'redeemTime',
+        'timestamp',
+      ]),
+      chatgptEmail: args.chatgptEmail,
+      attemptStartedAt: args.attemptStartedAt,
+      checkedAt: now(),
+    });
+  }
+
+  async function confirmRedeemedCard(
+    channelCardkey: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date
+  ): Promise<UpgradeResult | null> {
+    try {
+      const batchData = await batchQueryCard(channelCardkey);
+      const row = findCardRecord(batchData, channelCardkey);
+
+      if (
+        isConfirmed987aiRedemption({
+          row,
+          chatgptEmail,
+          attemptStartedAt,
+        })
+      ) {
+        return {
+          ok: true,
+          message: '批量查卡确认渠道卡密已兑换到当前账号',
+        };
+      }
+    } catch {
+      // 无法确认时继续走人工处理兜底。
+    }
+
+    return null;
+  }
+
+  async function classifyUncertainTask(
+    channelCardkey: string,
+    lastMessage: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date
+  ): Promise<UpgradeResult> {
+    try {
+      const verifyData = await verifyCard(channelCardkey);
+
+      if (isVerifyAvailable(verifyData)) {
+        return {
+          ok: false,
+          retryable: true,
+          cardkeyAction: 'release',
+          message: `987ai 充值结果无法确认，二次验卡仍有效，释放渠道卡密：${lastMessage}`,
+        };
+      }
+
+      if (isVerifyUsed(verifyData)) {
+        const confirmed = await confirmRedeemedCard(
+          channelCardkey,
+          chatgptEmail,
+          attemptStartedAt
+        );
+        if (confirmed) return confirmed;
+      }
+
+      return {
+        ok: false,
+        retryable: false,
+        stopFallback: true,
+        preserveRedeemCode: true,
+        cardkeyAction: 'consume',
+        message: `987ai 充值结果无法确认，二次验卡无效，需人工处理：${lastMessage}`,
+      };
+    } catch (error: any) {
+      return {
+        ok: false,
+        retryable: false,
+        stopFallback: true,
+        preserveRedeemCode: true,
+        cardkeyAction: 'consume',
+        message: `987ai 充值结果无法确认，二次验卡失败，需人工处理：${error?.message || lastMessage}`,
+      };
+    }
+  }
+
   return {
     async execute(req: UpgradeRequest): Promise<UpgradeResult> {
       const { channelCardkey, sessionToken } = req;
+      const attemptStartedAt = now();
 
       if (!channelCardkey) {
         return { ok: false, retryable: false, message: '缺少渠道卡密' };
@@ -96,9 +249,7 @@ export function create987aiAdapter(
 
       // Step 1: 验证渠道卡密
       try {
-        const verifyData = await requestJSON(
-          `/card-keys/${encodeURIComponent(channelCardkey)}`
-        );
+        const verifyData = await verifyCard(channelCardkey);
 
         if (!verifyData.available) {
           return {
@@ -153,11 +304,12 @@ export function create987aiAdapter(
         });
 
         if (!createData.success) {
-          return {
-            ok: false,
-            retryable: false,
-            message: `创建升级任务失败: ${createData.error || '未知错误'}`,
-          };
+          return classifyUncertainTask(
+            channelCardkey,
+            `创建升级任务失败: ${createData.error || '未知错误'}`,
+            req.chatgptEmail,
+            attemptStartedAt
+          );
         }
 
         taskId = createData.task_id || createData.taskId;
@@ -169,11 +321,12 @@ export function create987aiAdapter(
           };
         }
       } catch (err: any) {
-        return {
-          ok: false,
-          retryable: true,
-          message: `创建升级任务网络错误: ${err.message}`,
-        };
+        return classifyUncertainTask(
+          channelCardkey,
+          `创建升级任务网络错误: ${err.message}`,
+          req.chatgptEmail,
+          attemptStartedAt
+        );
       }
 
       // Step 4: 轮询任务结果。987ai 前台会一直等到终态，排队中的任务不应按固定次数超时。
@@ -215,14 +368,12 @@ export function create987aiAdapter(
             `[987ai] poll error (consecutive ${consecutivePollErrors}/${maxConsecutivePollErrors}): ${err.message}`
           );
           if (consecutivePollErrors >= maxConsecutivePollErrors) {
-            return {
-              ok: false,
-              retryable: false,
-              stopFallback: true,
-              preserveRedeemCode: true,
-              cardkeyAction: 'consume',
-              message: `987ai 任务状态连续查询失败 ${maxConsecutivePollErrors} 次，需人工核对：${err.message}`,
-            };
+            return classifyUncertainTask(
+              channelCardkey,
+              `任务状态连续查询失败 ${maxConsecutivePollErrors} 次：${err.message}`,
+              req.chatgptEmail,
+              attemptStartedAt
+            );
           }
         }
       }
