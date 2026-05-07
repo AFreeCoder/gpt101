@@ -57,11 +57,12 @@ Worker 取任务执行：
     ├─ 遍历每个 active 渠道：
     │   ├─ requiresCardkey=true → 从 channel_cardkey 池锁一张
     │   ├─ 调用 adapter.execute()
-    │   │   ├─ 987ai: 验卡密 → 验Token → 创建任务 → 轮询结果
-    │   │   └─ 9977ai: verify_code → submit_json
+    │   │   ├─ 987ai: 验卡密 → 验Token → 创建任务 → 轮询直到任务终态
+    │   │   ├─ 9977ai: verify_code → submit_json
     │   │       ├─ submit_json 失败 → reuse_record 自动重试 3 次
     │   │       ├─ verify_code 返回 used / is_new=false → 直接人工处理
     │   │       └─ 失败后不切换后续渠道
+    │   │   └─ cdk.aifadian.org: verify/cdk → recharge，充值结果不确定时二次验卡
     │   ├─ 成功 → 渠道卡密 used，任务 succeeded
     │   ├─ 普通失败 → 释放渠道卡密，尝试下一个渠道
     │   └─ 终止型失败（如 9977ai）→ 渠道卡密 consumed，任务 failed，保留本站卡密占用并标记人工处理
@@ -148,7 +149,7 @@ interface UpgradeChannelAdapter {
 | 1    | `GET /api/card-keys/{key}` | 验证渠道卡密                            |
 | 2    | `POST /api/parse-token`    | 验证 accessToken                        |
 | 3    | `POST /api/tasks`          | 创建升级任务（含 force_recharge=false） |
-| 4    | `GET /api/tasks/{id}`      | 轮询结果（3秒/次，最多30次）            |
+| 4    | `GET /api/tasks/{id}`      | 轮询结果（3秒/次，直到任务终态）        |
 
 Base URL: `https://api.987ai.vip/api`
 
@@ -157,6 +158,8 @@ Base URL: `https://api.987ai.vip/api`
 - 创建任务时 `force_recharge` 固定为 `false`（不覆盖充值）
 - `idp` 传空字符串
 - Adapter 内部从完整 JSON 中提取 `accessToken` 再传给 987ai API
+- 任务状态 `pending` / `processing` / 排队类非终态持续等待；只有 `completed`、`failed`、`unknown` 结束流程
+- 状态查询连续失败 5 次才转人工保守处理，并占用渠道卡密与本站卡密，避免充值结果不明时误释放
 
 ### 2.6 9977ai 渠道对接
 
@@ -185,7 +188,32 @@ Base URL: `https://api.987ai.vip/api`
   - 本站卡密保持占用。
   - 任务写入 `manualRequired=true`，禁止后台普通重试。
 
-### 2.7 Worker 机制
+### 2.7 cdk.aifadian.org 渠道对接
+
+cdk.aifadian.org 的前端实际调用 `api.afadian.org`，接入流程如下：
+
+| 步骤 | API                | 说明                                    |
+| ---- | ------------------ | --------------------------------------- |
+| 1    | `POST /verify/cdk` | 验证渠道卡密，body: `{ cdk }`           |
+| 2    | `POST /recharge`   | 发起充值，body: `{ cdk, session_data }` |
+
+Base URL: `https://api.afadian.org/api`
+
+渠道配置：
+
+- 后台渠道代码 / driver 使用 `cdk.aifadian.org`；`cdk-aifadian` 仅作为兼容别名保留。
+
+关键规则：
+
+- `session_data` 使用用户提交的完整 Session JSON，并要求能解析出 `user.email`、`account.id`，且 `account.planType=free`。
+- 首次 `verify/cdk` 返回非 `valid`：视为坏卡，渠道卡密标记 `disabled`。
+- `recharge` 成功：渠道卡密标记 `used`，任务成功。
+- `recharge` 明确返回卡密不存在 / 无效：渠道卡密标记 `disabled`。
+- `recharge` 返回无法识别的异常或网络异常：立即二次调用 `verify/cdk`。
+  - 二次验卡仍为 `valid`：说明卡密未被上游消耗，渠道卡密释放回池，并允许尝试后续渠道。
+  - 二次验卡不是 `valid`，或二次验卡自身失败：充值结果无法确认，渠道卡密保守标记为已占用，本站卡密保持占用，任务转人工处理。
+
+### 2.8 Worker 机制
 
 - **独立进程**：`worker.ts`，Docker 中用同一镜像、不同入口启动
 - **轮询方式**：`setInterval` 每 30 秒查询 `upgrade_task` 中 status=pending 的任务
@@ -389,6 +417,7 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 - `src/extensions/upgrade-channel/registry.ts` — adapter 注册表
 - `src/extensions/upgrade-channel/runner.ts` — 任务编排（按优先级遍历渠道）
 - `src/extensions/upgrade-channel/adapters/987ai.ts` — 987ai 渠道 adapter
+- `src/extensions/upgrade-channel/adapters/aifadian.ts` — cdk.aifadian.org 渠道 adapter
 - `src/extensions/upgrade-channel/adapters/mock.ts` — 测试用 mock adapter
 
 **前台页面**：
@@ -465,7 +494,7 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 
 ### Phase 2 — 全渠道接入
 
-- 9977ai、aifadian 等渠道 adapter 逐个接入
+- 9977ai、aifadian 已接入，后续渠道按 adapter 机制逐个接入
 - 每个渠道按需导入渠道卡密
 
 ### Phase 3 — 发票系统
@@ -530,6 +559,10 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 
 - **9977ai 渠道终止型失败策略**  
   9977ai adapter 现在支持 `verify_code` / `submit_json` / 内部 `reuse_record` 自动重试 3 次。进入 9977ai 的绑定型失败分支后不会再切下一个渠道，任务落为失败并标记人工处理。若复用记录明确不存在，渠道卡密释放回池；其他无法确认是否已绑定的失败仍保守占用渠道卡密与本站卡密。
+
+- **987ai 排队任务等待策略**：987ai adapter 不再使用固定轮询次数超时，改为与前台逻辑一致，每 3 秒持续查询任务状态，直到上游返回 `completed` / `failed` / `unknown`。状态查询连续失败 5 次时，才按充值结果不确定转人工保守处理。
+
+- **cdk.aifadian.org 二次验卡策略**：aifadian adapter 接入 `verify/cdk` 与 `recharge`。当充值结果无法识别时，会二次校验渠道卡密；二次仍有效则释放回池并允许后续渠道，不再误占用；二次不可用或校验失败时才占用渠道卡密并转人工。
 
 - **用户侧失败文案统一收敛**  
   `/upgrade` 提交失败和 `/upgrade/status/[taskNo]` 失败终态统一展示为“充值异常，请联系客服处理。”，不再暴露卡密校验或渠道细节。

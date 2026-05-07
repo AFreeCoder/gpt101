@@ -17,6 +17,7 @@ import type { UpgradeRequest, UpgradeResult } from './types';
 import './adapters/mock';
 import './adapters/987ai';
 import './adapters/9977ai';
+import './adapters/aifadian';
 
 export interface RunTaskInput {
   taskId: string;
