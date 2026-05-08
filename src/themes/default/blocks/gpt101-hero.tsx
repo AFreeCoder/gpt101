@@ -13,10 +13,16 @@ import {
 
 import { Button } from '@/shared/components/ui/button';
 import {
+  getAdPlusFunnelConversionAction,
+  markAdPlusUpgradeEntryFromLanding,
   resolveAdPlusSourceFromHref,
   trackAdPlusFunnelStep,
 } from '@/shared/lib/ad-funnel';
-import { sendGtagEvent, sendOutboundClick } from '@/shared/lib/gtag';
+import {
+  sendGoogleAdsConversionAction,
+  sendGtagEvent,
+  sendOutboundClick,
+} from '@/shared/lib/gtag';
 import { Section } from '@/shared/types/blocks/landing';
 
 import { getUpgradeButtonAction } from './gpt101-hero-actions';
@@ -159,11 +165,19 @@ export function Gpt101Hero({ section }: { section: Section }) {
                         : undefined
                     }
                     onClick={() => {
+                      markAdPlusUpgradeEntryFromLanding();
                       trackAdPlusFunnelStep(
                         resolveAdPlusSourceFromHref(upgradeAction.href),
                         'upgrade',
                         {
                           sendEvent: sendGtagEvent,
+                          sendConversion: (params) => {
+                            sendGoogleAdsConversionAction(
+                              getAdPlusFunnelConversionAction('upgrade'),
+                              undefined,
+                              params
+                            );
+                          },
                         }
                       );
                     }}

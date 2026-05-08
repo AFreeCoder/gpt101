@@ -7,11 +7,16 @@ import {
   type UpgradeTaskSummaryData,
 } from '@/shared/blocks/upgrade/upgrade-task-summary';
 import {
+  getAdPlusFunnelConversionAction,
   getUpgradeAttributionFromHref,
+  hasAdPlusUpgradeEntryFromLanding,
   resolveAdPlusSourceFromHref,
   trackAdPlusFunnelStep,
 } from '@/shared/lib/ad-funnel';
-import { sendAdsConversion, sendGtagEvent } from '@/shared/lib/gtag';
+import {
+  sendGoogleAdsConversionAction,
+  sendGtagEvent,
+} from '@/shared/lib/gtag';
 import {
   getMemberLabel,
   getProductMemberLabel,
@@ -68,10 +73,18 @@ export function UpgradeFlow({
         ? null
         : resolveAdPlusSourceFromHref(window.location.href);
 
+    if (!hasAdPlusUpgradeEntryFromLanding()) {
+      return;
+    }
+
     trackAdPlusFunnelStep(source, step, {
       sendEvent: sendGtagEvent,
       sendConversion: (params) => {
-        sendAdsConversion(undefined, params);
+        sendGoogleAdsConversionAction(
+          getAdPlusFunnelConversionAction(step),
+          undefined,
+          params
+        );
       },
     });
   };

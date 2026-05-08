@@ -5,7 +5,7 @@ import test from 'node:test';
 
 import { trackAdPlusFunnelStep } from '../../src/shared/lib/ad-funnel';
 
-test('trackAdPlusFunnelStep sends verify code event without conversion', () => {
+test('trackAdPlusFunnelStep sends verify code event and card-verify conversion', () => {
   const events: Array<{ name: string; params?: Record<string, unknown> }> = [];
   const conversions: Array<Record<string, unknown> | undefined> = [];
 
@@ -30,7 +30,12 @@ test('trackAdPlusFunnelStep sends verify code event without conversion', () => {
       },
     },
   ]);
-  assert.deepEqual(conversions, []);
+  assert.deepEqual(conversions, [
+    {
+      source: 'ad-plus',
+      funnel_step: 'verify_code',
+    },
+  ]);
 });
 
 test('trackAdPlusFunnelStep sends verify token event and Google Ads conversion together', () => {
@@ -62,6 +67,7 @@ test('trackAdPlusFunnelStep sends verify token event and Google Ads conversion t
     {
       source: 'ad-plus',
       funnel_step: 'verify_token',
+      transaction_id: '',
     },
   ]);
 });
@@ -78,6 +84,7 @@ test('upgrade page tracks ad-plus verify clicks on button press instead of waiti
 
   assert.match(pageSource, /UpgradeFlow/);
   assert.match(source, /resolveAdPlusSourceFromHref\(window\.location\.href\)/);
+  assert.match(source, /hasAdPlusUpgradeEntryFromLanding\(\)/);
   assert.match(source, /trackAdPlusFunnelStep\(source,\s*step,/);
   assert.match(
     source,
@@ -87,7 +94,8 @@ test('upgrade page tracks ad-plus verify clicks on button press instead of waiti
     source,
     /onClick=\{\(\) => \{\s*trackAdPlusStep\('verify_token'\);\s*void handleParseToken\(\);?\s*\}\}/
   );
-  assert.match(source, /sendAdsConversion/);
+  assert.match(source, /sendGoogleAdsConversionAction/);
+  assert.match(source, /getAdPlusFunnelConversionAction\(step\)/);
   assert.match(source, /getUpgradeAttributionFromHref/);
   assert.match(source, /\.\.\.attribution/);
 });

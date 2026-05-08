@@ -12,6 +12,12 @@ declare global {
   }
 }
 
+export type GoogleAdsConversionAction =
+  | 'outbound_buy'
+  | 'start_upgrade'
+  | 'card_verify'
+  | 'token_verify';
+
 /**
  * 确保 gtag 函数存在（即使脚本尚未加载也能入队）
  */
@@ -29,8 +35,27 @@ function ensureGtag() {
  * Google Ads 转化 send_to 值
  * 格式: AW-XXXXXXXXX/YYYYYYY
  */
-const CONVERSION_SEND_TO =
-  process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO || '';
+const GOOGLE_ADS_CONVERSION_SEND_TO: Record<GoogleAdsConversionAction, string> =
+  {
+    outbound_buy:
+      process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO ||
+      'AW-17885221737/JGUYCKiX7uobEOmmq9BC',
+    start_upgrade:
+      process.env.NEXT_PUBLIC_GOOGLE_ADS_START_UPGRADE_CONVERSION_SEND_TO ||
+      'AW-17885221737/eQl9CNy376kcEOmmq9BC',
+    card_verify:
+      process.env.NEXT_PUBLIC_GOOGLE_ADS_CARD_VERIFY_CONVERSION_SEND_TO ||
+      'AW-17885221737/VurcCIDn1akcEOmmq9BC',
+    token_verify:
+      process.env.NEXT_PUBLIC_GOOGLE_ADS_TOKEN_VERIFY_CONVERSION_SEND_TO ||
+      'AW-17885221737/JCCTCL6M76kcEOmmq9BC',
+  };
+
+export function getGoogleAdsConversionSendTo(
+  action: GoogleAdsConversionAction
+) {
+  return GOOGLE_ADS_CONVERSION_SEND_TO[action];
+}
 
 export function sendGtagEvent(
   eventName: string,
@@ -44,7 +69,8 @@ export function sendGtagEvent(
   window.gtag('event', eventName, params || {});
 }
 
-export function sendAdsConversion(
+export function sendGoogleAdsConversion(
+  sendTo: string,
   callback?: () => void,
   params?: Record<string, unknown>
 ) {
@@ -54,7 +80,7 @@ export function sendAdsConversion(
   }
 
   ensureGtag();
-  if (!window.gtag || !CONVERSION_SEND_TO) {
+  if (!window.gtag || !sendTo) {
     callback?.();
     return;
   }
@@ -67,12 +93,31 @@ export function sendAdsConversion(
   };
 
   window.gtag('event', 'conversion', {
-    send_to: CONVERSION_SEND_TO,
+    send_to: sendTo,
     ...(params || {}),
     event_callback: safeCallback,
   });
 
   setTimeout(safeCallback, 1000);
+}
+
+export function sendGoogleAdsConversionAction(
+  action: GoogleAdsConversionAction,
+  callback?: () => void,
+  params?: Record<string, unknown>
+) {
+  sendGoogleAdsConversion(
+    getGoogleAdsConversionSendTo(action),
+    callback,
+    params
+  );
+}
+
+export function sendAdsConversion(
+  callback?: () => void,
+  params?: Record<string, unknown>
+) {
+  sendGoogleAdsConversionAction('outbound_buy', callback, params);
 }
 
 /**
