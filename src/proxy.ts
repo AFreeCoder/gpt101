@@ -11,6 +11,7 @@ import {
 const intlMiddleware = createIntlMiddleware(routing);
 const PUBLIC_CACHE_CONTROL =
   'public, s-maxage=3600, stale-while-revalidate=14400';
+const QUERY_ROBOTS_HEADER = 'noindex, follow';
 
 function withPublicCacheHeaders(response: NextResponse, request: NextRequest) {
   response.headers.set('x-pathname', request.nextUrl.pathname);
@@ -18,6 +19,14 @@ function withPublicCacheHeaders(response: NextResponse, request: NextRequest) {
   response.headers.set('Cache-Control', PUBLIC_CACHE_CONTROL);
   response.headers.set('CDN-Cache-Control', PUBLIC_CACHE_CONTROL);
   response.headers.set('Cloudflare-CDN-Cache-Control', PUBLIC_CACHE_CONTROL);
+  return applyQueryRobotsHeader(response, request);
+}
+
+function applyQueryRobotsHeader(response: NextResponse, request: NextRequest) {
+  if (request.nextUrl.searchParams.has('q')) {
+    response.headers.set('X-Robots-Tag', QUERY_ROBOTS_HEADER);
+  }
+
   return response;
 }
 
@@ -125,6 +134,7 @@ export async function proxy(request: NextRequest) {
       'Cloudflare-CDN-Cache-Control',
       PUBLIC_CACHE_CONTROL
     );
+    applyQueryRobotsHeader(intlResponse, request);
   }
 
   // For all other routes (including /, /sign-in, /sign-up, /sign-out), just return the intl response

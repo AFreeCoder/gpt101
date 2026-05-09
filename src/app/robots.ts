@@ -10,7 +10,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
       disallow: [
-        '/*?*q=',
         '/privacy-policy',
         '/terms-of-service',
         '/settings/*',
@@ -22,4 +21,3 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: `${appUrl}/sitemap.xml`,
   };
 }
-
