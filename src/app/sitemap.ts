@@ -1,9 +1,9 @@
 import { MetadataRoute } from 'next';
 
-import { envConfigs } from '@/config';
+import { getSeoSiteUrl } from '@/shared/lib/seo-site-url';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = envConfigs.app_url || 'https://gpt101.org';
+  const baseUrl = getSeoSiteUrl();
 
   return [
     {

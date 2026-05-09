@@ -26,6 +26,21 @@ test('robots 不再阻断带 q 参数的公开 query URL', () => {
   ]);
 });
 
+test('robots 和 sitemap 默认使用公网域名，不能泄漏 localhost', () => {
+  const robotsConfig = robots();
+  const urls = sitemap().map((entry) => entry.url);
+
+  assert.equal(robotsConfig.sitemap, 'https://gpt101.org/sitemap.xml');
+  assert.equal(
+    urls.every((url) => url.startsWith('https://gpt101.org')),
+    true
+  );
+  assert.equal(
+    urls.some((url) => url.includes('localhost')),
+    false
+  );
+});
+
 test('sitemap 只暴露规范公开页，不输出 query URL', () => {
   const urls = sitemap().map((entry) => entry.url);
 
@@ -55,7 +70,7 @@ test('公开 query 页通过 X-Robots-Tag 明确 noindex 且保留 follow', () =
   assert.match(proxySource, /noindex,\s*follow/);
 });
 
-test('公开页 metadata 保留 canonical，upgrade 入口保留 noindex', () => {
+test('公开页 metadata 保留 canonical，upgrade 子域入口保留 noindex', () => {
   const lpSource = readFileSync(
     path.join(
       repoRoot,
