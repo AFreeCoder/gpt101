@@ -66,6 +66,7 @@ export function UpgradeFlow({
   const productLabel = getProductMemberLabel(productCode, memberType);
   const shouldShowOutlookEmailWarning =
     tokenParsed && isOutlookEmail(accountEmail);
+  const canConfirmUpgrade = tokenParsed && !isOutlookEmail(accountEmail);
 
   const trackAdPlusStep = (step: 'verify_code' | 'verify_token') => {
     const source =
@@ -215,6 +216,12 @@ export function UpgradeFlow({
 
   const handleSubmit = async () => {
     setError('');
+    if (isOutlookEmail(accountEmail)) {
+      setError('请将 ChatGPT 账号邮箱更换为 gmail、QQ 等其他邮箱后再继续升级');
+      setErrorStep(2);
+      return;
+    }
+
     setLoading('submit');
     const attribution =
       typeof window === 'undefined'
@@ -279,7 +286,7 @@ export function UpgradeFlow({
     poll();
   };
 
-  const currentStep = taskNo ? 4 : tokenParsed ? 3 : codeVerified ? 2 : 1;
+  const currentStep = taskNo ? 4 : canConfirmUpgrade ? 3 : codeVerified ? 2 : 1;
   const redeemCodeTaskStatus = redeemCodeTask?.status || '';
   const redeemCodeTaskNotice =
     redeemCodeTaskStatus === 'succeeded'
@@ -342,6 +349,18 @@ export function UpgradeFlow({
           </h1>
           <p className="text-muted-foreground mt-2 text-sm">
             全自动处理，通常 1-2 分钟完成升级
+          </p>
+        </div>
+
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <p className="font-semibold">邮箱风险提示</p>
+          <p className="mt-1">
+            因官方风控问题，GPT 账号为 outlook 或 hotmail 邮箱的用户，
+            需要更换为 gmail、QQ 等其他邮箱。
+          </p>
+          <p className="mt-1 text-sky-700 dark:text-sky-300">
+            更换步骤：网页登录
+            ChatGPT，点击【头像—设置—账户—电子邮件】，进行修改。
           </p>
         </div>
 
@@ -645,11 +664,12 @@ export function UpgradeFlow({
                     {shouldShowOutlookEmailWarning && (
                       <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
                         <p className="font-medium text-amber-800 dark:text-amber-300">
-                          由于特殊原因，outlook 邮箱账号存在封号风险， 请修改。
+                          因官方风控问题，outlook / hotmail
+                          邮箱账号存在封号风险，请修改。
                         </p>
                         <p className="mt-1 text-sky-700 dark:text-sky-300">
                           {
-                            '修改步骤：网页登录 ChatGPT，点击【头像—>设置—>账户—>电子邮件】，进行修改'
+                            '更换步骤：网页登录 ChatGPT，点击【头像—设置—账户—电子邮件】，进行修改。'
                           }
                         </p>
                       </div>
@@ -660,7 +680,7 @@ export function UpgradeFlow({
 
               {/* Step 3: 确认升级（样式固定不变） */}
               <div
-                className={`rounded-2xl border p-5 transition-all duration-300 sm:p-6 ${!tokenParsed ? 'border-border/20 bg-muted/20 pointer-events-none opacity-40' : currentStep === 3 ? 'border-primary/30 bg-card shadow-md' : 'border-border/50 bg-card/60'}`}
+                className={`rounded-2xl border p-5 transition-all duration-300 sm:p-6 ${!canConfirmUpgrade ? 'border-border/20 bg-muted/20 pointer-events-none opacity-40' : currentStep === 3 ? 'border-primary/30 bg-card shadow-md' : 'border-border/50 bg-card/60'}`}
               >
                 <div className="mb-4 flex items-center gap-3">
                   <div
@@ -756,7 +776,7 @@ export function UpgradeFlow({
                           setErrorStep(0);
                           handleSubmit();
                         }}
-                        disabled={loading === 'submit'}
+                        disabled={loading === 'submit' || !canConfirmUpgrade}
                         className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
                       >
                         {loading === 'submit' ? (

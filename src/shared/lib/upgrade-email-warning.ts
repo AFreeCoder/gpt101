@@ -1,4 +1,4 @@
-const OUTLOOK_EMAIL_DOMAIN = 'outlook.com';
+const WARNING_EMAIL_DOMAINS = new Set(['outlook.com', 'hotmail.com']);
 
 export function isOutlookEmail(email?: string | null) {
   const normalized = String(email || '')
@@ -10,5 +10,5 @@ export function isOutlookEmail(email?: string | null) {
     return false;
   }
 
-  return parts[1] === OUTLOOK_EMAIL_DOMAIN;
+  return WARNING_EMAIL_DOMAINS.has(parts[1]);
 }
