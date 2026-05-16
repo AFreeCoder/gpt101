@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   mergeUpgradeTaskMetadata,
   parseUpgradeTaskMetadata,
+  replaceSessionPlanType,
   resolveSessionAccountPayload,
 } from '../../src/shared/services/upgrade-task-helpers';
 
@@ -22,6 +23,28 @@ test('resolveSessionAccountPayload 解析完整 session JSON', () => {
     currentPlan: 'free',
     accessToken: 'access-token-123',
   });
+});
+
+test('replaceSessionPlanType 只替换 session JSON 的 account.planType', () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'user@example.com' },
+    account: { id: 'account_123', planType: 'plus', name: 'Personal' },
+    accessToken: 'access-token-123',
+  });
+
+  const result = replaceSessionPlanType(sessionToken, 'free');
+
+  assert.deepEqual(JSON.parse(result), {
+    user: { id: 'user_123', email: 'user@example.com' },
+    account: { id: 'account_123', planType: 'free', name: 'Personal' },
+    accessToken: 'access-token-123',
+  });
+});
+
+test('replaceSessionPlanType 遇到非 JSON token 时保持原样', () => {
+  const sessionToken = 'header.payload.signature';
+
+  assert.equal(replaceSessionPlanType(sessionToken, 'free'), sessionToken);
 });
 
 test('resolveSessionAccountPayload 拒绝缺少字段的 session JSON', () => {

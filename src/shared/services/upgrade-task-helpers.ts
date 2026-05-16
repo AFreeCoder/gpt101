@@ -162,6 +162,25 @@ export function resolveSessionAccountPayload(
   return snapshot;
 }
 
+export function replaceSessionPlanType(
+  sessionToken: string,
+  currentPlan: string
+): string {
+  const parsed = parseSessionTokenAsJson(sessionToken);
+  if (!parsed) return sessionToken;
+
+  const account = asRecord(parsed.account);
+  if (Object.keys(account).length === 0) return sessionToken;
+
+  return JSON.stringify({
+    ...parsed,
+    account: {
+      ...account,
+      planType: normalizePlanType(currentPlan),
+    },
+  });
+}
+
 export function parseUpgradeTaskMetadata(
   metadata?: string | null
 ): UpgradeTaskMetadata {

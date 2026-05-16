@@ -119,12 +119,17 @@ test('submitUpgradeTask 复用同一卡密已释放的失败任务', async () =>
   const prefix = `submitreuse${Date.now()}`;
   await cleanupByPrefix(prefix);
   const seeded = await seedReleasedFailedTask(prefix);
+  const submittedSession = JSON.stringify({
+    user: { id: 'submitted_user', email: 'submitted@example.com' },
+    account: { id: 'submitted_account', planType: 'plus' },
+    accessToken: 'submitted-access-token',
+  });
 
   try {
     const result = await submitUpgradeTask(
       {
         code: seeded.code,
-        sessionToken: '{"new":true}',
+        sessionToken: submittedSession,
         chatgptEmail: 'ignored@example.com',
         chatgptAccountId: 'ignored_account',
         chatgptCurrentPlan: 'free',
@@ -157,7 +162,11 @@ test('submitUpgradeTask 复用同一卡密已释放的失败任务', async () =>
     assert.equal(result.taskNo, seeded.taskNo);
     assert.equal(taskTotal.value, 1);
     assert.equal(taskRow.status, UpgradeTaskStatus.PENDING);
-    assert.equal(taskRow.sessionToken, '{"new":true}');
+    assert.deepEqual(JSON.parse(taskRow.sessionToken), {
+      user: { id: 'submitted_user', email: 'submitted@example.com' },
+      account: { id: 'submitted_account', planType: 'free' },
+      accessToken: 'submitted-access-token',
+    });
     assert.equal(taskRow.chatgptEmail, 'retry@example.com');
     assert.equal(taskRow.chatgptAccountId, 'retry_account');
     assert.equal(taskRow.attemptCount, 0);

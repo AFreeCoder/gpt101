@@ -16,6 +16,7 @@ import { resolveVerifiedSessionAccount } from '@/shared/services/upgrade-account
 import {
   mergeUpgradeTaskMetadata,
   parseUpgradeTaskMetadata,
+  replaceSessionPlanType,
   type ResolvedSessionAccount,
 } from '@/shared/services/upgrade-task-helpers';
 
@@ -119,6 +120,10 @@ export async function submitUpgradeTask(
   const accountResolver =
     options?.accountResolver || resolveVerifiedSessionAccount;
   const account = await accountResolver(req.sessionToken);
+  const verifiedSessionToken = replaceSessionPlanType(
+    req.sessionToken,
+    account.currentPlan
+  );
   let taskNo = newTaskNo;
 
   await db().transaction(async (tx: any) => {
@@ -172,7 +177,7 @@ export async function submitUpgradeTask(
       await tx
         .update(upgradeTask)
         .set({
-          sessionToken: req.sessionToken,
+          sessionToken: verifiedSessionToken,
           chatgptEmail: account.email,
           chatgptAccountId: account.accountId,
           chatgptCurrentPlan: account.currentPlan,
@@ -210,7 +215,7 @@ export async function submitUpgradeTask(
       redeemCodePlain: normalizedCode,
       productCode: code.productCode,
       memberType: code.memberType,
-      sessionToken: req.sessionToken,
+      sessionToken: verifiedSessionToken,
       chatgptEmail: account.email,
       chatgptAccountId: account.accountId,
       chatgptCurrentPlan: account.currentPlan,
