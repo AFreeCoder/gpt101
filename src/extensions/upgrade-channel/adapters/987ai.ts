@@ -15,6 +15,8 @@ const BASE_URL = 'https://api.987ai.vip/api';
 const REQUEST_TIMEOUT_MS = 30_000; // 30 秒请求超时
 const POLL_INTERVAL_MS = 3_000; // 3 秒轮询间隔
 const MAX_CONSECUTIVE_POLL_ERRORS = 5;
+const UUID_PATTERN =
+  /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
 interface AdapterOptions {
   baseUrl?: string;
@@ -23,6 +25,18 @@ interface AdapterOptions {
   pollIntervalMs?: number;
   maxConsecutivePollErrors?: number;
   now?: () => Date;
+}
+
+class JSONRequestError extends Error {
+  status: number;
+  payload: any;
+
+  constructor(message: string, status: number, payload: any) {
+    super(message);
+    this.name = 'JSONRequestError';
+    this.status = status;
+    this.payload = payload;
+  }
 }
 
 function trimTrailingSlash(value: string): string {
@@ -53,10 +67,12 @@ async function fetchJSON(
     });
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(
+      throw new JSONRequestError(
         data?.error ||
           data?.message ||
-          `request failed with status: ${res.status}`
+          `request failed with status: ${res.status}`,
+        res.status,
+        data
       );
     }
     return data;
@@ -75,6 +91,23 @@ export function create987aiAdapter(
   const maxConsecutivePollErrors =
     options.maxConsecutivePollErrors ?? MAX_CONSECUTIVE_POLL_ERRORS;
   const now = options.now || (() => new Date());
+
+  function extractExistingTaskId(error: any): string | null {
+    if (error?.status !== 409) {
+      return null;
+    }
+
+    const payload = error?.payload;
+    const directTaskId = payload?.task_id || payload?.taskId;
+    if (directTaskId) {
+      return String(directTaskId);
+    }
+
+    const message = String(
+      payload?.error || payload?.message || error?.message || ''
+    );
+    return message.match(UUID_PATTERN)?.[0] || null;
+  }
 
   async function requestJSON(
     path: string,
@@ -299,7 +332,7 @@ export function create987aiAdapter(
 
       // Step 3: 创建升级任务
       // 注意：force_recharge 固定为 false（不覆盖充值）
-      let taskId: string;
+      let taskId: string | null = null;
       try {
         const createData = await requestJSON('/tasks', {
           method: 'POST',
@@ -321,20 +354,26 @@ export function create987aiAdapter(
         }
 
         taskId = createData.task_id || createData.taskId;
-        if (!taskId) {
-          return {
-            ok: false,
-            retryable: false,
-            message: '创建任务成功但未返回任务 ID',
-          };
-        }
       } catch (err: any) {
-        return classifyUncertainTask(
-          channelCardkey,
-          `创建升级任务网络错误: ${err.message}`,
-          req.chatgptEmail,
-          attemptStartedAt
-        );
+        const existingTaskId = extractExistingTaskId(err);
+        if (existingTaskId) {
+          taskId = existingTaskId;
+        } else {
+          return classifyUncertainTask(
+            channelCardkey,
+            `创建升级任务网络错误: ${err.message}`,
+            req.chatgptEmail,
+            attemptStartedAt
+          );
+        }
+      }
+
+      if (!taskId) {
+        return {
+          ok: false,
+          retryable: false,
+          message: '创建任务成功但未返回任务 ID',
+        };
       }
 
       // Step 4: 轮询任务结果。987ai 前台会一直等到终态，排队中的任务不应按固定次数超时。

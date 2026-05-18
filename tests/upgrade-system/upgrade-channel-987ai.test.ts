@@ -114,6 +114,69 @@ test('987ai 会持续等待排队任务直到上游返回终态', async () => {
   );
 });
 
+test('987ai 创建任务返回 409 时提取已有任务 ID 并继续轮询', async () => {
+  const calls: string[] = [];
+  const conflictTaskId = '123e4567-e89b-12d3-a456-426614174000';
+
+  const adapter = create987aiAdapter({
+    pollIntervalMs: 0,
+    fetchImpl: (async (input, init) => {
+      const url = String(input);
+      calls.push(url);
+
+      if (url.endsWith('/card-keys/GOOD-CARD-CONFLICT')) {
+        return jsonResponse({ available: true });
+      }
+
+      if (url.endsWith('/parse-token')) {
+        return jsonResponse({ success: true, message: 'user@example.com' });
+      }
+
+      if (url.endsWith('/tasks') && init?.method === 'POST') {
+        return jsonResponse(
+          {
+            success: false,
+            error: `该卡密有任务正在处理中，任务ID: ${conflictTaskId}，请等待处理完成`,
+          },
+          409
+        );
+      }
+
+      if (url.endsWith(`/tasks/${conflictTaskId}`)) {
+        return jsonResponse({
+          status: 'completed',
+          result: '已有任务充值成功',
+        });
+      }
+
+      throw new Error(`unexpected request: ${url}`);
+    }) as typeof fetch,
+  });
+
+  const result = await adapter.execute({
+    taskId: 'task_987ai_conflict',
+    productCode: 'plus',
+    memberType: 'month',
+    sessionToken: buildSessionJson(),
+    chatgptEmail: 'user@example.com',
+    channelCardkey: 'GOOD-CARD-CONFLICT',
+  });
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.message, '已有任务充值成功');
+  }
+  assert.deepEqual(
+    calls.map((url) => new URL(url).pathname),
+    [
+      '/api/card-keys/GOOD-CARD-CONFLICT',
+      '/api/parse-token',
+      '/api/tasks',
+      `/api/tasks/${conflictTaskId}`,
+    ]
+  );
+});
+
 test('987ai 任务状态连续查询失败且批量查卡确认同邮箱后判成功', async () => {
   const calls: string[] = [];
   let pollCount = 0;
