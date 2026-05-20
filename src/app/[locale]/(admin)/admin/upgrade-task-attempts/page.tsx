@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { Header } from '@/shared/blocks/dashboard';
 import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 
 interface Attempt {
@@ -61,7 +62,9 @@ export default function UpgradeTaskAttemptsPage() {
   }, [fetchData]);
 
   return (
-    <div className="p-6">
+    <>
+      <Header />
+      <div className="p-6">
       <h2 className="mb-4 text-lg font-semibold">任务记录</h2>
 
       {/* 状态 Tab */}
@@ -207,6 +210,7 @@ export default function UpgradeTaskAttemptsPage() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
+import { Header } from '@/shared/blocks/dashboard';
 import { PRODUCT_TYPES } from '@/shared/lib/redeem-code';
 
 interface Channel {
@@ -131,7 +133,9 @@ export default function UpgradeChannelsPage() {
   };
 
   return (
-    <div className="p-6">
+    <>
+      <Header />
+      <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">渠道管理</h2>
         <button onClick={openCreate} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
@@ -267,6 +271,7 @@ export default function UpgradeChannelsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+
+import { Header } from '@/shared/blocks/dashboard';
 import { PRODUCT_TYPES, getMemberTypes } from '@/shared/lib/redeem-code';
 
 export default function GenerateRedeemCodesPage() {
@@ -51,7 +53,9 @@ export default function GenerateRedeemCodesPage() {
   };
 
   return (
-    <div className="p-6">
+    <>
+      <Header />
+      <div className="p-6">
       <h2 className="mb-6 text-lg font-semibold">批量生成卡密</h2>
 
       {error && (
@@ -155,6 +159,7 @@ export default function GenerateRedeemCodesPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

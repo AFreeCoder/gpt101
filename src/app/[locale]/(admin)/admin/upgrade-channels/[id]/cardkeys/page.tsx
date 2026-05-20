@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+import { Header } from '@/shared/blocks/dashboard';
 import {
   getMemberTypes,
   getProductMemberLabel,
@@ -217,7 +218,9 @@ export default function ChannelCardkeysPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="p-6">
+    <>
+      <Header />
+      <div className="p-6">
       <div className="mb-2">
         <a
           href="/admin/upgrade-channels"
@@ -535,6 +538,7 @@ export default function ChannelCardkeysPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

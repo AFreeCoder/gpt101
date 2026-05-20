@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { Header } from '@/shared/blocks/dashboard';
 import {
   getMemberTypes,
   getProductMemberLabel,
@@ -250,7 +251,9 @@ export default function ChannelCardkeysPage() {
   };
 
   return (
-    <div className="p-6">
+    <>
+      <Header />
+      <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">渠道卡密管理</h2>
         <div className="flex gap-2">
@@ -619,6 +622,7 @@ export default function ChannelCardkeysPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

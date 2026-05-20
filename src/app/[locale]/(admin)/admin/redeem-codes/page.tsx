@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { Header } from '@/shared/blocks/dashboard';
 import {
   getMemberTypes,
   getProductMemberLabel,
@@ -143,7 +144,9 @@ export default function RedeemCodesPage() {
   };
 
   return (
-    <div className="p-6">
+    <>
+      <Header />
+      <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">卡密列表</h2>
         <div className="flex gap-2">
@@ -388,6 +391,7 @@ export default function RedeemCodesPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

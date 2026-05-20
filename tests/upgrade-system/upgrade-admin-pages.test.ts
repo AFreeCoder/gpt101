@@ -53,3 +53,22 @@ test('upgrade task attempts admin page and API include site redeem cardkey', () 
   assert.match(pageSource, /redeemCodePlain/);
   assert.match(routeSource, /redeemCodePlain/);
 });
+
+test('client-only admin pages render the dashboard header for mobile sidebar access', () => {
+  const clientAdminPages = [
+    'src/app/[locale]/(admin)/admin/channel-cardkeys/page.tsx',
+    'src/app/[locale]/(admin)/admin/redeem-codes/generate/page.tsx',
+    'src/app/[locale]/(admin)/admin/redeem-codes/page.tsx',
+    'src/app/[locale]/(admin)/admin/upgrade-channels/[id]/cardkeys/page.tsx',
+    'src/app/[locale]/(admin)/admin/upgrade-channels/page.tsx',
+    'src/app/[locale]/(admin)/admin/upgrade-task-attempts/page.tsx',
+    'src/app/[locale]/(admin)/admin/upgrade-tasks/page.tsx',
+  ];
+
+  for (const pagePath of clientAdminPages) {
+    const source = readSource(pagePath);
+
+    assert.match(source, /@\/shared\/blocks\/dashboard/);
+    assert.match(source, /<Header\b/);
+  }
+});
