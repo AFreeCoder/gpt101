@@ -15,6 +15,7 @@ const BASE_URL = 'https://api.987ai.vip/api';
 const REQUEST_TIMEOUT_MS = 30_000; // 30 秒请求超时
 const POLL_INTERVAL_MS = 3_000; // 3 秒轮询间隔
 const MAX_CONSECUTIVE_POLL_ERRORS = 5;
+const NON_TERMINAL_CONFIRM_INTERVAL_MS = 30_000;
 const UUID_PATTERN =
   /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
@@ -24,6 +25,7 @@ interface AdapterOptions {
   requestTimeoutMs?: number;
   pollIntervalMs?: number;
   maxConsecutivePollErrors?: number;
+  nonTerminalConfirmIntervalMs?: number;
   now?: () => Date;
 }
 
@@ -90,6 +92,8 @@ export function create987aiAdapter(
   const pollIntervalMs = options.pollIntervalMs ?? POLL_INTERVAL_MS;
   const maxConsecutivePollErrors =
     options.maxConsecutivePollErrors ?? MAX_CONSECUTIVE_POLL_ERRORS;
+  const nonTerminalConfirmIntervalMs =
+    options.nonTerminalConfirmIntervalMs ?? NON_TERMINAL_CONFIRM_INTERVAL_MS;
   const now = options.now || (() => new Date());
 
   function extractExistingTaskId(error: any): string | null {
@@ -378,6 +382,7 @@ export function create987aiAdapter(
 
       // Step 4: 轮询任务结果。987ai 前台会一直等到终态，排队中的任务不应按固定次数超时。
       let consecutivePollErrors = 0;
+      let lastNonTerminalConfirmAt = attemptStartedAt.getTime();
       for (;;) {
         await delay(pollIntervalMs);
 
@@ -420,6 +425,21 @@ export function create987aiAdapter(
 
             default:
               // pending / processing / queued 以及上游新增的非终态都继续等待。
+              {
+                const checkedAt = now();
+                if (
+                  checkedAt.getTime() - lastNonTerminalConfirmAt >=
+                  nonTerminalConfirmIntervalMs
+                ) {
+                  lastNonTerminalConfirmAt = checkedAt.getTime();
+                  const confirmed = await confirmRedeemedCard(
+                    channelCardkey,
+                    req.chatgptEmail,
+                    attemptStartedAt
+                  );
+                  if (confirmed) return confirmed;
+                }
+              }
               break;
           }
         } catch (err: any) {
