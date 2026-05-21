@@ -253,34 +253,49 @@
       },
       "faq": {
         "id": "faqs",
+        "block": "faq",
         "title": "FAQ",
         "description": "Frequently asked questions about GPT Plus subscription service",
+        "category_all_label": "All",
+        "categories": [
+          "Subscription",
+          "Account Safety",
+          "Support",
+          "Plan Choice"
+        ],
         "items": [
           {
+            "category": "Subscription",
             "question": "Q: Can I subscribe without an overseas credit card?",
             "answer": "Yes! You can use WeChat Pay or Alipay through our platform."
           },
           {
+            "category": "Account Safety",
             "question": "Q: Do I need to provide my account password?",
             "answer": "No! Our self-service platform doesn't require your account or password."
           },
           {
+            "category": "Subscription",
             "question": "Q: How long does it take?",
             "answer": "Usually 1-2 minutes. Contact support WeChat: AFreeCoder01 if you need help."
           },
           {
+            "category": "Support",
             "question": "Q: What if the subscription fails?",
             "answer": "We'll process a refund per our policy. Refund timing depends on the payment platform. Contact WeChat: AFreeCoder01."
           },
           {
+            "category": "Account Safety",
             "question": "Q: Will my account get banned?",
             "answer": "We cannot guarantee against bans. Account status depends on the platform's policies. If issues arise from our service, we'll investigate and process refunds per policy."
           },
           {
+            "category": "Support",
             "question": "Q: Can I get an invoice?",
             "answer": "Yes. Contact support WeChat: AFreeCoder01 with your billing details."
           },
           {
+            "category": "Plan Choice",
             "question": "Q: Should I choose Plus subscription or mirror service?",
             "answer": "Choose Plus if you need full features and have good network access. Choose mirror for a lighter experience that works well in China."
           }

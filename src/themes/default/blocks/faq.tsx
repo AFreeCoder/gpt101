@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import {
   Accordion,
   AccordionContent,
@@ -16,51 +18,100 @@ export function Faq({
   section: Section;
   className?: string;
 }) {
+  const items = section.items || [];
+  const allCategoryLabel = section.category_all_label || '全部';
+  const [activeCategory, setActiveCategory] = useState(allCategoryLabel);
+  const categories = [
+    allCategoryLabel,
+    ...Array.from(
+      new Set([
+        ...(section.categories || []),
+        ...items.map((item) => item.category).filter(Boolean),
+      ])
+    ),
+  ];
+  const filteredItems =
+    activeCategory === allCategoryLabel
+      ? items
+      : items.filter((item) => item.category === activeCategory);
+
   return (
-    <section id={section.id} className={`py-16 md:py-24 ${className}`}>
-      <div className={`mx-auto max-w-full px-4 md:max-w-3xl md:px-8`}>
+    <section id={section.id} className={`py-16 md:py-24 ${className || ''}`}>
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-[0.8fr_1.2fr] md:px-8">
         <ScrollAnimation>
-          <div className="mx-auto max-w-2xl text-center text-balance">
+          <div className="md:sticky md:top-24">
+            <div className="border-primary/20 text-primary mb-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
+              FAQ
+            </div>
             <h2 className="text-foreground mb-4 text-3xl font-semibold tracking-tight md:text-4xl">
               {section.title}
             </h2>
-            <p className="text-muted-foreground mb-6 md:mb-12 lg:mb-16">
+            <p className="text-muted-foreground max-w-md text-base leading-7">
               {section.description}
             </p>
+            {section.tip && (
+              <p className="text-muted-foreground mt-6 rounded-lg border border-dashed px-4 py-3 text-sm leading-6">
+                {section.tip}
+              </p>
+            )}
           </div>
         </ScrollAnimation>
 
         <ScrollAnimation delay={0.2}>
-          <div className="mx-auto mt-12 max-w-full">
+          <div className="min-w-0">
+            {categories.length > 2 && (
+              <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setActiveCategory(category)}
+                    className={`shrink-0 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                      activeCategory === category
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            )}
             <Accordion
+              key={activeCategory}
               type="single"
               collapsible
-              className="bg-muted dark:bg-muted/50 w-full rounded-2xl p-1"
+              defaultValue={
+                filteredItems[0]?.question || filteredItems[0]?.title || ''
+              }
+              className="w-full space-y-3"
             >
-              {section.items?.map((item, idx) => (
-                <div className="group" key={idx}>
-                  <AccordionItem
-                    value={item.question || item.title || ''}
-                    className="data-[state=open]:bg-card dark:data-[state=open]:bg-muted peer rounded-xl border-none px-7 py-1 data-[state=open]:border-none data-[state=open]:shadow-sm"
-                  >
-                    <AccordionTrigger className="cursor-pointer text-base hover:no-underline">
-                      {item.question || item.title || ''}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <p className="text-base">
-                        {item.answer || item.description || ''}
-                      </p>
-                    </AccordionContent>
-                  </AccordionItem>
-                  <hr className="mx-7 border-dashed group-last:hidden peer-data-[state=open]:opacity-0" />
-                </div>
+              {filteredItems.map((item, idx) => (
+                <AccordionItem
+                  value={item.question || item.title || String(idx)}
+                  className="border-border bg-background data-[state=open]:bg-muted/40 rounded-lg border px-5 shadow-sm transition-colors"
+                  key={item.question || item.title || idx}
+                >
+                  <AccordionTrigger className="cursor-pointer gap-4 py-4 text-left text-base font-medium hover:no-underline">
+                    <span className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+                      {item.category && (
+                        <span className="border-primary/20 bg-primary/5 text-primary w-fit shrink-0 rounded-md border px-2 py-0.5 text-xs font-medium">
+                          {item.category}
+                        </span>
+                      )}
+                      <span className="min-w-0">
+                        {item.question || item.title || ''}
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-muted-foreground pb-4 text-base leading-7">
+                      {item.answer || item.description || ''}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
             </Accordion>
-
-            <p
-              className="text-muted-foreground mt-6 px-8"
-              dangerouslySetInnerHTML={{ __html: section.tip || '' }}
-            />
           </div>
         </ScrollAnimation>
       </div>

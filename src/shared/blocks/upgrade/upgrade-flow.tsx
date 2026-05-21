@@ -7,6 +7,13 @@ import {
   type UpgradeTaskSummaryData,
 } from '@/shared/blocks/upgrade/upgrade-task-summary';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui/dialog';
+import {
   getAdPlusFunnelConversionAction,
   getUpgradeAttributionFromHref,
   hasAdPlusUpgradeEntryFromLanding,
@@ -21,6 +28,7 @@ import {
   getMemberLabel,
   getProductMemberLabel,
 } from '@/shared/lib/redeem-code';
+import type { UpgradeNoticeConfig } from '@/shared/lib/content-config';
 import { isOutlookEmail } from '@/shared/lib/upgrade-email-warning';
 
 export type UpgradeFlowProps = {
@@ -30,6 +38,7 @@ export type UpgradeFlowProps = {
   submitErrorMessage?: string;
   failedHelpText?: string;
   safetyIssueText?: string;
+  noticeConfig?: UpgradeNoticeConfig | null;
 };
 
 const MEMBERSHIP_REFRESH_HINT =
@@ -42,6 +51,7 @@ export function UpgradeFlow({
   submitErrorMessage = '充值异常，请联系客服处理',
   failedHelpText,
   safetyIssueText = '异常联系客服处理',
+  noticeConfig = null,
 }: UpgradeFlowProps = {}) {
   const [code, setCode] = useState('');
   const [sessionToken, setSessionToken] = useState('');
@@ -60,6 +70,7 @@ export function UpgradeFlow({
   const [taskStatus, setTaskStatus] = useState('');
   const [taskMessage, setTaskMessage] = useState('');
   const [polling, setPolling] = useState(false);
+  const [noticeAcknowledged, setNoticeAcknowledged] = useState(false);
   const [redeemCodeTask, setRedeemCodeTask] =
     useState<UpgradeTaskSummaryData | null>(null);
 
@@ -67,6 +78,7 @@ export function UpgradeFlow({
   const shouldShowOutlookEmailWarning =
     tokenParsed && isOutlookEmail(accountEmail);
   const canConfirmUpgrade = tokenParsed && !isOutlookEmail(accountEmail);
+  const shouldShowNotice = !!noticeConfig?.enabled && !noticeAcknowledged;
 
   const trackAdPlusStep = (step: 'verify_code' | 'verify_token') => {
     const source =
@@ -109,6 +121,13 @@ export function UpgradeFlow({
     setError('');
     setErrorStep(0);
     setLoading('');
+  };
+
+  const handleNoticeAck = () => {
+    setNoticeAcknowledged(true);
+    sendGtagEvent('upgrade_notice_ack', {
+      notice_title: noticeConfig?.title || '',
+    });
   };
 
   const handleVerifyCode = async () => {
@@ -319,6 +338,51 @@ export function UpgradeFlow({
 
   return (
     <div className="relative min-h-[80vh]">
+      {noticeConfig?.enabled && (
+        <Dialog open={shouldShowNotice}>
+          <DialogContent
+            showCloseButton={false}
+            onInteractOutside={(event) => event.preventDefault()}
+            onEscapeKeyDown={(event) => event.preventDefault()}
+            className="gap-0 overflow-hidden p-0 sm:max-w-[560px]"
+          >
+            <div className="border-b bg-amber-50 px-6 py-5 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+              <DialogHeader>
+                <DialogTitle className="text-xl">
+                  {noticeConfig.title}
+                </DialogTitle>
+                <DialogDescription className="text-amber-900/80 dark:text-amber-100/75">
+                  {noticeConfig.description}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+            <div className="space-y-4 px-6 py-5">
+              <ul className="space-y-3">
+                {noticeConfig.items.map((item, idx) => (
+                  <li key={item} className="flex gap-3 text-sm leading-6">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-amber-100 text-xs font-semibold text-amber-900 dark:bg-amber-400/20 dark:text-amber-100">
+                      {idx + 1}
+                    </span>
+                    <span className="text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              {noticeConfig.footer && (
+                <p className="text-muted-foreground border-t pt-4 text-sm leading-6">
+                  {noticeConfig.footer}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={handleNoticeAck}
+                className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+              >
+                {noticeConfig.buttonText || '我已了解，继续升级'}
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       {/* 背景装饰 */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="bg-primary/5 absolute -top-40 -right-40 h-96 w-96 rounded-full blur-3xl" />

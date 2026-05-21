@@ -3,6 +3,7 @@
     "show_sections": [
       "hero",
       "comparison",
+      "faq",
       "customer-support",
       "floating-customer-service"
     ],
@@ -12,7 +13,12 @@
         "block": "mirror-hero",
         "title_gradient": "GPT 镜像",
         "title_normal": "服务",
-        "typewriter_texts": ["国内网络可用", "月卡仅需 58 元", "支持多种GPT模型", "使用更灵活"],
+        "typewriter_texts": [
+          "国内网络可用",
+          "月卡仅需 58 元",
+          "支持多种GPT模型",
+          "使用更灵活"
+        ],
         "subtitle": "专业 GPT 镜像服务，国内网络可用，流程更简化\n支持GPT-5、GPTs商店、DALL-E 3画图等常见功能，体验更顺畅",
         "plus_banner": {
           "text": "需要使用 APP、对话记忆、Codex？",
@@ -62,18 +68,83 @@
           "plus": "Plus会员"
         },
         "items": [
-          { "feature": "网络要求", "mirror": "国内网络可用", "plus": "网络条件视地区/政策而定", "highlight": "network" },
-          { "feature": "使用限制", "mirror": "按套餐说明", "plus": "以平台政策为准", "highlight": "limit" },
-          { "feature": "价格对比", "mirror": "¥5/天，¥25/周，¥58/月", "plus": "¥144/月", "highlight": "price" },
-          { "feature": "主流模型支持", "mirror": "支持多种模型", "plus": "支持多种模型" },
-          { "feature": "GPTs商店", "mirror": "视套餐与网络情况", "plus": "以平台政策为准" },
-          { "feature": "高级语音模式", "mirror": "视套餐与网络情况", "plus": "以平台政策为准" },
-          { "feature": "GPT-4o 画图", "mirror": "视套餐与网络情况", "plus": "以平台政策为准" },
+          {
+            "feature": "网络要求",
+            "mirror": "国内网络可用",
+            "plus": "网络条件视地区/政策而定",
+            "highlight": "network"
+          },
+          {
+            "feature": "使用限制",
+            "mirror": "按套餐说明",
+            "plus": "以平台政策为准",
+            "highlight": "limit"
+          },
+          {
+            "feature": "价格对比",
+            "mirror": "¥5/天，¥25/周，¥58/月",
+            "plus": "¥144/月",
+            "highlight": "price"
+          },
+          {
+            "feature": "主流模型支持",
+            "mirror": "支持多种模型",
+            "plus": "支持多种模型"
+          },
+          {
+            "feature": "GPTs商店",
+            "mirror": "视套餐与网络情况",
+            "plus": "以平台政策为准"
+          },
+          {
+            "feature": "高级语音模式",
+            "mirror": "视套餐与网络情况",
+            "plus": "以平台政策为准"
+          },
+          {
+            "feature": "GPT-4o 画图",
+            "mirror": "视套餐与网络情况",
+            "plus": "以平台政策为准"
+          },
           { "feature": "账号形式", "mirror": "镜像账号", "plus": "平台账号" },
           { "feature": "网页端登录", "mirror": "支持", "plus": "支持" },
-          { "feature": "APP登录", "mirror": "视套餐与网络情况", "plus": "支持（以平台规则为准）" }
+          {
+            "feature": "APP登录",
+            "mirror": "视套餐与网络情况",
+            "plus": "支持（以平台规则为准）"
+          }
         ],
         "tip": "镜像服务适合网络条件受限、中高频使用的用户；Plus会员适合需要完整移动端体验、对话记忆、Codex体验的用户"
+      },
+      "faq": {
+        "id": "faqs",
+        "block": "faq",
+        "title": "镜像服务常见问题",
+        "description": "关于 GPT 镜像账号、套餐、入口和售后的常见问题",
+        "category_all_label": "全部",
+        "categories": ["服务说明", "购买售后", "功能差异"],
+        "items": [
+          {
+            "category": "服务说明",
+            "question": "Q: 镜像服务和 Plus 代充有什么区别？",
+            "answer": "镜像服务使用镜像账号入口，适合网络条件受限、希望更轻量使用的用户；Plus 代充是升级你的 ChatGPT 账号，适合需要 APP、对话记忆、Codex 等完整体验的用户。"
+          },
+          {
+            "category": "购买售后",
+            "question": "Q: 购买后在哪里使用和查询订单？",
+            "answer": "购买、使用入口和订单查询按钮都在本页面顶部。支付和订单查询会跳转到第三方平台，到账情况以订单状态为准。"
+          },
+          {
+            "category": "功能差异",
+            "question": "Q: 镜像服务支持哪些功能？",
+            "answer": "镜像服务支持多种 GPT 模型和常见对话能力，具体功能会随套餐、平台策略和网络情况变化。需要完整移动端、对话记忆或 Codex 体验时，建议选择 Plus 代充。"
+          },
+          {
+            "category": "购买售后",
+            "question": "Q: 如果充值失败怎么办？",
+            "answer": "如遇充值失败或服务未交付，请保留订单信息并联系客服。符合退款政策的订单会按支付平台规则处理。"
+          }
+        ]
       },
       "customer-support": {
         "id": "customer-support",

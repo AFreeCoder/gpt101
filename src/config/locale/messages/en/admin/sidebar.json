@@ -49,6 +49,11 @@
               "title": "Posts",
               "icon": "FileText",
               "url": "/admin/posts"
+            },
+            {
+              "title": "Site Content",
+              "icon": "PanelsTopLeft",
+              "url": "/admin/content"
             }
           ]
         },

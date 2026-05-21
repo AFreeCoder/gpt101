@@ -49,6 +49,11 @@
               "title": "文章",
               "icon": "FileText",
               "url": "/admin/posts"
+            },
+            {
+              "title": "站点内容",
+              "icon": "PanelsTopLeft",
+              "url": "/admin/content"
             }
           ]
         },

@@ -3,11 +3,17 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
 import {
-  buildWebsiteJsonLd,
-  buildServiceJsonLd,
+  getContentConfigValue,
+  HOMEPAGE_FAQ_CONFIG_KEY,
+  resolveFaqConfig,
+} from '@/shared/lib/content-config';
+import {
   buildFaqJsonLd,
+  buildServiceJsonLd,
+  buildWebsiteJsonLd,
 } from '@/shared/lib/jsonld';
-import { DynamicPage } from '@/shared/types/blocks/landing';
+import { getContentConfigValues } from '@/shared/models/content-config';
+import { DynamicPage, FAQ } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
 
@@ -23,6 +29,20 @@ export default async function LandingPage({
 
   // get page data
   const page: DynamicPage = t.raw('page');
+  const contentConfigs = await getContentConfigValues();
+  const resolvedFaq = resolveFaqConfig(
+    getContentConfigValue(contentConfigs, HOMEPAGE_FAQ_CONFIG_KEY, locale),
+    (page.sections?.faq || {
+      id: 'faqs',
+      block: 'faq',
+      title: 'FAQ',
+      items: [],
+    }) as FAQ
+  );
+  page.sections = {
+    ...page.sections,
+    faq: resolvedFaq,
+  };
 
   // load page component
   const Page = await getThemePage('dynamic-page');
@@ -43,7 +63,7 @@ export default async function LandingPage({
       providerUrl: appUrl,
       serviceType: 'GPT Plus 代充',
     }),
-    buildFaqJsonLd(page.sections?.faq?.items || []),
+    buildFaqJsonLd(resolvedFaq.items || []),
   ].filter(Boolean);
 
   return (

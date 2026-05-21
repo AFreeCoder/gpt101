@@ -83,10 +83,12 @@ export interface Showcases extends Section {}
 export interface FAQItem extends SectionItem {
   question?: string;
   answer?: string;
+  category?: string;
 }
 
 export interface FAQ extends Section {
   items?: FAQItem[];
+  categories?: string[];
 }
 
 export interface CTA extends Section {}

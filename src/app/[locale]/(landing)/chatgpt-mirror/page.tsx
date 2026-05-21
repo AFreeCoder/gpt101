@@ -2,9 +2,15 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
+import {
+  getContentConfigValue,
+  MIRROR_FAQ_CONFIG_KEY,
+  resolveFaqConfig,
+} from '@/shared/lib/content-config';
+import { buildFaqJsonLd, buildServiceJsonLd } from '@/shared/lib/jsonld';
 import { getMetadata } from '@/shared/lib/seo';
-import { buildServiceJsonLd } from '@/shared/lib/jsonld';
-import { DynamicPage } from '@/shared/types/blocks/landing';
+import { getContentConfigValues } from '@/shared/models/content-config';
+import { DynamicPage, FAQ } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
 
@@ -26,6 +32,20 @@ export default async function ChatGPTMirrorPage({
   const t = await getTranslations('pages.chatgpt-mirror');
 
   const page: DynamicPage = t.raw('page');
+  const contentConfigs = await getContentConfigValues();
+  const resolvedFaq = resolveFaqConfig(
+    getContentConfigValue(contentConfigs, MIRROR_FAQ_CONFIG_KEY, locale),
+    (page.sections?.faq || {
+      id: 'faqs',
+      block: 'faq',
+      title: 'FAQ',
+      items: [],
+    }) as FAQ
+  );
+  page.sections = {
+    ...page.sections,
+    faq: resolvedFaq,
+  };
 
   const Page = await getThemePage('dynamic-page');
 
@@ -39,13 +59,17 @@ export default async function ChatGPTMirrorPage({
     providerUrl: appUrl,
     serviceType: 'GPT 镜像',
   });
+  const faqJsonLd = buildFaqJsonLd(resolvedFaq.items || []);
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
-      />
+      {[serviceJsonLd, faqJsonLd].filter(Boolean).map((jsonLd, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ))}
       <Page locale={locale} page={page} />
     </>
   );

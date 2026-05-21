@@ -3,6 +3,7 @@
     "show_sections": [
       "hero",
       "comparison",
+      "faq",
       "details",
       "customer-support",
       "floating-customer-service"
@@ -13,7 +14,12 @@
         "block": "mirror-hero",
         "title_gradient": "GPT Mirror",
         "title_normal": "Service",
-        "typewriter_texts": ["Works in China", "Only ¥58/month", "Multiple GPT models", "Flexible plans"],
+        "typewriter_texts": [
+          "Works in China",
+          "Only ¥58/month",
+          "Multiple GPT models",
+          "Flexible plans"
+        ],
         "subtitle": "Professional GPT mirror service, works in China without VPN\nSupports GPT-5, GPTs Store, DALL-E 3 and more",
         "plus_banner": {
           "text": "Need APP access, conversation memory, or Codex?",
@@ -61,18 +67,91 @@
           "plus": "Plus Membership"
         },
         "items": [
-          { "feature": "Network", "mirror": "Works in China", "plus": "Depends on region/policy", "highlight": "network" },
-          { "feature": "Usage Limits", "mirror": "Per plan terms", "plus": "Per platform policy", "highlight": "limit" },
-          { "feature": "Pricing", "mirror": "¥5/day, ¥25/week, ¥58/month", "plus": "¥144/month", "highlight": "price" },
-          { "feature": "Model Support", "mirror": "Multiple models", "plus": "Multiple models" },
-          { "feature": "GPTs Store", "mirror": "Varies by plan", "plus": "Per platform policy" },
-          { "feature": "Advanced Voice", "mirror": "Varies by plan", "plus": "Per platform policy" },
-          { "feature": "GPT-4o Image", "mirror": "Varies by plan", "plus": "Per platform policy" },
-          { "feature": "Account Type", "mirror": "Mirror account", "plus": "Platform account" },
-          { "feature": "Web Login", "mirror": "Supported", "plus": "Supported" },
-          { "feature": "APP Login", "mirror": "Varies by plan", "plus": "Supported (per platform rules)" }
+          {
+            "feature": "Network",
+            "mirror": "Works in China",
+            "plus": "Depends on region/policy",
+            "highlight": "network"
+          },
+          {
+            "feature": "Usage Limits",
+            "mirror": "Per plan terms",
+            "plus": "Per platform policy",
+            "highlight": "limit"
+          },
+          {
+            "feature": "Pricing",
+            "mirror": "¥5/day, ¥25/week, ¥58/month",
+            "plus": "¥144/month",
+            "highlight": "price"
+          },
+          {
+            "feature": "Model Support",
+            "mirror": "Multiple models",
+            "plus": "Multiple models"
+          },
+          {
+            "feature": "GPTs Store",
+            "mirror": "Varies by plan",
+            "plus": "Per platform policy"
+          },
+          {
+            "feature": "Advanced Voice",
+            "mirror": "Varies by plan",
+            "plus": "Per platform policy"
+          },
+          {
+            "feature": "GPT-4o Image",
+            "mirror": "Varies by plan",
+            "plus": "Per platform policy"
+          },
+          {
+            "feature": "Account Type",
+            "mirror": "Mirror account",
+            "plus": "Platform account"
+          },
+          {
+            "feature": "Web Login",
+            "mirror": "Supported",
+            "plus": "Supported"
+          },
+          {
+            "feature": "APP Login",
+            "mirror": "Varies by plan",
+            "plus": "Supported (per platform rules)"
+          }
         ],
         "tip": "Mirror is ideal for users with network limitations; Plus is ideal for full mobile, conversation memory, and Codex experience."
+      },
+      "faq": {
+        "id": "faqs",
+        "block": "faq",
+        "title": "Mirror Service FAQ",
+        "description": "Common questions about mirror accounts, plans, access, and support.",
+        "category_all_label": "All",
+        "categories": ["Service", "Purchase", "Features"],
+        "items": [
+          {
+            "category": "Service",
+            "question": "Q: What is the difference between mirror service and Plus subscription?",
+            "answer": "Mirror service uses a separate mirror account entry and is suitable for users with network limitations. Plus subscription upgrades your own ChatGPT account and is better for APP access, memory, Codex, and the full account experience."
+          },
+          {
+            "category": "Purchase",
+            "question": "Q: Where do I use the service and check my order?",
+            "answer": "Use the purchase, access, and order query buttons at the top of this page. Payment and order queries are handled by a third-party platform, and delivery follows the order status."
+          },
+          {
+            "category": "Features",
+            "question": "Q: Which features does mirror service support?",
+            "answer": "Mirror service supports multiple GPT models and common chat capabilities. Feature availability may vary by plan, platform policy, and network conditions."
+          },
+          {
+            "category": "Purchase",
+            "question": "Q: What if activation fails?",
+            "answer": "Keep your order information and contact support. Eligible failed orders are handled according to the refund policy and payment platform rules."
+          }
+        ]
       },
       "details": {
         "id": "details",
@@ -104,10 +183,26 @@
         "security": {
           "title": "Security Guarantees",
           "items": [
-            { "title": "iOS Compliant", "description": "Compliant Apple account subscription channel", "color": "blue" },
-            { "title": "Platform Channel", "description": "Subscription via official platform channels", "color": "green" },
-            { "title": "High Success Rate", "description": "Mature process and system guarantees", "color": "purple" },
-            { "title": "Refund on Failure", "description": "Subscription failures are refundable per policy", "color": "orange" }
+            {
+              "title": "iOS Compliant",
+              "description": "Compliant Apple account subscription channel",
+              "color": "blue"
+            },
+            {
+              "title": "Platform Channel",
+              "description": "Subscription via official platform channels",
+              "color": "green"
+            },
+            {
+              "title": "High Success Rate",
+              "description": "Mature process and system guarantees",
+              "color": "purple"
+            },
+            {
+              "title": "Refund on Failure",
+              "description": "Subscription failures are refundable per policy",
+              "color": "orange"
+            }
           ]
         }
       },
