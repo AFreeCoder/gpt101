@@ -41,6 +41,19 @@ test('channel cardkeys admin page shows channel and offers batch disable', () =>
   assert.match(source, /\/api\/admin\/channel-cardkeys\/disable/);
 });
 
+test('redeem codes admin page exposes code search while preserving filters', () => {
+  const source = readSource(
+    'src/app/[locale]/(admin)/admin/redeem-codes/page.tsx'
+  );
+
+  assert.match(source, /placeholder="搜索卡密/);
+  assert.match(source, /const \[searchInput,\s*setSearchInput\]/);
+  assert.match(source, /searchInput\.trim\(\)/);
+  assert.match(source, /router\.push\(buildUrl\(\{\s*search:\s*keyword,\s*page:\s*''/s);
+  assert.match(source, /router\.push\(buildUrl\(\{\s*search:\s*'',\s*page:\s*''/s);
+  assert.match(source, /status,\s*productCode,\s*memberType,\s*batchId,\s*search/s);
+});
+
 test('upgrade task attempts admin page and API include site redeem cardkey', () => {
   const pageSource = readSource(
     'src/app/[locale]/(admin)/admin/upgrade-task-attempts/page.tsx'
@@ -52,6 +65,27 @@ test('upgrade task attempts admin page and API include site redeem cardkey', () 
   assert.match(pageSource, /本站卡密/);
   assert.match(pageSource, /redeemCodePlain/);
   assert.match(routeSource, /redeemCodePlain/);
+});
+
+test('upgrade task attempts table scrolls internally without truncating long fields', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/upgrade-task-attempts/page.tsx'
+  );
+
+  assert.match(pageSource, /overflow-x-auto/);
+  assert.match(pageSource, /<table className="w-max min-w-full text-sm">/);
+  assert.match(pageSource, /whitespace-nowrap/);
+  assert.match(
+    pageSource,
+    /min-w-\[420px\] max-w-\[720px\] whitespace-normal break-words/
+  );
+  assert.doesNotMatch(pageSource, /truncate/);
+});
+
+test('dashboard layout constrains wide admin tables to the content viewport', () => {
+  const source = readSource('src/shared/blocks/dashboard/layout.tsx');
+
+  assert.match(source, /<SidebarInset className="w-0 min-w-0">/);
 });
 
 test('client-only admin pages render the dashboard header for mobile sidebar access', () => {

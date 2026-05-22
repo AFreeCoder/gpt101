@@ -106,19 +106,33 @@ export default function UpgradeTaskAttemptsPage() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
+        <table className="w-max min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-3 py-2 text-left">任务编号</th>
-              <th className="px-3 py-2 text-left">本站卡密</th>
-              <th className="px-3 py-2 text-left">渠道</th>
-              <th className="px-3 py-2 text-left">渠道卡密</th>
-              <th className="px-3 py-2 text-left">尝试序号</th>
-              <th className="px-3 py-2 text-left">状态</th>
-              <th className="px-3 py-2 text-left">错误信息</th>
-              <th className="px-3 py-2 text-left">耗时</th>
-              <th className="px-3 py-2 text-left">开始时间</th>
-              <th className="px-3 py-2 text-left">完成时间</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">
+                任务编号
+              </th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">
+                本站卡密
+              </th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">渠道</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">
+                渠道卡密
+              </th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">
+                尝试序号
+              </th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">状态</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">
+                错误信息
+              </th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">耗时</th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">
+                开始时间
+              </th>
+              <th className="whitespace-nowrap px-3 py-2 text-left">
+                完成时间
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -142,21 +156,23 @@ export default function UpgradeTaskAttemptsPage() {
               </tr>
             ) : (
               attempts.map((a) => (
-                <tr key={a.id} className="border-t hover:bg-gray-50">
-                  <td className="px-3 py-2 font-mono text-xs">
+                <tr key={a.id} className="border-t align-top hover:bg-gray-50">
+                  <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">
                     {a.taskNo || a.taskId.slice(0, 8)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs">
+                  <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">
                     {a.redeemCodePlain || '-'}
                   </td>
-                  <td className="px-3 py-2 text-xs">
+                  <td className="whitespace-nowrap px-3 py-2 text-xs">
                     {a.channelName || a.channelId.slice(0, 8)}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs">
+                  <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">
                     {a.channelCardkeyValue || '-'}
                   </td>
-                  <td className="px-3 py-2 text-center">{a.attemptNo}</td>
-                  <td className="px-3 py-2">
+                  <td className="whitespace-nowrap px-3 py-2 text-center">
+                    {a.attemptNo}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
                     <span
                       className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[a.status]?.color || ''}`}
                     >
@@ -164,20 +180,20 @@ export default function UpgradeTaskAttemptsPage() {
                     </span>
                   </td>
                   <td
-                    className="max-w-64 truncate px-3 py-2 text-xs text-gray-500"
+                    className="min-w-[420px] max-w-[720px] whitespace-normal break-words px-3 py-2 text-xs text-gray-500"
                     title={a.errorMessage || ''}
                   >
                     {a.errorMessage || '-'}
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
+                  <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-500">
                     {a.durationMs != null
                       ? `${(a.durationMs / 1000).toFixed(1)}s`
                       : '-'}
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
+                  <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-500">
                     {formatTimestampWithoutTimeZone(a.startedAt)}
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
+                  <td className="whitespace-nowrap px-3 py-2 text-xs text-gray-500">
                     {formatTimestampWithoutTimeZone(a.finishedAt)}
                   </td>
                 </tr>

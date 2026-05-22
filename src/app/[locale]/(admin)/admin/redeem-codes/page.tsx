@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Header } from '@/shared/blocks/dashboard';
@@ -35,6 +35,7 @@ export default function RedeemCodesPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [exportText, setExportText] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
   // 筛选参数
   const status = searchParams.get('status') || '';
@@ -45,6 +46,10 @@ export default function RedeemCodesPage() {
   const page = Number(searchParams.get('page')) || 1;
 
   const memberTypes = productCode ? getMemberTypes(productCode) : [];
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -87,6 +92,17 @@ export default function RedeemCodesPage() {
       if (v) params.set(k, v);
     });
     return `/admin/redeem-codes?${params}`;
+  };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const keyword = searchInput.trim();
+    router.push(buildUrl({ search: keyword, page: '' }));
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    router.push(buildUrl({ search: '', page: '' }));
   };
 
   // 全选/取消全选
@@ -222,6 +238,34 @@ export default function RedeemCodesPage() {
           </a>
         )}
       </div>
+
+      <form
+        onSubmit={handleSearchSubmit}
+        className="mb-4 flex max-w-xl flex-wrap items-center gap-2"
+      >
+        <input
+          type="search"
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
+          placeholder="搜索卡密，输入完整卡密后回车"
+          className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm font-mono outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          搜索
+        </button>
+        {search && (
+          <button
+            type="button"
+            onClick={handleClearSearch}
+            className="rounded-lg border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          >
+            清除搜索
+          </button>
+        )}
+      </form>
 
       {/* 批量操作栏 */}
       {selectedIds.size > 0 && (
