@@ -49,9 +49,18 @@ test('redeem codes admin page exposes code search while preserving filters', () 
   assert.match(source, /placeholder="搜索卡密/);
   assert.match(source, /const \[searchInput,\s*setSearchInput\]/);
   assert.match(source, /searchInput\.trim\(\)/);
-  assert.match(source, /router\.push\(buildUrl\(\{\s*search:\s*keyword,\s*page:\s*''/s);
-  assert.match(source, /router\.push\(buildUrl\(\{\s*search:\s*'',\s*page:\s*''/s);
-  assert.match(source, /status,\s*productCode,\s*memberType,\s*batchId,\s*search/s);
+  assert.match(
+    source,
+    /router\.push\(buildUrl\(\{[\s\S]*search:\s*keyword,[\s\S]*page:\s*''/
+  );
+  assert.match(
+    source,
+    /router\.push\(buildUrl\(\{[\s\S]*search:\s*'',[\s\S]*page:\s*''/
+  );
+  assert.match(
+    source,
+    /status,[\s\S]*productCode,[\s\S]*memberType,[\s\S]*batchId,[\s\S]*search/
+  );
 });
 
 test('upgrade task attempts admin page and API include site redeem cardkey', () => {
@@ -82,6 +91,23 @@ test('upgrade task attempts table scrolls internally without truncating long fie
   assert.doesNotMatch(pageSource, /truncate/);
 });
 
+test('upgrade partners admin page exposes app key provisioning actions', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/upgrade-partners/page.tsx'
+  );
+  const sidebarSource = readSource(
+    'src/config/locale/messages/zh/admin/sidebar.json'
+  );
+
+  assert.match(sidebarSource, /\/admin\/upgrade-partners/);
+  assert.match(pageSource, /新建接入方/);
+  assert.match(pageSource, /appKey/);
+  assert.match(pageSource, /appSecret/);
+  assert.match(pageSource, /\/api\/admin\/upgrade-partners\/create/);
+  assert.match(pageSource, /\/api\/admin\/upgrade-partners\/update/);
+  assert.match(pageSource, /\/api\/admin\/upgrade-partners\/rotate-secret/);
+});
+
 test('dashboard layout constrains wide admin tables to the content viewport', () => {
   const source = readSource('src/shared/blocks/dashboard/layout.tsx');
 
@@ -95,6 +121,7 @@ test('client-only admin pages render the dashboard header for mobile sidebar acc
     'src/app/[locale]/(admin)/admin/redeem-codes/page.tsx',
     'src/app/[locale]/(admin)/admin/upgrade-channels/[id]/cardkeys/page.tsx',
     'src/app/[locale]/(admin)/admin/upgrade-channels/page.tsx',
+    'src/app/[locale]/(admin)/admin/upgrade-partners/page.tsx',
     'src/app/[locale]/(admin)/admin/upgrade-task-attempts/page.tsx',
     'src/app/[locale]/(admin)/admin/upgrade-tasks/page.tsx',
   ];

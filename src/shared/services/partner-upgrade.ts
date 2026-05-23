@@ -30,6 +30,10 @@ import type { ResolvedSessionAccount } from '@/shared/services/upgrade-task-help
 
 export type UpgradePartnerApp = typeof upgradePartnerApp.$inferSelect;
 export type UpgradePartnerOrder = typeof upgradePartnerOrder.$inferSelect;
+export type PartnerAllowedProduct = {
+  productCode: string;
+  memberType?: string;
+};
 
 const SIGNATURE_TTL_MS = 5 * 60 * 1000;
 const NONCE_TTL_MS = 10 * 60 * 1000;
@@ -104,6 +108,66 @@ function parseJsonArrayField(value: string | null): unknown[] {
   if (!value?.trim()) return [];
   const parsed = JSON.parse(value);
   return Array.isArray(parsed) ? parsed : [];
+}
+
+export function parsePartnerAllowedProducts(
+  value: string | null
+): PartnerAllowedProduct[] {
+  return parseJsonArrayField(value)
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+
+      const product = item as {
+        productCode?: unknown;
+        memberType?: unknown;
+      };
+      const productCode =
+        typeof product.productCode === 'string'
+          ? product.productCode.trim()
+          : '';
+      const memberType =
+        typeof product.memberType === 'string' ? product.memberType.trim() : '';
+
+      if (!productCode) return null;
+      return {
+        productCode,
+        ...(memberType ? { memberType } : {}),
+      };
+    })
+    .filter(Boolean) as PartnerAllowedProduct[];
+}
+
+function normalizePartnerAllowedProducts(
+  allowedProducts?: PartnerAllowedProduct[]
+) {
+  if (!allowedProducts) return undefined;
+
+  const normalized: PartnerAllowedProduct[] = [];
+  const seen = new Set<string>();
+
+  for (const item of allowedProducts) {
+    const productCode = item.productCode?.trim();
+    const memberType = item.memberType?.trim();
+    if (!productCode) continue;
+
+    assertAllowedProductConfig(productCode, memberType || undefined);
+    const key = `${productCode}:${memberType || '*'}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    normalized.push({
+      productCode,
+      ...(memberType ? { memberType } : {}),
+    });
+  }
+
+  return normalized;
+}
+
+function serializeAllowedProducts(allowedProducts?: PartnerAllowedProduct[]) {
+  const normalized = normalizePartnerAllowedProducts(allowedProducts);
+  if (normalized === undefined) return undefined;
+  return normalized.length > 0 ? JSON.stringify(normalized) : null;
 }
 
 function isProductAllowed(
@@ -493,6 +557,11 @@ export async function createPartnerApp(args: {
 }): Promise<{ app: UpgradePartnerApp; appSecret: string }> {
   const name = normalizeRequiredString(args.name, '缺少接入方名称');
   const appSecret = generatePartnerSecret();
+  const allowedProducts = serializeAllowedProducts(args.allowedProducts);
+  const rateLimitPerMinute = Math.floor(args.rateLimitPerMinute ?? 120);
+  if (rateLimitPerMinute < 1 || rateLimitPerMinute > 10000) {
+    throw new Error('限流值须在 1~10000 之间');
+  }
   const [app] = await db()
     .insert(upgradePartnerApp)
     .values({
@@ -501,16 +570,86 @@ export async function createPartnerApp(args: {
       appSecret,
       name,
       status: 'active',
-      allowedProducts: args.allowedProducts
-        ? JSON.stringify(args.allowedProducts)
-        : null,
-      ipAllowlist: args.ipAllowlist?.join(',') || null,
-      rateLimitPerMinute: args.rateLimitPerMinute ?? 120,
+      allowedProducts: allowedProducts ?? null,
+      ipAllowlist:
+        args.ipAllowlist
+          ?.map((item) => item.trim())
+          .filter(Boolean)
+          .join(',') || null,
+      rateLimitPerMinute,
       note: args.note,
     })
     .returning();
 
   return { app, appSecret };
+}
+
+export async function listPartnerApps() {
+  return db()
+    .select()
+    .from(upgradePartnerApp)
+    .orderBy(desc(upgradePartnerApp.createdAt));
+}
+
+export async function updatePartnerApp(
+  appId: string,
+  args: Partial<{
+    name: string;
+    status: string;
+    allowedProducts: PartnerAllowedProduct[];
+    ipAllowlist: string[];
+    rateLimitPerMinute: number;
+    note: string;
+  }>
+): Promise<UpgradePartnerApp> {
+  const values: Record<string, unknown> = {
+    updatedAt: dbTimestampNow(),
+  };
+
+  if (args.name !== undefined) {
+    values.name = normalizeRequiredString(args.name, '缺少接入方名称');
+  }
+
+  if (args.status !== undefined) {
+    const status = args.status.trim();
+    if (!['active', 'disabled'].includes(status)) {
+      throw new Error('接入方状态不支持');
+    }
+    values.status = status;
+  }
+
+  if (args.allowedProducts !== undefined) {
+    values.allowedProducts = serializeAllowedProducts(args.allowedProducts);
+  }
+
+  if (args.ipAllowlist !== undefined) {
+    values.ipAllowlist =
+      args.ipAllowlist
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .join(',') || null;
+  }
+
+  if (args.rateLimitPerMinute !== undefined) {
+    const rateLimit = Math.floor(args.rateLimitPerMinute);
+    if (rateLimit < 1 || rateLimit > 10000) {
+      throw new Error('限流值须在 1~10000 之间');
+    }
+    values.rateLimitPerMinute = rateLimit;
+  }
+
+  if (args.note !== undefined) {
+    values.note = args.note.trim() || null;
+  }
+
+  const [app] = await db()
+    .update(upgradePartnerApp)
+    .set(values)
+    .where(eq(upgradePartnerApp.id, appId))
+    .returning();
+
+  if (!app) throw new Error('接入方不存在');
+  return app;
 }
 
 export async function rotatePartnerAppSecret(

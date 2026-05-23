@@ -58,6 +58,10 @@ GPT101 侧会为接入方配置：
 | `ipAllowlist`        | 可选 IP 白名单。配置后，仅允许白名单 IP 调用。                     |
 | `rateLimitPerMinute` | 每分钟成功鉴权请求数限制，默认 120。                               |
 
+GPT101 管理员可在后台 `/admin/upgrade-partners` 创建接入方、分配
+`appKey` / `appSecret`、配置可售商品、IP 白名单、限流和启停状态。`appSecret`
+只在创建或轮换后返回给管理员，列表页不会展示原密钥。
+
 `productCode` 和 `memberType` 必须同时满足：
 
 1. 属于 GPT101 当前支持的内部产品/档位。
