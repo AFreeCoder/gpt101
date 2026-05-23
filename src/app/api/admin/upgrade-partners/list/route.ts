@@ -6,7 +6,7 @@ import { serializePartnerApp } from '../_shared';
 
 export async function GET() {
   try {
-    await requirePermission({ code: PERMISSIONS.UPGRADE_CHANNEL_READ });
+    await requirePermission({ code: PERMISSIONS.UPGRADE_PARTNER_READ });
   } catch {
     return respErr('无权限');
   }

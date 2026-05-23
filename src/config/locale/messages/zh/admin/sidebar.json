@@ -106,6 +106,11 @@
           ]
         },
         {
+          "title": "第三方接入",
+          "url": "/admin/upgrade-partners",
+          "icon": "KeyRound"
+        },
+        {
           "title": "上游渠道",
           "icon": "Route",
           "is_expand": true,
@@ -119,11 +124,6 @@
               "title": "卡密管理",
               "url": "/admin/channel-cardkeys",
               "icon": "Key"
-            },
-            {
-              "title": "第三方接入",
-              "url": "/admin/upgrade-partners",
-              "icon": "KeyRound"
             }
           ]
         },

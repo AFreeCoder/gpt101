@@ -98,14 +98,42 @@ test('upgrade partners admin page exposes app key provisioning actions', () => {
   const sidebarSource = readSource(
     'src/config/locale/messages/zh/admin/sidebar.json'
   );
+  const listRouteSource = readSource(
+    'src/app/api/admin/upgrade-partners/list/route.ts'
+  );
+  const createRouteSource = readSource(
+    'src/app/api/admin/upgrade-partners/create/route.ts'
+  );
+  const sidebar = JSON.parse(sidebarSource);
+  const upgradeNav = sidebar.main_navs.find(
+    (nav: { title?: string }) => nav.title === '升级管理'
+  );
+  const upstreamNav = upgradeNav.items.find(
+    (item: { title?: string }) => item.title === '上游渠道'
+  );
 
   assert.match(sidebarSource, /\/admin\/upgrade-partners/);
+  assert.ok(
+    upgradeNav.items.some(
+      (item: { title?: string; url?: string }) =>
+        item.title === '第三方接入' && item.url === '/admin/upgrade-partners'
+    )
+  );
+  assert.ok(
+    !upstreamNav.children.some(
+      (item: { url?: string }) => item.url === '/admin/upgrade-partners'
+    )
+  );
   assert.match(pageSource, /新建接入方/);
   assert.match(pageSource, /appKey/);
   assert.match(pageSource, /appSecret/);
   assert.match(pageSource, /\/api\/admin\/upgrade-partners\/create/);
   assert.match(pageSource, /\/api\/admin\/upgrade-partners\/update/);
   assert.match(pageSource, /\/api\/admin\/upgrade-partners\/rotate-secret/);
+  assert.match(listRouteSource, /PERMISSIONS\.UPGRADE_PARTNER_READ/);
+  assert.match(createRouteSource, /PERMISSIONS\.UPGRADE_PARTNER_WRITE/);
+  assert.doesNotMatch(listRouteSource, /UPGRADE_CHANNEL/);
+  assert.doesNotMatch(createRouteSource, /UPGRADE_CHANNEL/);
 });
 
 test('dashboard layout constrains wide admin tables to the content viewport', () => {

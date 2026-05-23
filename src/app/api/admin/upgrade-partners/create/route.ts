@@ -10,7 +10,7 @@ import {
 
 export async function POST(req: Request) {
   try {
-    await requirePermission({ code: PERMISSIONS.UPGRADE_CHANNEL_WRITE });
+    await requirePermission({ code: PERMISSIONS.UPGRADE_PARTNER_WRITE });
   } catch {
     return respErr('无权限');
   }

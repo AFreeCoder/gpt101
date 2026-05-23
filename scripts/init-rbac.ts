@@ -290,6 +290,22 @@ const defaultPermissions = [
     description: 'Create, update, enable/disable upgrade channels',
   },
 
+  // Upgrade Partners management
+  {
+    code: 'admin.upgrade-partners.read',
+    resource: 'upgrade-partners',
+    action: 'read',
+    title: 'Read Upgrade Partners',
+    description: 'View third-party upgrade partner app credentials',
+  },
+  {
+    code: 'admin.upgrade-partners.write',
+    resource: 'upgrade-partners',
+    action: 'write',
+    title: 'Write Upgrade Partners',
+    description: 'Create, update, enable/disable, and rotate partner secrets',
+  },
+
   // Channel Cardkeys management
   {
     code: 'admin.channel-cardkeys.read',
@@ -377,6 +393,7 @@ const defaultRoles = [
       'admin.ai-tasks.*',
       'admin.redeem-codes.*',
       'admin.upgrade-channels.*',
+      'admin.upgrade-partners.*',
       'admin.channel-cardkeys.*',
       'admin.upgrade-tasks.*',
       'admin.invoices.*',

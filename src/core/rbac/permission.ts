@@ -70,6 +70,10 @@ export const PERMISSIONS = {
   UPGRADE_CHANNEL_READ: 'admin.upgrade-channels.read',
   UPGRADE_CHANNEL_WRITE: 'admin.upgrade-channels.write',
 
+  // Upgrade Partners
+  UPGRADE_PARTNER_READ: 'admin.upgrade-partners.read',
+  UPGRADE_PARTNER_WRITE: 'admin.upgrade-partners.write',
+
   // Channel Cardkeys
   CHANNEL_CARDKEY_READ: 'admin.channel-cardkeys.read',
   CHANNEL_CARDKEY_WRITE: 'admin.channel-cardkeys.write',

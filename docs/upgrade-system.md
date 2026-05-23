@@ -410,6 +410,7 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
 
 - `admin.redeem-codes.read/write/delete`
 - `admin.upgrade-channels.read/write`
+- `admin.upgrade-partners.read/write`
 - `admin.channel-cardkeys.read/write`
 - `admin.upgrade-tasks.read/write`
 - `admin.invoices.read/write`
