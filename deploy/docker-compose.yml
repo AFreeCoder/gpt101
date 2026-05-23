@@ -28,6 +28,9 @@ services:
       - GOOGLE_ANALYTICS_ID=${GOOGLE_ANALYTICS_ID:-}
       - GOOGLE_ADS_ID=${GOOGLE_ADS_ID:-}
       - BAIDU_ANALYTICS_ID=${BAIDU_ANALYTICS_ID:-}
+      # App only listens on 127.0.0.1 via Caddy on silicon, so partner API may
+      # trust Caddy-normalized forwarded headers for HTTPS/IP checks.
+      - PARTNER_TRUSTED_PROXY_HEADERS=${PARTNER_TRUSTED_PROXY_HEADERS:-true}
     depends_on:
       gpt101-postgres:
         condition: service_healthy

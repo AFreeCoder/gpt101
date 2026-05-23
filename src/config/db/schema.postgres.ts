@@ -599,6 +599,115 @@ export const redeemCode = table(
   ]
 );
 
+export const upgradePartnerApp = table(
+  'upgrade_partner_app',
+  {
+    id: text('id').primaryKey(),
+    appKey: text('app_key').notNull().unique(),
+    appSecret: text('app_secret').notNull(),
+    name: text('name').notNull(),
+    status: text('status').notNull(),
+    allowedProducts: text('allowed_products'),
+    ipAllowlist: text('ip_allowlist'),
+    rateLimitPerMinute: integer('rate_limit_per_minute').default(120).notNull(),
+    note: text('note'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_upgrade_partner_app_status').on(t.status),
+    index('idx_upgrade_partner_app_key_status').on(t.appKey, t.status),
+  ]
+);
+
+export const upgradePartnerOrder = table(
+  'upgrade_partner_order',
+  {
+    id: text('id').primaryKey(),
+    partnerAppId: text('partner_app_id').notNull(),
+    externalOrderNo: text('external_order_no').notNull(),
+    productCode: text('product_code').notNull(),
+    memberType: text('member_type').notNull(),
+    redeemCodeId: text('redeem_code_id').notNull(),
+    taskId: text('task_id'),
+    status: text('status').notNull(),
+    metadata: text('metadata'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    uniqueIndex('uq_upgrade_partner_order_app_external').on(
+      t.partnerAppId,
+      t.externalOrderNo
+    ),
+    index('idx_upgrade_partner_order_redeem_code').on(t.redeemCodeId),
+    index('idx_upgrade_partner_order_task').on(t.taskId),
+  ]
+);
+
+export const upgradePartnerNonce = table(
+  'upgrade_partner_nonce',
+  {
+    id: text('id').primaryKey(),
+    partnerAppId: text('partner_app_id').notNull(),
+    appKey: text('app_key').notNull(),
+    nonce: text('nonce').notNull(),
+    method: text('method').notNull(),
+    path: text('path').notNull(),
+    bodyHash: text('body_hash').notNull(),
+    clientIp: text('client_ip'),
+    expiresAt: timestamp('expires_at').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('uq_upgrade_partner_nonce_app_nonce').on(
+      t.partnerAppId,
+      t.nonce
+    ),
+    index('idx_upgrade_partner_nonce_app_created').on(
+      t.partnerAppId,
+      t.createdAt
+    ),
+  ]
+);
+
+export const upgradePartnerAuditLog = table(
+  'upgrade_partner_audit_log',
+  {
+    id: text('id').primaryKey(),
+    partnerAppId: text('partner_app_id'),
+    appKey: text('app_key').notNull(),
+    nonce: text('nonce'),
+    method: text('method').notNull(),
+    path: text('path').notNull(),
+    requestBodyHash: text('request_body_hash'),
+    clientIp: text('client_ip'),
+    outcome: text('outcome').notNull(),
+    errorMessage: text('error_message'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [
+    index('idx_upgrade_partner_audit_app_created').on(
+      t.partnerAppId,
+      t.createdAt
+    ),
+    index('idx_upgrade_partner_audit_app_key_created').on(
+      t.appKey,
+      t.createdAt
+    ),
+    index('idx_upgrade_partner_audit_outcome_created').on(
+      t.outcome,
+      t.createdAt
+    ),
+  ]
+);
+
 export const upgradeChannel = table(
   'upgrade_channel',
   {
