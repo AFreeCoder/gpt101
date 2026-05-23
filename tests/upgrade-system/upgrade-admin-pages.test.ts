@@ -104,6 +104,12 @@ test('upgrade partners admin page exposes app key provisioning actions', () => {
   const createRouteSource = readSource(
     'src/app/api/admin/upgrade-partners/create/route.ts'
   );
+  const updateRouteSource = readSource(
+    'src/app/api/admin/upgrade-partners/update/route.ts'
+  );
+  const deleteRouteSource = readSource(
+    'src/app/api/admin/upgrade-partners/delete/route.ts'
+  );
   const sidebar = JSON.parse(sidebarSource);
   const upgradeNav = sidebar.main_navs.find(
     (nav: { title?: string }) => nav.title === '升级管理'
@@ -125,13 +131,22 @@ test('upgrade partners admin page exposes app key provisioning actions', () => {
     )
   );
   assert.match(pageSource, /新建接入方/);
+  assert.match(pageSource, /查询名称、appKey 或备注/);
   assert.match(pageSource, /appKey/);
   assert.match(pageSource, /appSecret/);
+  assert.match(pageSource, /创建后不可修改/);
+  assert.match(pageSource, /handleDelete/);
   assert.match(pageSource, /\/api\/admin\/upgrade-partners\/create/);
   assert.match(pageSource, /\/api\/admin\/upgrade-partners\/update/);
+  assert.match(pageSource, /\/api\/admin\/upgrade-partners\/delete/);
   assert.match(pageSource, /\/api\/admin\/upgrade-partners\/rotate-secret/);
+  assert.match(listRouteSource, /search:/);
+  assert.match(listRouteSource, /status:/);
   assert.match(listRouteSource, /PERMISSIONS\.UPGRADE_PARTNER_READ/);
   assert.match(createRouteSource, /PERMISSIONS\.UPGRADE_PARTNER_WRITE/);
+  assert.match(deleteRouteSource, /deletePartnerApp/);
+  assert.match(deleteRouteSource, /PERMISSIONS\.UPGRADE_PARTNER_WRITE/);
+  assert.doesNotMatch(updateRouteSource, /name:\s*body\.name/);
   assert.doesNotMatch(listRouteSource, /UPGRADE_CHANNEL/);
   assert.doesNotMatch(createRouteSource, /UPGRADE_CHANNEL/);
 });

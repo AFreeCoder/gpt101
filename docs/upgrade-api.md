@@ -59,8 +59,9 @@ GPT101 侧会为接入方配置：
 | `rateLimitPerMinute` | 每分钟成功鉴权请求数限制，默认 120。                               |
 
 GPT101 管理员可在后台 `/admin/upgrade-partners` 创建接入方、分配
-`appKey` / `appSecret`、配置可售商品、IP 白名单、限流和启停状态。`appSecret`
-只在创建或轮换后返回给管理员，列表页不会展示原密钥。
+`appKey` / `appSecret`、查询接入方、配置可售商品、IP 白名单、限流和启停状态。
+接入方名称创建后不可修改；删除接入方采用软删除，会让该 `appKey` 立即失效，但保留历史订单和审计记录。
+`appSecret` 只在创建或轮换后返回给管理员，列表页不会展示原密钥。
 
 `productCode` 和 `memberType` 必须同时满足：
 

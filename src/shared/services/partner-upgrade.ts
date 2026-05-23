@@ -4,7 +4,7 @@ import {
   randomBytes,
   timingSafeEqual,
 } from 'node:crypto';
-import { and, count, desc, eq, gte, lt } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, like, lt, or } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import {
@@ -584,17 +584,57 @@ export async function createPartnerApp(args: {
   return { app, appSecret };
 }
 
-export async function listPartnerApps() {
-  return db()
+export async function listPartnerApps(
+  args: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    status?: string;
+  } = {}
+) {
+  const page = Math.max(1, args.page || 1);
+  const pageSize = Math.min(Math.max(args.pageSize || 30, 1), 100);
+  const search = args.search?.trim();
+  const status = args.status?.trim();
+  const conditions = [];
+
+  if (status) {
+    conditions.push(eq(upgradePartnerApp.status, status));
+  } else {
+    conditions.push(inArray(upgradePartnerApp.status, ['active', 'disabled']));
+  }
+
+  if (search) {
+    const pattern = `%${search}%`;
+    conditions.push(
+      or(
+        like(upgradePartnerApp.name, pattern),
+        like(upgradePartnerApp.appKey, pattern),
+        like(upgradePartnerApp.note, pattern)
+      )
+    );
+  }
+
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+  const items = await db()
     .select()
     .from(upgradePartnerApp)
-    .orderBy(desc(upgradePartnerApp.createdAt));
+    .where(where)
+    .orderBy(desc(upgradePartnerApp.createdAt))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+
+  const [{ total }] = await db()
+    .select({ total: count() })
+    .from(upgradePartnerApp)
+    .where(where);
+
+  return { items, total };
 }
 
 export async function updatePartnerApp(
   appId: string,
   args: Partial<{
-    name: string;
     status: string;
     allowedProducts: PartnerAllowedProduct[];
     ipAllowlist: string[];
@@ -605,10 +645,6 @@ export async function updatePartnerApp(
   const values: Record<string, unknown> = {
     updatedAt: dbTimestampNow(),
   };
-
-  if (args.name !== undefined) {
-    values.name = normalizeRequiredString(args.name, '缺少接入方名称');
-  }
 
   if (args.status !== undefined) {
     const status = args.status.trim();
@@ -645,10 +681,37 @@ export async function updatePartnerApp(
   const [app] = await db()
     .update(upgradePartnerApp)
     .set(values)
-    .where(eq(upgradePartnerApp.id, appId))
+    .where(
+      and(
+        eq(upgradePartnerApp.id, appId),
+        inArray(upgradePartnerApp.status, ['active', 'disabled'])
+      )
+    )
     .returning();
 
-  if (!app) throw new Error('接入方不存在');
+  if (!app) throw new Error('接入方不存在或已删除');
+  return app;
+}
+
+export async function deletePartnerApp(
+  appId: string
+): Promise<UpgradePartnerApp> {
+  const [app] = await db()
+    .update(upgradePartnerApp)
+    .set({
+      status: 'deleted',
+      appSecret: generatePartnerSecret(),
+      updatedAt: dbTimestampNow(),
+    })
+    .where(
+      and(
+        eq(upgradePartnerApp.id, appId),
+        inArray(upgradePartnerApp.status, ['active', 'disabled'])
+      )
+    )
+    .returning();
+
+  if (!app) throw new Error('接入方不存在或已删除');
   return app;
 }
 
@@ -662,10 +725,15 @@ export async function rotatePartnerAppSecret(
       appSecret,
       updatedAt: dbTimestampNow(),
     })
-    .where(eq(upgradePartnerApp.id, appId))
+    .where(
+      and(
+        eq(upgradePartnerApp.id, appId),
+        inArray(upgradePartnerApp.status, ['active', 'disabled'])
+      )
+    )
     .returning();
 
-  if (!app) throw new Error('接入方不存在');
+  if (!app) throw new Error('接入方不存在或已删除');
 
   return { app, appSecret };
 }

@@ -1,7 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Copy, Pencil, Plus, RefreshCw, X } from 'lucide-react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from 'react';
+import { Copy, Pencil, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 
 import { Header } from '@/shared/blocks/dashboard';
 import { getProductMemberLabel, PRODUCT_TYPES } from '@/shared/lib/redeem-code';
@@ -27,6 +33,7 @@ interface PartnerApp {
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
   active: { label: '启用', color: 'bg-green-50 text-green-700' },
   disabled: { label: '已禁用', color: 'bg-red-50 text-red-700' },
+  deleted: { label: '已删除', color: 'bg-gray-100 text-gray-500' },
 };
 
 const defaultForm = {
@@ -62,10 +69,14 @@ function formatDate(value: string) {
 
 export default function UpgradePartnersPage() {
   const [apps, setApps] = useState<PartnerApp[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...defaultForm });
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [secretResult, setSecretResult] = useState<{
@@ -88,14 +99,20 @@ export default function UpgradePartnersPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/upgrade-partners/list');
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (statusFilter) params.set('status', statusFilter);
+      params.set('pageSize', '100');
+
+      const res = await fetch(`/api/admin/upgrade-partners/list?${params}`);
       const data = await res.json();
       if (data.code === 0) {
-        setApps(data.data);
+        setApps(data.data.items);
+        setTotal(data.data.total);
       }
     } catch {}
     setLoading(false);
-  }, []);
+  }, [search, statusFilter]);
 
   useEffect(() => {
     fetchData();
@@ -134,24 +151,31 @@ export default function UpgradePartnersPage() {
     }));
   };
 
-  const buildPayload = () => ({
-    name: form.name.trim(),
-    appKeyPrefix: editingId ? undefined : form.appKeyPrefix.trim(),
-    status: form.status,
-    allowedProducts: form.allowedProductKeys
-      .map(keyToAllowedProduct)
-      .filter(Boolean),
-    ipAllowlist: form.ipAllowlist
-      .split(/[\n,]/)
-      .map((item) => item.trim())
-      .filter(Boolean),
-    rateLimitPerMinute: Number(form.rateLimitPerMinute) || 120,
-    note: form.note.trim(),
-  });
+  const buildPayload = () => {
+    const payload: Record<string, unknown> = {
+      status: form.status,
+      allowedProducts: form.allowedProductKeys
+        .map(keyToAllowedProduct)
+        .filter(Boolean),
+      ipAllowlist: form.ipAllowlist
+        .split(/[\n,]/)
+        .map((item) => item.trim())
+        .filter(Boolean),
+      rateLimitPerMinute: Number(form.rateLimitPerMinute) || 120,
+      note: form.note.trim(),
+    };
+
+    if (!editingId) {
+      payload.name = form.name.trim();
+      payload.appKeyPrefix = form.appKeyPrefix.trim();
+    }
+
+    return payload;
+  };
 
   const handleSave = async () => {
     setError('');
-    if (!form.name.trim()) {
+    if (!editingId && !form.name.trim()) {
       setError('请输入接入方名称');
       return;
     }
@@ -199,6 +223,16 @@ export default function UpgradePartnersPage() {
     }
   };
 
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSearch(searchInput.trim());
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setSearch('');
+  };
+
   const handleRotateSecret = async (app: PartnerApp) => {
     if (!confirm(`确定轮换「${app.name}」的 appSecret？旧密钥会立即失效。`)) {
       return;
@@ -227,6 +261,32 @@ export default function UpgradePartnersPage() {
     }
   };
 
+  const handleDelete = async (app: PartnerApp) => {
+    if (
+      !confirm(
+        `确定删除「${app.name}」？删除后该 appKey 会立即失效，历史订单和审计记录会保留。`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/upgrade-partners/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: app.id }),
+      });
+      const data = await res.json();
+      if (data.code !== 0) {
+        alert(data.message);
+        return;
+      }
+      fetchData();
+    } catch {
+      alert('删除失败');
+    }
+  };
+
   const copyText = async (value: string) => {
     await navigator.clipboard.writeText(value);
     alert('已复制');
@@ -246,6 +306,57 @@ export default function UpgradePartnersPage() {
             新建接入方
           </button>
         </div>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {[
+            { key: '', label: '全部' },
+            { key: 'active', label: '启用' },
+            { key: 'disabled', label: '已禁用' },
+            { key: 'deleted', label: '已删除' },
+          ].map((status) => (
+            <button
+              key={status.key}
+              onClick={() => setStatusFilter(status.key)}
+              className={`rounded-full px-3 py-1 text-xs ${
+                statusFilter === status.key
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {status.label}
+            </button>
+          ))}
+          <span className="text-xs text-gray-400">共 {total} 个</span>
+        </div>
+
+        <form
+          onSubmit={handleSearchSubmit}
+          className="mb-4 flex max-w-xl flex-wrap items-center gap-2"
+        >
+          <input
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="查询名称、appKey 或备注"
+            className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            <Search className="size-4" />
+            查询
+          </button>
+          {search && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              清除
+            </button>
+          )}
+        </form>
 
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-sm">
@@ -334,22 +445,33 @@ export default function UpgradePartnersPage() {
                       {formatDate(app.updatedAt)}
                     </td>
                     <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => openEdit(app)}
-                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                        >
-                          <Pencil className="size-3.5" />
-                          编辑
-                        </button>
-                        <button
-                          onClick={() => handleRotateSecret(app)}
-                          className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline"
-                        >
-                          <RefreshCw className="size-3.5" />
-                          轮换密钥
-                        </button>
-                      </div>
+                      {app.status === 'deleted' ? (
+                        <span className="text-xs text-gray-400">已删除</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => openEdit(app)}
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                          >
+                            <Pencil className="size-3.5" />
+                            编辑
+                          </button>
+                          <button
+                            onClick={() => handleRotateSecret(app)}
+                            className="inline-flex items-center gap-1 text-xs text-orange-600 hover:underline"
+                          >
+                            <RefreshCw className="size-3.5" />
+                            轮换密钥
+                          </button>
+                          <button
+                            onClick={() => handleDelete(app)}
+                            className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline"
+                          >
+                            <Trash2 className="size-3.5" />
+                            删除
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -388,6 +510,11 @@ export default function UpgradePartnersPage() {
                   <div>
                     <label className="mb-1 block text-sm font-medium">
                       接入方名称
+                      {editingId && (
+                        <span className="ml-1 text-xs text-gray-400">
+                          （创建后不可修改）
+                        </span>
+                      )}
                     </label>
                     <input
                       type="text"
@@ -395,7 +522,8 @@ export default function UpgradePartnersPage() {
                       onChange={(event) =>
                         setForm({ ...form, name: event.target.value })
                       }
-                      className="w-full rounded-lg border px-3 py-2 text-sm"
+                      disabled={!!editingId}
+                      className="w-full rounded-lg border px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
                   <div>

@@ -20,10 +20,13 @@ import {
   assertPartnerRequestIsSecure,
   authenticatePartnerRequest,
   createPartnerApp,
+  deletePartnerApp,
+  listPartnerApps,
   queryPartnerTaskStatus,
   resolvePartnerAccount,
   rotatePartnerAppSecret,
   submitPartnerUpgradeTask,
+  updatePartnerApp,
   verifyPartnerOrder,
 } from '../../src/shared/services/partner-upgrade';
 import { UpgradeTaskStatus } from '../../src/shared/services/upgrade-task';
@@ -498,6 +501,72 @@ test('createPartnerApp 分发独立密钥且 rotatePartnerAppSecret 使旧密钥
       rawBody,
     });
     assert.equal(rotatedAuth.app.appKey, created.app.appKey);
+  } finally {
+    await cleanupByPrefix(prefix);
+  }
+});
+
+test('partner app 支持查询和软删除且名称不可修改', async () => {
+  const prefix = `partnerquery${Date.now()}`;
+  await cleanupByPrefix(prefix);
+
+  try {
+    const created = await createPartnerApp({
+      name: `${prefix} original`,
+      appKeyPrefix: prefix,
+      allowedProducts: [{ productCode: 'gpt', memberType: 'plus' }],
+      note: `${prefix} note`,
+    });
+
+    const updated = await updatePartnerApp(created.app.id, {
+      name: `${prefix} changed`,
+      status: 'disabled',
+      allowedProducts: [{ productCode: 'gpt', memberType: 'plus' }],
+      rateLimitPerMinute: 60,
+    } as any);
+    assert.equal(updated.name, `${prefix} original`);
+    assert.equal(updated.status, 'disabled');
+
+    const searchResult = await listPartnerApps({
+      search: created.app.appKey,
+      status: 'disabled',
+    });
+    assert.equal(searchResult.total, 1);
+    assert.equal(searchResult.items[0].id, created.app.id);
+
+    const deleted = await deletePartnerApp(created.app.id);
+    assert.equal(deleted.status, 'deleted');
+
+    const defaultResult = await listPartnerApps({ search: created.app.appKey });
+    assert.equal(defaultResult.total, 0);
+
+    const deletedResult = await listPartnerApps({
+      search: created.app.appKey,
+      status: 'deleted',
+    });
+    assert.equal(deletedResult.total, 1);
+
+    const rawBody = JSON.stringify({ externalOrderNo: `${prefix}-ORDER` });
+    const path = '/api/partner/upgrade/verify-order';
+    const deletedHeaders = signedHeaders({
+      appKey: deleted.appKey,
+      secret: deleted.appSecret,
+      method: 'POST',
+      path,
+      rawBody,
+      nonce: `${prefix}-deleted`,
+    });
+
+    await assert.rejects(
+      () =>
+        authenticatePartnerRequest({
+          method: 'POST',
+          path,
+          headers: deletedHeaders.headers,
+          rawBody,
+        }),
+      /接入方无效或已禁用/
+    );
   } finally {
     await cleanupByPrefix(prefix);
   }

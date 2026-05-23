@@ -27,7 +27,6 @@ export async function POST(req: Request) {
     }
 
     const app = await updatePartnerApp(body.id, {
-      name: body.name,
       status: body.status,
       allowedProducts,
       ipAllowlist: parseStringList(body.ipAllowlist),
