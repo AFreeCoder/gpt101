@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ChevronUp } from 'lucide-react';
 
 import {
   UpgradeTaskSummary,
@@ -20,6 +21,7 @@ import {
   resolveAdPlusSourceFromHref,
   trackAdPlusFunnelStep,
 } from '@/shared/lib/ad-funnel';
+import type { UpgradeNoticeConfig } from '@/shared/lib/content-config';
 import {
   sendGoogleAdsConversionAction,
   sendGtagEvent,
@@ -28,7 +30,6 @@ import {
   getMemberLabel,
   getProductMemberLabel,
 } from '@/shared/lib/redeem-code';
-import type { UpgradeNoticeConfig } from '@/shared/lib/content-config';
 import { isOutlookEmail } from '@/shared/lib/upgrade-email-warning';
 
 export type UpgradeFlowProps = {
@@ -71,6 +72,8 @@ export function UpgradeFlow({
   const [taskMessage, setTaskMessage] = useState('');
   const [polling, setPolling] = useState(false);
   const [noticeAcknowledged, setNoticeAcknowledged] = useState(false);
+  const [noticeScrollHintVisible, setNoticeScrollHintVisible] = useState(false);
+  const noticeBodyRef = useRef<HTMLDivElement | null>(null);
   const [redeemCodeTask, setRedeemCodeTask] =
     useState<UpgradeTaskSummaryData | null>(null);
 
@@ -79,6 +82,36 @@ export function UpgradeFlow({
     tokenParsed && isOutlookEmail(accountEmail);
   const canConfirmUpgrade = tokenParsed && !isOutlookEmail(accountEmail);
   const shouldShowNotice = !!noticeConfig?.enabled && !noticeAcknowledged;
+
+  const updateNoticeScrollHint = useCallback(() => {
+    const body = noticeBodyRef.current;
+
+    if (!body || !shouldShowNotice) {
+      setNoticeScrollHintVisible(false);
+      return;
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } = body;
+    const hasOverflow = scrollHeight > clientHeight + 4;
+    const hasReachedBottom = scrollTop + clientHeight >= scrollHeight - 4;
+
+    setNoticeScrollHintVisible(hasOverflow && !hasReachedBottom);
+  }, [shouldShowNotice]);
+
+  useEffect(() => {
+    if (!shouldShowNotice) {
+      setNoticeScrollHintVisible(false);
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(updateNoticeScrollHint);
+    window.addEventListener('resize', updateNoticeScrollHint);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', updateNoticeScrollHint);
+    };
+  }, [noticeConfig, shouldShowNotice, updateNoticeScrollHint]);
 
   const trackAdPlusStep = (step: 'verify_code' | 'verify_token') => {
     const source =
@@ -344,9 +377,9 @@ export function UpgradeFlow({
             showCloseButton={false}
             onInteractOutside={(event) => event.preventDefault()}
             onEscapeKeyDown={(event) => event.preventDefault()}
-            className="gap-0 overflow-hidden p-0 sm:max-w-[560px]"
+            className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[560px]"
           >
-            <div className="border-b bg-amber-50 px-6 py-5 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+            <div className="shrink-0 border-b bg-amber-50 px-6 py-5 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
               <DialogHeader>
                 <DialogTitle className="text-xl">
                   {noticeConfig.title}
@@ -356,22 +389,41 @@ export function UpgradeFlow({
                 </DialogDescription>
               </DialogHeader>
             </div>
-            <div className="space-y-4 px-6 py-5">
-              <ul className="space-y-3">
-                {noticeConfig.items.map((item, idx) => (
-                  <li key={item} className="flex gap-3 text-sm leading-6">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-amber-100 text-xs font-semibold text-amber-900 dark:bg-amber-400/20 dark:text-amber-100">
-                      {idx + 1}
-                    </span>
-                    <span className="text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              {noticeConfig.footer && (
-                <p className="text-muted-foreground border-t pt-4 text-sm leading-6">
-                  {noticeConfig.footer}
-                </p>
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              <div
+                ref={noticeBodyRef}
+                onScroll={updateNoticeScrollHint}
+                className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5"
+              >
+                <ul className="space-y-3">
+                  {noticeConfig.items.map((item, idx) => (
+                    <li key={item} className="flex gap-3 text-sm leading-6">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-amber-100 text-xs font-semibold text-amber-900 dark:bg-amber-400/20 dark:text-amber-100">
+                        {idx + 1}
+                      </span>
+                      <span className="text-foreground">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                {noticeConfig.footer && (
+                  <p className="text-muted-foreground border-t pt-4 text-sm leading-6">
+                    {noticeConfig.footer}
+                  </p>
+                )}
+              </div>
+              {noticeScrollHintVisible && (
+                <div className="from-background via-background/95 pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t to-transparent px-6 pt-10 pb-3">
+                  <div className="border-border/70 bg-background/95 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium shadow-sm">
+                    <ChevronUp
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 motion-safe:animate-bounce"
+                    />
+                    上滑查看更多注意事项
+                  </div>
+                </div>
               )}
+            </div>
+            <div className="bg-background/95 shrink-0 border-t px-6 py-4">
               <button
                 type="button"
                 onClick={handleNoticeAck}
