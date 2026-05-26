@@ -63,6 +63,32 @@ test('redeem codes admin page exposes code search while preserving filters', () 
   );
 });
 
+test('redeem code batch query admin page exposes textarea query and status filters', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/redeem-codes/batch-query/page.tsx'
+  );
+  const routeSource = readSource(
+    'src/app/api/admin/redeem-codes/batch-query/route.ts'
+  );
+  const sidebarSource = readSource(
+    'src/config/locale/messages/zh/admin/sidebar.json'
+  );
+
+  assert.match(sidebarSource, /\/admin\/redeem-codes\/batch-query/);
+  assert.match(pageSource, /批量查询/);
+  assert.match(pageSource, /textarea/);
+  assert.match(pageSource, /最多 100 个/);
+  assert.match(pageSource, /\/api\/admin\/redeem-codes\/batch-query/);
+  assert.match(pageSource, /filterTab/);
+  assert.match(pageSource, /已使用/);
+  assert.match(pageSource, /未使用/);
+  assert.match(pageSource, /usedByEmail/);
+  assert.match(pageSource, /usedAt/);
+  assert.match(routeSource, /PERMISSIONS\.REDEEM_READ/);
+  assert.match(routeSource, /queryRedeemCodeUsageBatch/);
+  assert.match(routeSource, /最多查询 100 个卡密/);
+});
+
 test('upgrade task attempts admin page and API include site redeem cardkey', () => {
   const pageSource = readSource(
     'src/app/[locale]/(admin)/admin/upgrade-task-attempts/page.tsx'
@@ -161,6 +187,7 @@ test('client-only admin pages render the dashboard header for mobile sidebar acc
   const clientAdminPages = [
     'src/app/[locale]/(admin)/admin/channel-cardkeys/page.tsx',
     'src/app/[locale]/(admin)/admin/redeem-codes/generate/page.tsx',
+    'src/app/[locale]/(admin)/admin/redeem-codes/batch-query/page.tsx',
     'src/app/[locale]/(admin)/admin/redeem-codes/page.tsx',
     'src/app/[locale]/(admin)/admin/upgrade-channels/[id]/cardkeys/page.tsx',
     'src/app/[locale]/(admin)/admin/upgrade-channels/page.tsx',

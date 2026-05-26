@@ -163,278 +163,290 @@ export default function RedeemCodesPage() {
     <>
       <Header />
       <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">卡密列表</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={handleExport}
-            className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
-          >
-            导出
-          </button>
-        </div>
-      </div>
-
-      {/* 状态 Tab */}
-      <div className="mb-4 flex gap-1 border-b">
-        {[
-          { key: '', label: '全部' },
-          { key: 'available', label: '可用' },
-          { key: 'consumed', label: '已使用' },
-          { key: 'disabled', label: '已禁用' },
-        ].map((tab) => (
-          <a
-            key={tab.key}
-            href={buildUrl({ status: tab.key, page: '' })}
-            className={`px-4 py-2 text-sm ${status === tab.key ? 'border-b-2 border-blue-600 font-medium text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-          >
-            {tab.label}
-          </a>
-        ))}
-      </div>
-
-      {/* 筛选条件 */}
-      <div className="mb-4 flex flex-wrap gap-2">
-        {/* 产品筛选 */}
-        {PRODUCT_TYPES.map((p) => (
-          <a
-            key={p.code}
-            href={buildUrl({
-              productCode: productCode === p.code ? '' : p.code,
-              memberType: '',
-              page: '',
-            })}
-            className={`rounded-full px-3 py-1 text-xs ${productCode === p.code ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-          >
-            {p.label}
-          </a>
-        ))}
-
-        {/* 会员类型筛选（选了产品后显示） */}
-        {productCode && memberTypes.length > 0 && (
-          <>
-            <span className="text-xs leading-6 text-gray-400">|</span>
-            {memberTypes.map((m) => (
-              <a
-                key={m.code}
-                href={buildUrl({
-                  memberType: memberType === m.code ? '' : m.code,
-                  page: '',
-                })}
-                className={`rounded-full px-3 py-1 text-xs ${memberType === m.code ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-              >
-                {m.label}
-              </a>
-            ))}
-          </>
-        )}
-
-        {(productCode || memberType) && (
-          <a
-            href="/admin/redeem-codes"
-            className="rounded-full bg-red-100 px-3 py-1 text-xs text-red-600 hover:bg-red-200"
-          >
-            清除筛选
-          </a>
-        )}
-      </div>
-
-      <form
-        onSubmit={handleSearchSubmit}
-        className="mb-4 flex max-w-xl flex-wrap items-center gap-2"
-      >
-        <input
-          type="search"
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="搜索卡密，输入完整卡密后回车"
-          className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm font-mono outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-        <button
-          type="submit"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          搜索
-        </button>
-        {search && (
-          <button
-            type="button"
-            onClick={handleClearSearch}
-            className="rounded-lg border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
-          >
-            清除搜索
-          </button>
-        )}
-      </form>
-
-      {/* 批量操作栏 */}
-      {selectedIds.size > 0 && (
-        <div className="mb-4 flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-2">
-          <span className="text-sm text-blue-700">
-            已选 {selectedIds.size} 项
-          </span>
-          <button
-            onClick={() => handleBatchAction('disable')}
-            disabled={actionLoading}
-            className="rounded bg-orange-500 px-3 py-1 text-xs text-white hover:bg-orange-600 disabled:opacity-50"
-          >
-            批量禁用
-          </button>
-          <button
-            onClick={() => handleBatchAction('delete')}
-            disabled={actionLoading}
-            className="rounded bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600 disabled:opacity-50"
-          >
-            批量删除
-          </button>
-          <button
-            onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            取消选择
-          </button>
-        </div>
-      )}
-
-      {/* 表格 */}
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-3 py-2 text-left">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedIds.size === codes.length && codes.length > 0
-                  }
-                  onChange={toggleAll}
-                />
-              </th>
-              <th className="px-3 py-2 text-left">卡密</th>
-              <th className="px-3 py-2 text-left">产品/会员</th>
-              <th className="px-3 py-2 text-left">状态</th>
-              <th className="px-3 py-2 text-left">批次</th>
-              <th className="px-3 py-2 text-left">创建时间</th>
-              <th className="px-3 py-2 text-left">使用时间</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
-                  加载中...
-                </td>
-              </tr>
-            ) : codes.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
-                  暂无数据
-                </td>
-              </tr>
-            ) : (
-              codes.map((c) => (
-                <tr key={c.id} className="border-t hover:bg-gray-50">
-                  <td className="px-3 py-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(c.id)}
-                      onChange={() => toggleOne(c.id)}
-                    />
-                  </td>
-                  <td className="px-3 py-2 font-mono text-xs">{c.code}</td>
-                  <td className="px-3 py-2">
-                    {getProductMemberLabel(c.productCode, c.memberType)}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600'}`}
-                    >
-                      {STATUS_LABELS[c.status] || c.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
-                    {c.batchId}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
-                    {formatTimestampWithoutTimeZone(c.createdAt)}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
-                    {formatTimestampWithoutTimeZone(c.usedAt)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* 分页 */}
-      {total > 30 && (
-        <div className="mt-4 flex justify-center gap-2">
-          {page > 1 && (
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">卡密列表</h2>
+          <div className="flex gap-2">
             <a
-              href={buildUrl({ page: String(page - 1) })}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+              href="/admin/redeem-codes/batch-query"
+              className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
             >
-              上一页
+              批量查询
             </a>
-          )}
-          <span className="px-3 py-1 text-sm text-gray-500">
-            第 {page} 页，共 {Math.ceil(total / 30)} 页
-          </span>
-          {page * 30 < total && (
-            <a
-              href={buildUrl({ page: String(page + 1) })}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+            <button
+              onClick={handleExport}
+              className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
             >
-              下一页
-            </a>
-          )}
-        </div>
-      )}
-
-      {/* 导出弹窗 */}
-      {showExport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowExport(false)}
-          />
-          <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
-                导出卡密（{codes.length} 张）
-              </h3>
-              <button
-                onClick={() => setShowExport(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            <textarea
-              readOnly
-              value={exportText}
-              rows={12}
-              className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-sm"
-            />
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={handleCopyExport}
-                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                一键复制全部
-              </button>
-              <button
-                onClick={() => setShowExport(false)}
-                className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
-              >
-                关闭
-              </button>
-            </div>
+              导出
+            </button>
           </div>
         </div>
-      )}
+
+        {/* 状态 Tab */}
+        <div className="mb-4 flex gap-1 border-b">
+          {[
+            { key: '', label: '全部' },
+            { key: 'available', label: '可用' },
+            { key: 'consumed', label: '已使用' },
+            { key: 'disabled', label: '已禁用' },
+          ].map((tab) => (
+            <a
+              key={tab.key}
+              href={buildUrl({ status: tab.key, page: '' })}
+              className={`px-4 py-2 text-sm ${status === tab.key ? 'border-b-2 border-blue-600 font-medium text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              {tab.label}
+            </a>
+          ))}
+        </div>
+
+        {/* 筛选条件 */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          {/* 产品筛选 */}
+          {PRODUCT_TYPES.map((p) => (
+            <a
+              key={p.code}
+              href={buildUrl({
+                productCode: productCode === p.code ? '' : p.code,
+                memberType: '',
+                page: '',
+              })}
+              className={`rounded-full px-3 py-1 text-xs ${productCode === p.code ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              {p.label}
+            </a>
+          ))}
+
+          {/* 会员类型筛选（选了产品后显示） */}
+          {productCode && memberTypes.length > 0 && (
+            <>
+              <span className="text-xs leading-6 text-gray-400">|</span>
+              {memberTypes.map((m) => (
+                <a
+                  key={m.code}
+                  href={buildUrl({
+                    memberType: memberType === m.code ? '' : m.code,
+                    page: '',
+                  })}
+                  className={`rounded-full px-3 py-1 text-xs ${memberType === m.code ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                >
+                  {m.label}
+                </a>
+              ))}
+            </>
+          )}
+
+          {(productCode || memberType) && (
+            <a
+              href="/admin/redeem-codes"
+              className="rounded-full bg-red-100 px-3 py-1 text-xs text-red-600 hover:bg-red-200"
+            >
+              清除筛选
+            </a>
+          )}
+        </div>
+
+        <form
+          onSubmit={handleSearchSubmit}
+          className="mb-4 flex max-w-xl flex-wrap items-center gap-2"
+        >
+          <input
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="搜索卡密，输入完整卡密后回车"
+            className="min-w-0 flex-1 rounded-lg border px-3 py-2 font-mono text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            搜索
+          </button>
+          {search && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="rounded-lg border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+            >
+              清除搜索
+            </button>
+          )}
+        </form>
+
+        {/* 批量操作栏 */}
+        {selectedIds.size > 0 && (
+          <div className="mb-4 flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-2">
+            <span className="text-sm text-blue-700">
+              已选 {selectedIds.size} 项
+            </span>
+            <button
+              onClick={() => handleBatchAction('disable')}
+              disabled={actionLoading}
+              className="rounded bg-orange-500 px-3 py-1 text-xs text-white hover:bg-orange-600 disabled:opacity-50"
+            >
+              批量禁用
+            </button>
+            <button
+              onClick={() => handleBatchAction('delete')}
+              disabled={actionLoading}
+              className="rounded bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600 disabled:opacity-50"
+            >
+              批量删除
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              取消选择
+            </button>
+          </div>
+        )}
+
+        {/* 表格 */}
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-3 py-2 text-left">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedIds.size === codes.length && codes.length > 0
+                    }
+                    onChange={toggleAll}
+                  />
+                </th>
+                <th className="px-3 py-2 text-left">卡密</th>
+                <th className="px-3 py-2 text-left">产品/会员</th>
+                <th className="px-3 py-2 text-left">状态</th>
+                <th className="px-3 py-2 text-left">批次</th>
+                <th className="px-3 py-2 text-left">创建时间</th>
+                <th className="px-3 py-2 text-left">使用时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-3 py-8 text-center text-gray-400"
+                  >
+                    加载中...
+                  </td>
+                </tr>
+              ) : codes.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-3 py-8 text-center text-gray-400"
+                  >
+                    暂无数据
+                  </td>
+                </tr>
+              ) : (
+                codes.map((c) => (
+                  <tr key={c.id} className="border-t hover:bg-gray-50">
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(c.id)}
+                        onChange={() => toggleOne(c.id)}
+                      />
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{c.code}</td>
+                    <td className="px-3 py-2">
+                      {getProductMemberLabel(c.productCode, c.memberType)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600'}`}
+                      >
+                        {STATUS_LABELS[c.status] || c.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-xs text-gray-500">
+                      {c.batchId}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-gray-500">
+                      {formatTimestampWithoutTimeZone(c.createdAt)}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-gray-500">
+                      {formatTimestampWithoutTimeZone(c.usedAt)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 分页 */}
+        {total > 30 && (
+          <div className="mt-4 flex justify-center gap-2">
+            {page > 1 && (
+              <a
+                href={buildUrl({ page: String(page - 1) })}
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+              >
+                上一页
+              </a>
+            )}
+            <span className="px-3 py-1 text-sm text-gray-500">
+              第 {page} 页，共 {Math.ceil(total / 30)} 页
+            </span>
+            {page * 30 < total && (
+              <a
+                href={buildUrl({ page: String(page + 1) })}
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+              >
+                下一页
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* 导出弹窗 */}
+        {showExport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowExport(false)}
+            />
+            <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">
+                  导出卡密（{codes.length} 张）
+                </h3>
+                <button
+                  onClick={() => setShowExport(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={exportText}
+                rows={12}
+                className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-sm"
+              />
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={handleCopyExport}
+                  className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  一键复制全部
+                </button>
+                <button
+                  onClick={() => setShowExport(false)}
+                  className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

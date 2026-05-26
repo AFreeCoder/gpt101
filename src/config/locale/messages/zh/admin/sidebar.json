@@ -94,6 +94,11 @@
               "icon": "List"
             },
             {
+              "title": "批量查询",
+              "url": "/admin/redeem-codes/batch-query",
+              "icon": "Search"
+            },
+            {
               "title": "批量生成",
               "url": "/admin/redeem-codes/generate",
               "icon": "Plus"

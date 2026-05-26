@@ -1,7 +1,7 @@
-import { and, count, desc, eq, inArray } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
-import { redeemCode, redeemCodeBatch } from '@/config/db/schema';
+import { redeemCode, redeemCodeBatch, upgradeTask } from '@/config/db/schema';
 import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
 import { generateRedeemCode } from '@/shared/lib/redeem-code';
@@ -13,6 +13,39 @@ export enum RedeemCodeStatus {
   AVAILABLE = 'available',
   CONSUMED = 'consumed',
   DISABLED = 'disabled',
+}
+
+export type RedeemCodeUsageState = 'used' | 'unused' | 'disabled' | 'not_found';
+
+export interface RedeemCodeUsageBatchItem {
+  code: string;
+  state: RedeemCodeUsageState;
+  used: boolean;
+  status: string | null;
+  productCode: string | null;
+  memberType: string | null;
+  usedAt: Date | null;
+  usedByEmail: string | null;
+}
+
+export interface RedeemCodeUsageBatchResult {
+  items: RedeemCodeUsageBatchItem[];
+  summary: {
+    total: number;
+    used: number;
+    unused: number;
+    disabled: number;
+    notFound: number;
+  };
+}
+
+interface RedeemCodeUsageQueryRow {
+  code: string;
+  status: string;
+  productCode: string;
+  memberType: string;
+  usedAt: Date | null;
+  usedByEmail: string | null;
 }
 
 // --- 批次 ID 用时间戳 ---
@@ -168,6 +201,86 @@ export async function getCodeByCode(code: string) {
     .from(redeemCode)
     .where(eq(redeemCode.code, code.toUpperCase()));
   return result || null;
+}
+
+export function normalizeRedeemCodeBatchInput(input: string[] | string) {
+  const lines = Array.isArray(input) ? input : input.split(/\r?\n/);
+  const codes = lines
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.toUpperCase());
+
+  if (codes.length > 100) {
+    throw new Error('最多查询 100 个卡密');
+  }
+
+  return codes;
+}
+
+function getRedeemCodeUsageState(status: string | null): RedeemCodeUsageState {
+  if (status === RedeemCodeStatus.CONSUMED) return 'used';
+  if (status === RedeemCodeStatus.AVAILABLE) return 'unused';
+  if (status === RedeemCodeStatus.DISABLED) return 'disabled';
+  return 'not_found';
+}
+
+export async function queryRedeemCodeUsageBatch(
+  input: string[] | string
+): Promise<RedeemCodeUsageBatchResult> {
+  const displayCodes = (Array.isArray(input) ? input : input.split(/\r?\n/))
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const codes = normalizeRedeemCodeBatchInput(input);
+  const summary: RedeemCodeUsageBatchResult['summary'] = {
+    total: codes.length,
+    used: 0,
+    unused: 0,
+    disabled: 0,
+    notFound: 0,
+  };
+
+  if (codes.length === 0) {
+    return { items: [], summary };
+  }
+
+  const uniqueCodes = Array.from(new Set(codes));
+  const rows = (await db()
+    .select({
+      code: redeemCode.code,
+      status: redeemCode.status,
+      productCode: redeemCode.productCode,
+      memberType: redeemCode.memberType,
+      usedAt: redeemCode.usedAt,
+      usedByEmail: upgradeTask.chatgptEmail,
+    })
+    .from(redeemCode)
+    .leftJoin(upgradeTask, eq(redeemCode.usedByTaskId, upgradeTask.id))
+    .where(
+      sql`upper(${redeemCode.code}) IN ${uniqueCodes}`
+    )) as RedeemCodeUsageQueryRow[];
+
+  const byCode = new Map(rows.map((row) => [row.code.toUpperCase(), row]));
+  const items = codes.map((code, index) => {
+    const row = byCode.get(code);
+    const state = getRedeemCodeUsageState(row?.status || null);
+    if (state === 'used') summary.used += 1;
+    if (state === 'unused') summary.unused += 1;
+    if (state === 'disabled') summary.disabled += 1;
+    if (state === 'not_found') summary.notFound += 1;
+
+    return {
+      code: row?.code || displayCodes[index],
+      state,
+      used: state === 'used',
+      status: row?.status || null,
+      productCode: row?.productCode || null,
+      memberType: row?.memberType || null,
+      usedAt: row?.usedAt || null,
+      usedByEmail: row?.usedByEmail || null,
+    };
+  });
+
+  return { items, summary };
 }
 
 // --- 卡密核心操作 ---
