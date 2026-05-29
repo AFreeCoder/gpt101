@@ -24,7 +24,7 @@ import { resolveVerifiedSessionAccount } from '@/shared/services/upgrade-account
 import {
   mergeUpgradeTaskMetadata,
   parseUpgradeTaskMetadata,
-  replaceSessionPlanType,
+  replaceSessionAccountFields,
   type ResolvedSessionAccount,
 } from '@/shared/services/upgrade-task-helpers';
 
@@ -152,9 +152,9 @@ export async function submitUpgradeTask(
   const accountResolver =
     options?.accountResolver || resolveVerifiedSessionAccount;
   const account = await accountResolver(req.sessionToken);
-  const verifiedSessionToken = replaceSessionPlanType(
+  const verifiedSessionToken = replaceSessionAccountFields(
     req.sessionToken,
-    account.currentPlan
+    account
   );
   let taskNo = newTaskNo;
 

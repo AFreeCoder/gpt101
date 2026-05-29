@@ -132,6 +132,127 @@ test('resolveVerifiedSessionAccount 会先预热 chatgpt cookie 再校验账号'
   assert.equal(result.accountId, 'account_123');
 });
 
+test('resolveVerifiedSessionAccount 用官方接口补齐缺失的 account 字段', async () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'user@example.com' },
+    accessToken: 'opaque-access-token',
+  });
+
+  const result = await resolveVerifiedSessionAccount(sessionToken, {
+    fetchImpl: mockAccountsCheckResponse({
+      accounts: {
+        account_remote: {
+          account: {
+            account_id: 'account_remote',
+            plan_type: 'free',
+            is_default: true,
+          },
+        },
+      },
+    }) as typeof fetch,
+  });
+
+  assert.deepEqual(result, {
+    email: 'user@example.com',
+    accountId: 'account_remote',
+    currentPlan: 'free',
+    accessToken: 'opaque-access-token',
+  });
+});
+
+test('resolveVerifiedSessionAccount 在 access token claims 与远程账号不一致时拒绝提交', async () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'user@example.com' },
+    accessToken: buildJwt({
+      sub: 'user_123',
+      'https://api.openai.com/profile': {
+        email: 'user@example.com',
+      },
+      'https://api.openai.com/auth': {
+        chatgpt_user_id: 'account_local',
+        chatgpt_plan_type: 'free',
+      },
+    }),
+  });
+
+  await assert.rejects(
+    () =>
+      resolveVerifiedSessionAccount(sessionToken, {
+        fetchImpl: mockAccountsCheckResponse({
+          accounts: {
+            account_remote: {
+              account: {
+                account_id: 'account_remote',
+                plan_type: 'free',
+                is_default: true,
+              },
+            },
+          },
+        }) as typeof fetch,
+      }),
+    /账号信息不一致/
+  );
+});
+
+test('resolveVerifiedSessionAccount 在 access token 只有 account claim 且远程账号不匹配时拒绝提交', async () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'user@example.com' },
+    accessToken: buildJwt({
+      'https://api.openai.com/auth': {
+        chatgpt_user_id: 'account_claim',
+      },
+    }),
+  });
+
+  await assert.rejects(
+    () =>
+      resolveVerifiedSessionAccount(sessionToken, {
+        fetchImpl: mockAccountsCheckResponse({
+          accounts: {
+            account_remote: {
+              account: {
+                account_id: 'account_remote',
+                plan_type: 'free',
+                is_default: true,
+              },
+            },
+          },
+        }) as typeof fetch,
+      }),
+    /账号信息不一致/
+  );
+});
+
+test('resolveVerifiedSessionAccount 在 access token 只有 email claim 且远程邮箱不一致时拒绝提交', async () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'remote@example.com' },
+    accessToken: buildJwt({
+      'https://api.openai.com/profile': {
+        email: 'jwt@example.com',
+      },
+    }),
+  });
+
+  await assert.rejects(
+    () =>
+      resolveVerifiedSessionAccount(sessionToken, {
+        fetchImpl: mockAccountsCheckResponse({
+          email: 'remote@example.com',
+          accounts: {
+            account_remote: {
+              account: {
+                account_id: 'account_remote',
+                plan_type: 'free',
+                is_default: true,
+              },
+            },
+          },
+        }) as typeof fetch,
+      }),
+    /账号信息不一致/
+  );
+});
+
 test('resolveVerifiedSessionAccount 在远程账号与当前 token 信息不一致时拒绝提交', async () => {
   const sessionToken = JSON.stringify({
     user: { id: 'user_123', email: 'user@example.com' },

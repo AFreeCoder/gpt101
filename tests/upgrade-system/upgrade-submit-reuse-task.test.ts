@@ -121,7 +121,7 @@ test('submitUpgradeTask 复用同一卡密已释放的失败任务', async () =>
   const seeded = await seedReleasedFailedTask(prefix);
   const submittedSession = JSON.stringify({
     user: { id: 'submitted_user', email: 'submitted@example.com' },
-    account: { id: 'submitted_account', planType: 'plus' },
+    account: { name: 'Personal' },
     accessToken: 'submitted-access-token',
   });
 
@@ -164,7 +164,7 @@ test('submitUpgradeTask 复用同一卡密已释放的失败任务', async () =>
     assert.equal(taskRow.status, UpgradeTaskStatus.PENDING);
     assert.deepEqual(JSON.parse(taskRow.sessionToken), {
       user: { id: 'submitted_user', email: 'submitted@example.com' },
-      account: { id: 'submitted_account', planType: 'free' },
+      account: { id: 'retry_account', planType: 'free', name: 'Personal' },
       accessToken: 'submitted-access-token',
     });
     assert.equal(taskRow.chatgptEmail, 'retry@example.com');

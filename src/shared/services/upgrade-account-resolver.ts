@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import {
   extractAccessTokenAccountSnapshot,
-  extractSessionAccountSnapshot,
+  extractSessionAccountVerificationInput,
   normalizePlanType,
   type ResolvedSessionAccount,
 } from '@/shared/services/upgrade-task-helpers';
@@ -42,6 +42,8 @@ const FORBIDDEN_MARKERS = [
   'account banned',
   'has been banned',
 ] as const;
+const IDENTITY_MISMATCH_MESSAGE =
+  'Token 对应的账号信息不一致，请重新获取最新 Session Token';
 
 interface ResolveAccountOptions {
   fetchImpl?: typeof fetch;
@@ -57,6 +59,11 @@ interface RemoteChatGPTAccount {
   email?: string;
   accountId?: string;
   currentPlan?: string;
+}
+
+interface IdentitySnapshot {
+  email?: string;
+  accountId?: string;
 }
 
 function asRecord(value: unknown): Record<string, any> {
@@ -115,17 +122,20 @@ function selectRemoteAccountEntry(
         currentPlan: extractRemotePlan(preferred),
       };
     }
+
+    throw new Error(IDENTITY_MISMATCH_MESSAGE);
   }
 
   let defaultCandidate: RemoteChatGPTAccount | null = null;
-  let paidCandidate: RemoteChatGPTAccount | null = null;
   let firstCandidate: RemoteChatGPTAccount | null = null;
+  let candidateCount = 0;
 
   for (const [accountId, rawEntry] of Object.entries(accounts)) {
     const entry = asRecord(rawEntry);
     if (Object.keys(entry).length === 0) {
       continue;
     }
+    candidateCount += 1;
 
     const account = asRecord(entry.account);
     const candidate: RemoteChatGPTAccount = {
@@ -139,16 +149,17 @@ function selectRemoteAccountEntry(
     if (account.is_default === true && !defaultCandidate) {
       defaultCandidate = candidate;
     }
-    if (
-      candidate.currentPlan &&
-      candidate.currentPlan !== 'free' &&
-      !paidCandidate
-    ) {
-      paidCandidate = candidate;
-    }
   }
 
-  return defaultCandidate || paidCandidate || firstCandidate || {};
+  if (defaultCandidate) {
+    return defaultCandidate;
+  }
+
+  if (candidateCount === 1) {
+    return firstCandidate || {};
+  }
+
+  return {};
 }
 
 function buildTemporaryFailureError() {
@@ -346,7 +357,8 @@ async function fetchRemoteChatGPTAccount(
       if (
         error.message.includes('access token 无效或已过期') ||
         error.message.includes('未获取到账号信息') ||
-        error.message.includes('账号当前被限制或已停用')
+        error.message.includes('账号当前被限制或已停用') ||
+        error.message.includes(IDENTITY_MISMATCH_MESSAGE)
       ) {
         throw error;
       }
@@ -358,7 +370,7 @@ async function fetchRemoteChatGPTAccount(
 }
 
 function assertConsistentIdentity(
-  current: ResolvedSessionAccount,
+  current: IdentitySnapshot,
   resolved: ResolvedSessionAccount
 ) {
   if (
@@ -366,7 +378,7 @@ function assertConsistentIdentity(
     resolved.email &&
     current.email.toLowerCase() !== resolved.email.toLowerCase()
   ) {
-    throw new Error('Token 对应的账号信息不一致，请重新获取最新 Session Token');
+    throw new Error(IDENTITY_MISMATCH_MESSAGE);
   }
 
   if (
@@ -374,7 +386,7 @@ function assertConsistentIdentity(
     resolved.accountId &&
     current.accountId !== resolved.accountId
   ) {
-    throw new Error('Token 对应的账号信息不一致，请重新获取最新 Session Token');
+    throw new Error(IDENTITY_MISMATCH_MESSAGE);
   }
 }
 
@@ -382,7 +394,7 @@ export async function resolveVerifiedSessionAccount(
   sessionToken: string,
   options: ResolveAccountOptions = {}
 ): Promise<ResolvedSessionAccount> {
-  const sessionSnapshot = extractSessionAccountSnapshot(sessionToken);
+  const sessionSnapshot = extractSessionAccountVerificationInput(sessionToken);
   const accessTokenSnapshot = extractAccessTokenAccountSnapshot(
     sessionSnapshot.accessToken
   );
@@ -420,6 +432,7 @@ export async function resolveVerifiedSessionAccount(
   }
 
   assertConsistentIdentity(sessionSnapshot, resolved);
+  assertConsistentIdentity(accessTokenSnapshot, resolved);
 
   if (resolved.currentPlan === 'plus') {
     throw new Error('当前为 Plus 会员，请等会员到期后再进行充值升级');

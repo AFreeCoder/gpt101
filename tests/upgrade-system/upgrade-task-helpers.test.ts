@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  extractSessionAccountVerificationInput,
   mergeUpgradeTaskMetadata,
   parseUpgradeTaskMetadata,
+  replaceSessionAccountFields,
   replaceSessionPlanType,
   resolveSessionAccountPayload,
 } from '../../src/shared/services/upgrade-task-helpers';
@@ -45,6 +47,55 @@ test('replaceSessionPlanType 遇到非 JSON token 时保持原样', () => {
   const sessionToken = 'header.payload.signature';
 
   assert.equal(replaceSessionPlanType(sessionToken, 'free'), sessionToken);
+});
+
+test('replaceSessionAccountFields 补齐 session JSON 的 account 字段', () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'user@example.com' },
+    account: { name: 'Personal', structure: 'personal' },
+    accessToken: 'access-token-123',
+  });
+
+  const result = replaceSessionAccountFields(sessionToken, {
+    accountId: 'account_from_remote',
+    currentPlan: 'FREE',
+  });
+
+  assert.deepEqual(JSON.parse(result), {
+    user: { id: 'user_123', email: 'user@example.com' },
+    account: {
+      id: 'account_from_remote',
+      planType: 'free',
+      name: 'Personal',
+      structure: 'personal',
+    },
+    accessToken: 'access-token-123',
+  });
+});
+
+test('extractSessionAccountVerificationInput 允许缺少 account 字段但仍要求 user.email', () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'user@example.com' },
+    accessToken: 'access-token-123',
+  });
+
+  assert.deepEqual(extractSessionAccountVerificationInput(sessionToken), {
+    email: 'user@example.com',
+    accountId: '',
+    currentPlan: '',
+    accessToken: 'access-token-123',
+  });
+
+  assert.throws(
+    () =>
+      extractSessionAccountVerificationInput(
+        JSON.stringify({
+          user: { id: 'user_123' },
+          accessToken: 'access-token-123',
+        })
+      ),
+    /缺少 user.email/
+  );
 });
 
 test('resolveSessionAccountPayload 拒绝缺少字段的 session JSON', () => {

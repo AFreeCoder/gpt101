@@ -5,6 +5,13 @@ export interface ResolvedSessionAccount {
   accessToken: string;
 }
 
+export interface SessionAccountVerificationInput {
+  email?: string;
+  accountId?: string;
+  currentPlan?: string;
+  accessToken: string;
+}
+
 export interface UpgradeTaskMetadata {
   adminNote?: string;
   manualSuccessChannelId?: string;
@@ -74,9 +81,9 @@ function readClaimString(...values: unknown[]): string {
   return '';
 }
 
-function extractJwtAccountSnapshot(
+function extractJwtAccountClaims(
   token: string
-): ResolvedSessionAccount | null {
+): Partial<ResolvedSessionAccount> | null {
   const payload = parseJwtPayload(token);
   if (!payload || typeof payload !== 'object') {
     return null;
@@ -103,14 +110,26 @@ function extractJwtAccountSnapshot(
     )
   );
 
-  if (!email || !accountId || !currentPlan) {
+  return {
+    ...(email ? { email } : {}),
+    ...(accountId ? { accountId } : {}),
+    ...(currentPlan ? { currentPlan } : {}),
+    accessToken: token,
+  };
+}
+
+function extractJwtAccountSnapshot(
+  token: string
+): ResolvedSessionAccount | null {
+  const claims = extractJwtAccountClaims(token);
+  if (!claims?.email || !claims.accountId || !claims.currentPlan) {
     return null;
   }
 
   return {
-    email,
-    accountId,
-    currentPlan,
+    email: claims.email,
+    accountId: claims.accountId,
+    currentPlan: claims.currentPlan,
     accessToken: token,
   };
 }
@@ -118,7 +137,32 @@ function extractJwtAccountSnapshot(
 export function extractAccessTokenAccountSnapshot(
   accessToken: string
 ): Partial<ResolvedSessionAccount> {
-  return extractJwtAccountSnapshot(accessToken) || { accessToken };
+  return extractJwtAccountClaims(accessToken) || { accessToken };
+}
+
+export function extractSessionAccountVerificationInput(
+  sessionToken: string
+): SessionAccountVerificationInput {
+  const parsed = parseSessionTokenAsJson(sessionToken);
+
+  if (parsed) {
+    const email = requireJsonField(parsed.user?.email || '', 'user.email');
+    requireJsonField(parsed.user?.id || '', 'user.id');
+
+    return {
+      email,
+      accountId: readClaimString(parsed.account?.id),
+      currentPlan: normalizePlanType(readClaimString(parsed.account?.planType)),
+      accessToken: requireJsonField(parsed.accessToken || '', 'accessToken'),
+    };
+  }
+
+  const snapshot = extractJwtAccountSnapshot(sessionToken);
+  if (snapshot) {
+    return snapshot;
+  }
+
+  throw new Error('无法解析 Token，请粘贴完整的 Session Token 内容');
 }
 
 export function extractSessionAccountSnapshot(
@@ -177,6 +221,23 @@ export function replaceSessionPlanType(
     account: {
       ...account,
       planType: normalizePlanType(currentPlan),
+    },
+  });
+}
+
+export function replaceSessionAccountFields(
+  sessionToken: string,
+  account: Pick<ResolvedSessionAccount, 'accountId' | 'currentPlan'>
+): string {
+  const parsed = parseSessionTokenAsJson(sessionToken);
+  if (!parsed) return sessionToken;
+
+  return JSON.stringify({
+    ...parsed,
+    account: {
+      ...asRecord(parsed.account),
+      id: account.accountId,
+      planType: normalizePlanType(account.currentPlan),
     },
   });
 }

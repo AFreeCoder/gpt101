@@ -214,8 +214,6 @@ export function UpgradeFlow({
         const missing = [];
         if (!parsed.user?.id) missing.push('user.id');
         if (!parsed.user?.email) missing.push('user.email');
-        if (!parsed.account?.id) missing.push('account.id');
-        if (!parsed.account?.planType) missing.push('account.planType');
         if (!parsed.accessToken) missing.push('accessToken');
         if (missing.length > 0) {
           setError(`Token 格式不完整，缺少字段：${missing.join('、')}`);

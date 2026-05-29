@@ -360,11 +360,12 @@ Step 2 的实际校验策略：
 1. 从 Session Token 中提取 `accessToken`
 2. 调用 `https://chatgpt.com/backend-api/accounts/check/v4-2023-04-27` 校验 access token 是否仍然有效
 3. 结合以下三类信息合并出最终账号视图：
-   - Session JSON 中的当前用户信息（`user.email`、`account.id`、`account.planType`）
-   - access token 自身 claims 中可解析出的邮箱 / 账号 / 套餐信息
+   - Session JSON 中的当前用户信息（`user.id` / `user.email` 仍为必填；`account.id` / `account.planType` 可由官方校验结果补齐）
+   - access token 自身 claims 中可解析出的邮箱 / 账号 / 套餐信息；即使只解析出部分 claims，也会参与账号选择和一致性校验
    - `accounts/check` 返回的实时账号状态（优先用于判断当前套餐）
 4. 用 access token 校验得到的账号信息反向核对 Session JSON 中的当前用户信息
 5. `currentPlan=plus` 时拦截；access token 无效、远程校验失败、账号信息不一致时也拦截
+6. 提交任务入库前，会把已校验得到的 `account.id` 和 `account.planType` 写回 Session JSON，供后续渠道 adapter 使用
 
 失败处理原则：
 
