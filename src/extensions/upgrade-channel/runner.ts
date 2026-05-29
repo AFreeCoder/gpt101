@@ -193,8 +193,8 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
 
     const durationMs = Date.now() - startTime;
 
-    // 更新已创建的 attempt
-    await db()
+    // 更新已创建的 attempt。若恢复器已经回写该 attempt，则不再覆盖结果或动渠道卡。
+    const finalizedAttempts = await db()
       .update(upgradeTaskAttempt)
       .set({
         status: result.ok ? 'success' : 'failed',
@@ -202,7 +202,22 @@ export async function runTask(input: RunTaskInput): Promise<RunTaskResult> {
         durationMs,
         finishedAt: dbTimestampNow(),
       })
-      .where(eq(upgradeTaskAttempt.id, attemptId));
+      .where(
+        and(
+          eq(upgradeTaskAttempt.id, attemptId),
+          eq(upgradeTaskAttempt.status, 'running')
+        )
+      )
+      .returning({ id: upgradeTaskAttempt.id });
+
+    if (finalizedAttempts.length === 0) {
+      return {
+        success: false,
+        error: '升级尝试已由恢复流程处理',
+        preserveRedeemCode: true,
+        attempts,
+      };
+    }
 
     attempts.push({
       channelId: channel.id,

@@ -225,6 +225,50 @@ export function createAifadianAdapter(
   }
 
   return {
+    async recoverRunningAttempt(
+      req: UpgradeRequest & { attemptStartedAt: Date }
+    ): Promise<UpgradeResult | null> {
+      if (!req.channelCardkey) return null;
+
+      try {
+        const verifyData = await verifyCdk(req.channelCardkey);
+        const status = normalizeStatus(verifyData);
+
+        if (
+          isUsedStatus(status) &&
+          isConfirmedCurrentRedemption({
+            isRedeemed: true,
+            redeemEmail: pickFirstPresentField(verifyData, [
+              'email',
+              'userEmail',
+              'redeemEmail',
+              'user_id',
+            ]),
+            redeemTime: pickFirstPresentField(verifyData, [
+              'updated_at',
+              'updatedAt',
+              'used_at',
+              'usedAt',
+              'redeemTime',
+              'timestamp',
+            ]),
+            chatgptEmail: req.chatgptEmail,
+            attemptStartedAt: req.attemptStartedAt,
+            checkedAt: now(),
+          })
+        ) {
+          return {
+            ok: true,
+            message: '二次验卡确认渠道卡密已兑换到当前账号',
+          };
+        }
+      } catch {
+        // 恢复流程只做确认，不在这里转失败或释放卡密。
+      }
+
+      return null;
+    },
+
     async execute(req: UpgradeRequest): Promise<UpgradeResult> {
       const { channelCardkey, sessionToken } = req;
       const attemptStartedAt = now();

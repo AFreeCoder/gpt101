@@ -1,9 +1,17 @@
-import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, lte, sql } from 'drizzle-orm';
 
 import { db } from '@/core/db';
-import { channelCardkey, redeemCode, upgradeTask } from '@/config/db/schema';
+import {
+  channelCardkey,
+  redeemCode,
+  upgradeChannel,
+  upgradeTask,
+  upgradeTaskAttempt,
+} from '@/config/db/schema';
+import { getAdapter } from '@/extensions/upgrade-channel/registry';
 import { runTask } from '@/extensions/upgrade-channel/runner';
-import { dbTimestampNow } from '@/shared/lib/db-time';
+import type { UpgradeResult } from '@/extensions/upgrade-channel/types';
+import { dbTimestampFromDate, dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
 import { ChannelCardkeyStatus as ChannelInventoryStatus } from '@/shared/models/channel-cardkey';
 import {
@@ -28,6 +36,30 @@ export enum UpgradeTaskStatus {
   SUCCEEDED = 'succeeded',
   FAILED = 'failed',
   CANCELED = 'canceled',
+}
+
+const DEFAULT_RUNNING_RECOVERY_STALE_MS = 10 * 60 * 1000;
+
+export interface RecoverStaleRunningTasksOptions {
+  staleAfterMs?: number;
+  now?: () => Date;
+}
+
+interface RunningRecoveryCandidate {
+  taskId: string;
+  taskNo: string;
+  redeemCodeId: string;
+  productCode: string;
+  memberType: string;
+  sessionToken: string;
+  chatgptEmail: string;
+  attemptId: string;
+  attemptNo: number;
+  attemptStartedAt: Date;
+  channelId: string;
+  channelDriver: string;
+  channelCardkeyId: string;
+  channelCardkey: string;
 }
 
 function getRedeemCodeErrorMessage(reason: string): string {
@@ -347,6 +379,228 @@ export async function queryTaskStatus(
 
 // --- Worker: 拉取和执行任务 ---
 
+async function getStaleRunningRecoveryCandidates(
+  maxCount: number,
+  cutoff: Date
+): Promise<RunningRecoveryCandidate[]> {
+  if (maxCount <= 0) return [];
+
+  const rows = await db()
+    .select({
+      taskId: upgradeTask.id,
+      taskNo: upgradeTask.taskNo,
+      redeemCodeId: upgradeTask.redeemCodeId,
+      productCode: upgradeTask.productCode,
+      memberType: upgradeTask.memberType,
+      sessionToken: upgradeTask.sessionToken,
+      chatgptEmail: upgradeTask.chatgptEmail,
+      attemptId: upgradeTaskAttempt.id,
+      attemptNo: upgradeTaskAttempt.attemptNo,
+      attemptStartedAt: upgradeTaskAttempt.startedAt,
+      channelId: upgradeChannel.id,
+      channelDriver: upgradeChannel.driver,
+      channelCardkeyId: channelCardkey.id,
+      channelCardkey: channelCardkey.cardkey,
+    })
+    .from(upgradeTask)
+    .innerJoin(
+      upgradeTaskAttempt,
+      and(
+        eq(upgradeTaskAttempt.taskId, upgradeTask.id),
+        eq(upgradeTaskAttempt.status, 'running'),
+        lte(upgradeTaskAttempt.startedAt, cutoff)
+      )
+    )
+    .innerJoin(
+      upgradeChannel,
+      eq(upgradeChannel.id, upgradeTaskAttempt.channelId)
+    )
+    .innerJoin(
+      channelCardkey,
+      eq(channelCardkey.id, upgradeTaskAttempt.channelCardkeyId)
+    )
+    .where(
+      and(
+        eq(upgradeTask.status, UpgradeTaskStatus.RUNNING),
+        lte(upgradeTask.startedAt, cutoff)
+      )
+    )
+    .orderBy(asc(upgradeTask.startedAt), desc(upgradeTaskAttempt.attemptNo))
+    .limit(Math.max(maxCount * 4, maxCount));
+
+  const candidates: RunningRecoveryCandidate[] = [];
+  const seenTaskIds = new Set<string>();
+  for (const row of rows) {
+    if (seenTaskIds.has(row.taskId)) continue;
+    seenTaskIds.add(row.taskId);
+    candidates.push(row);
+    if (candidates.length >= maxCount) break;
+  }
+
+  return candidates;
+}
+
+function getRecoveryDurationMs(startedAt: Date, finishedAt: Date) {
+  const startedTime = new Date(startedAt).getTime();
+  const finishedTime = finishedAt.getTime();
+  if (!Number.isFinite(startedTime) || !Number.isFinite(finishedTime)) {
+    return 0;
+  }
+  return Math.max(0, finishedTime - startedTime);
+}
+
+async function markRunningTaskRecovered(
+  candidate: RunningRecoveryCandidate,
+  result: Extract<UpgradeResult, { ok: true }>,
+  finishedAt: Date
+): Promise<boolean> {
+  return db().transaction(async (tx: any) => {
+    const [task] = await tx
+      .select({ id: upgradeTask.id })
+      .from(upgradeTask)
+      .where(
+        and(
+          eq(upgradeTask.id, candidate.taskId),
+          eq(upgradeTask.status, UpgradeTaskStatus.RUNNING)
+        )
+      )
+      .limit(1)
+      .for('update');
+
+    if (!task) return false;
+
+    const [attempt] = await tx
+      .select({ id: upgradeTaskAttempt.id })
+      .from(upgradeTaskAttempt)
+      .where(
+        and(
+          eq(upgradeTaskAttempt.id, candidate.attemptId),
+          eq(upgradeTaskAttempt.taskId, candidate.taskId),
+          eq(upgradeTaskAttempt.status, 'running'),
+          eq(upgradeTaskAttempt.channelCardkeyId, candidate.channelCardkeyId)
+        )
+      )
+      .limit(1)
+      .for('update');
+
+    if (!attempt) return false;
+
+    const [lockedCardkey] = await tx
+      .select({
+        id: channelCardkey.id,
+        status: channelCardkey.status,
+        lockedByTaskId: channelCardkey.lockedByTaskId,
+        usedByAttemptId: channelCardkey.usedByAttemptId,
+      })
+      .from(channelCardkey)
+      .where(eq(channelCardkey.id, candidate.channelCardkeyId))
+      .limit(1)
+      .for('update');
+
+    if (!lockedCardkey) return false;
+    const cardkeyStillBelongsToAttempt =
+      (lockedCardkey.status === ChannelInventoryStatus.LOCKED &&
+        lockedCardkey.lockedByTaskId === candidate.taskId) ||
+      (lockedCardkey.status === ChannelInventoryStatus.USED &&
+        lockedCardkey.usedByAttemptId === candidate.attemptId);
+    if (!cardkeyStillBelongsToAttempt) {
+      return false;
+    }
+
+    await tx
+      .update(upgradeTaskAttempt)
+      .set({
+        status: 'success',
+        errorMessage: null,
+        durationMs: getRecoveryDurationMs(
+          candidate.attemptStartedAt,
+          finishedAt
+        ),
+        finishedAt: dbTimestampFromDate(finishedAt),
+      })
+      .where(eq(upgradeTaskAttempt.id, candidate.attemptId));
+
+    await tx
+      .update(channelCardkey)
+      .set({
+        status: ChannelInventoryStatus.USED,
+        lockedByTaskId: null,
+        usedByAttemptId: candidate.attemptId,
+        usedAt: dbTimestampFromDate(finishedAt),
+      })
+      .where(eq(channelCardkey.id, candidate.channelCardkeyId));
+
+    await tx
+      .update(upgradeTask)
+      .set({
+        status: UpgradeTaskStatus.SUCCEEDED,
+        successChannelId: candidate.channelId,
+        successChannelCardkeyId: candidate.channelCardkeyId,
+        attemptCount: candidate.attemptNo,
+        resultMessage: result.message || '升级成功',
+        lastError: null,
+        finishedAt: dbTimestampFromDate(finishedAt),
+      })
+      .where(eq(upgradeTask.id, candidate.taskId));
+
+    await tx
+      .update(redeemCode)
+      .set({
+        status: RedeemCodeStatus.CONSUMED,
+        usedByTaskId: candidate.taskId,
+      })
+      .where(eq(redeemCode.id, candidate.redeemCodeId));
+
+    return true;
+  });
+}
+
+export async function recoverStaleRunningTasks(
+  maxCount: number = 5,
+  options: RecoverStaleRunningTasksOptions = {}
+): Promise<number> {
+  const now = options.now?.() || new Date();
+  const staleAfterMs =
+    options.staleAfterMs ?? DEFAULT_RUNNING_RECOVERY_STALE_MS;
+  const cutoff = new Date(now.getTime() - staleAfterMs);
+  const candidates = await getStaleRunningRecoveryCandidates(maxCount, cutoff);
+  let recovered = 0;
+
+  for (const candidate of candidates) {
+    const adapter = getAdapter(candidate.channelDriver);
+    if (!adapter?.recoverRunningAttempt) continue;
+
+    let result: UpgradeResult | null = null;
+    try {
+      result = await adapter.recoverRunningAttempt({
+        taskId: candidate.taskId,
+        productCode: candidate.productCode,
+        memberType: candidate.memberType,
+        sessionToken: candidate.sessionToken,
+        chatgptEmail: candidate.chatgptEmail,
+        channelCardkey: candidate.channelCardkey,
+        attemptId: candidate.attemptId,
+        attemptStartedAt: candidate.attemptStartedAt,
+        channelId: candidate.channelId,
+      });
+    } catch (error) {
+      console.warn(
+        `[upgrade] running recovery failed for ${candidate.taskNo}:`,
+        error
+      );
+      continue;
+    }
+
+    if (!result?.ok) continue;
+
+    if (await markRunningTaskRecovered(candidate, result, now)) {
+      recovered++;
+    }
+  }
+
+  return recovered;
+}
+
 export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
   let processed = 0;
 
@@ -389,7 +643,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
       });
 
       if (result.success) {
-        await db()
+        const updatedTasks = await db()
           .update(upgradeTask)
           .set({
             status: UpgradeTaskStatus.SUCCEEDED,
@@ -399,10 +653,18 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
             resultMessage: result.message || '升级成功',
             finishedAt: dbTimestampNow(),
           })
-          .where(eq(upgradeTask.id, task.id));
+          .where(
+            and(
+              eq(upgradeTask.id, task.id),
+              eq(upgradeTask.status, UpgradeTaskStatus.RUNNING)
+            )
+          )
+          .returning({ id: upgradeTask.id });
 
-        // 标记本站卡密为已消费
-        await markCodeConsumed(task.redeemCodeId);
+        if (updatedTasks.length > 0) {
+          // 标记本站卡密为已消费
+          await markCodeConsumed(task.redeemCodeId);
+        }
       } else {
         const nextMetadata = result.preserveRedeemCode
           ? mergeUpgradeTaskMetadata(task.metadata, {
@@ -411,7 +673,7 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
             })
           : task.metadata;
 
-        await db()
+        const updatedTasks = await db()
           .update(upgradeTask)
           .set({
             status: UpgradeTaskStatus.FAILED,
@@ -421,15 +683,21 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
             metadata: nextMetadata,
             finishedAt: dbTimestampNow(),
           })
-          .where(eq(upgradeTask.id, task.id));
+          .where(
+            and(
+              eq(upgradeTask.id, task.id),
+              eq(upgradeTask.status, UpgradeTaskStatus.RUNNING)
+            )
+          )
+          .returning({ id: upgradeTask.id });
 
-        if (!result.preserveRedeemCode) {
+        if (updatedTasks.length > 0 && !result.preserveRedeemCode) {
           // 失败：回滚本站卡密
           await rollbackCode(task.redeemCodeId);
         }
       }
     } catch (err: any) {
-      await db()
+      const updatedTasks = await db()
         .update(upgradeTask)
         .set({
           status: UpgradeTaskStatus.FAILED,
@@ -437,9 +705,17 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
           resultMessage: null,
           finishedAt: dbTimestampNow(),
         })
-        .where(eq(upgradeTask.id, task.id));
+        .where(
+          and(
+            eq(upgradeTask.id, task.id),
+            eq(upgradeTask.status, UpgradeTaskStatus.RUNNING)
+          )
+        )
+        .returning({ id: upgradeTask.id });
 
-      await rollbackCode(task.redeemCodeId);
+      if (updatedTasks.length > 0) {
+        await rollbackCode(task.redeemCodeId);
+      }
     }
 
     processed++;

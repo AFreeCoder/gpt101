@@ -330,6 +330,17 @@ export function createDnsconAdapter(
   }
 
   return {
+    async recoverRunningAttempt(
+      req: UpgradeRequest & { attemptStartedAt: Date }
+    ): Promise<UpgradeResult | null> {
+      if (!req.channelCardkey) return null;
+      return confirmRedeemedCard(
+        req.channelCardkey,
+        req.chatgptEmail,
+        req.attemptStartedAt
+      );
+    },
+
     async execute(req: UpgradeRequest): Promise<UpgradeResult> {
       const { channelCardkey, sessionToken } = req;
       const attemptStartedAt = now();

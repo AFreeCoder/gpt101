@@ -343,6 +343,55 @@ test('987ai 非终态轮询期间批量查卡确认同邮箱后提前判成功',
   );
 });
 
+test('987ai running 恢复只用已有渠道卡批量查卡确认成功', async () => {
+  const calls: string[] = [];
+  const adapter = create987aiAdapter({
+    now: () => new Date(FIXED_NOW.getTime() + 31_000),
+    fetchImpl: (async (input, init) => {
+      const url = String(input);
+      calls.push(url);
+
+      if (url.endsWith('/card-keys/batch-query')) {
+        assert.equal(init?.method, 'POST');
+        return jsonResponse({
+          success: true,
+          data: [
+            {
+              card_key: 'GOOD-CARD-RECOVERED',
+              status: 1,
+              user_id: 'USER@example.com',
+              used_at: '2026-05-07T06:41:33Z',
+            },
+          ],
+        });
+      }
+
+      throw new Error(`unexpected request: ${url}`);
+    }) as typeof fetch,
+  });
+
+  const result = await adapter.recoverRunningAttempt?.({
+    taskId: 'task_987ai_recovered',
+    attemptId: 'attempt_987ai_recovered',
+    channelId: 'channel_987ai',
+    productCode: 'plus',
+    memberType: 'month',
+    sessionToken: buildSessionJson(),
+    chatgptEmail: 'user@example.com',
+    channelCardkey: 'GOOD-CARD-RECOVERED',
+    attemptStartedAt: FIXED_NOW,
+  });
+
+  assert.equal(result?.ok, true);
+  if (result?.ok) {
+    assert.match(result.message || '', /批量查卡确认渠道卡密已兑换/);
+  }
+  assert.deepEqual(
+    calls.map((url) => new URL(url).pathname),
+    ['/api/card-keys/batch-query']
+  );
+});
+
 test(
   '987ai 任务状态接口返回限流错误时不会按非终态无限等待',
   { timeout: 500 },

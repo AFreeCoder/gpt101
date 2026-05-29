@@ -12,19 +12,48 @@
 // 注册所有 adapter（在 runner 被调用前）
 import './src/extensions/upgrade-channel/adapters/mock';
 
-import { pickAndRunTasks } from './src/shared/services/upgrade-task';
+import {
+  pickAndRunTasks,
+  recoverStaleRunningTasks,
+} from './src/shared/services/upgrade-task';
 
 const POLL_INTERVAL_MS = 30_000; // 30 秒
 const MAX_TASKS_PER_TICK = 5;
 
 let running = true;
+let processingPending = false;
+let recoveringRunning = false;
 
-async function tick() {
+async function recoverRunning() {
+  if (recoveringRunning) return;
+  recoveringRunning = true;
+  try {
+    const recovered = await recoverStaleRunningTasks(MAX_TASKS_PER_TICK);
+    if (recovered > 0) {
+      console.log(`[worker] Recovered ${recovered} running task(s)`);
+    }
+  } finally {
+    recoveringRunning = false;
+  }
+}
+
+async function processPending() {
+  if (processingPending) return;
+  processingPending = true;
   try {
     const processed = await pickAndRunTasks(MAX_TASKS_PER_TICK);
     if (processed > 0) {
       console.log(`[worker] Processed ${processed} task(s)`);
     }
+  } finally {
+    processingPending = false;
+  }
+}
+
+async function tick() {
+  try {
+    await recoverRunning();
+    await processPending();
   } catch (err) {
     console.error('[worker] Error during tick:', err);
   }
@@ -32,7 +61,9 @@ async function tick() {
 
 async function main() {
   console.log('[worker] Starting upgrade worker...');
-  console.log(`[worker] Poll interval: ${POLL_INTERVAL_MS}ms, max tasks per tick: ${MAX_TASKS_PER_TICK}`);
+  console.log(
+    `[worker] Poll interval: ${POLL_INTERVAL_MS}ms, max tasks per tick: ${MAX_TASKS_PER_TICK}`
+  );
 
   // 立即执行一次
   await tick();
