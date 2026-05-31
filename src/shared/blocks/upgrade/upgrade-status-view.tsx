@@ -26,6 +26,8 @@ export type UpgradeStatusViewProps = {
   supportContact?: string | null;
   supportContactLabel?: string;
   failedHelpText?: string;
+  /** 与 UpgradeFlow 一致：'default' / 'channel' */
+  variant?: 'default' | 'channel';
 };
 
 export function UpgradeStatusView({
@@ -33,7 +35,9 @@ export function UpgradeStatusView({
   supportContact = 'AFreeCoder01',
   supportContactLabel = '微信',
   failedHelpText,
+  variant = 'default',
 }: UpgradeStatusViewProps = {}) {
+  const isChannel = variant === 'channel';
   const params = useParams();
   const taskNo = taskNoProp || (params.taskNo as string);
 
@@ -79,34 +83,58 @@ export function UpgradeStatusView({
     };
   }, [fetchStatus, polling]);
 
-  const statusConfig: Record<string, { icon: string; color: string }> = {
-    pending: { icon: '⏳', color: 'text-yellow-600' },
-    running: { icon: '⚙️', color: 'text-blue-600' },
-    succeeded: { icon: '✅', color: 'text-green-600' },
-    failed: { icon: '❌', color: 'text-red-600' },
-    canceled: { icon: '🚫', color: 'text-gray-600' },
-  };
+  const statusConfig: Record<string, { icon: string; color: string }> =
+    isChannel
+      ? {
+          pending: { icon: '⏳', color: 'text-[#C77C12]' },
+          running: { icon: '⚙️', color: 'text-[#9A3412]' },
+          succeeded: { icon: '✅', color: 'text-[#8A5A12]' },
+          failed: { icon: '❌', color: 'text-destructive' },
+          canceled: { icon: '🚫', color: 'text-muted-foreground' },
+        }
+      : {
+          pending: { icon: '⏳', color: 'text-yellow-600' },
+          running: { icon: '⚙️', color: 'text-blue-600' },
+          succeeded: { icon: '✅', color: 'text-green-600' },
+          failed: { icon: '❌', color: 'text-red-600' },
+          canceled: { icon: '🚫', color: 'text-gray-600' },
+        };
+
+  // channel 走 D3 语义类；default 保持原浅色样式逐字不变
+  const cardCls = isChannel
+    ? 'border-border bg-card'
+    : 'border-gray-200 bg-white shadow-sm';
+  const subtleText = isChannel ? 'text-muted-foreground' : 'text-gray-500';
+  const strongText = isChannel ? 'text-foreground' : 'text-gray-700';
+  const spinnerColor = isChannel ? 'border-primary' : 'border-blue-600';
+  const ctaCls = isChannel
+    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+    : 'bg-green-600 text-white hover:bg-green-700';
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
-      <h1 className="mb-8 text-center text-2xl font-bold text-gray-900">
+      <h1
+        className={`mb-8 text-center text-2xl font-bold ${isChannel ? 'text-foreground' : 'text-gray-900'}`}
+      >
         升级进度
       </h1>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+        <div
+          className={`mb-4 rounded-lg p-3 text-sm ${isChannel ? 'bg-destructive/10 text-destructive' : 'bg-red-50 text-red-600'}`}
+        >
           {error}
         </div>
       )}
 
       {task ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className={`rounded-xl border p-6 ${cardCls}`}>
           <div className="mb-6 text-center">
             <span className="text-4xl">
               {statusConfig[task.status]?.icon || '❓'}
             </span>
             <p
-              className={`mt-3 text-lg font-semibold ${statusConfig[task.status]?.color || 'text-gray-600'}`}
+              className={`mt-3 text-lg font-semibold ${statusConfig[task.status]?.color || (isChannel ? 'text-muted-foreground' : 'text-gray-600')}`}
             >
               {task.message}
             </p>
@@ -115,27 +143,31 @@ export function UpgradeStatusView({
           <UpgradeTaskSummary task={task} />
 
           {polling && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+            <div
+              className={`mt-4 flex items-center justify-center gap-2 text-sm ${subtleText}`}
+            >
+              <div
+                className={`h-4 w-4 animate-spin rounded-full border-2 border-t-transparent ${spinnerColor}`}
+              />
               正在查询最新状态...
             </div>
           )}
 
           {task.status === 'failed' && failedHelpText && (
-            <div className="mt-4 text-center text-sm text-gray-500">
+            <div className={`mt-4 text-center text-sm ${subtleText}`}>
               {failedHelpText}
-              <span className="font-mono text-gray-700">{task.taskNo}</span>
+              <span className={`font-mono ${strongText}`}>{task.taskNo}</span>
             </div>
           )}
 
           {task.status === 'failed' && !failedHelpText && supportContact && (
-            <div className="mt-4 text-center text-sm text-gray-500">
+            <div className={`mt-4 text-center text-sm ${subtleText}`}>
               请联系客服{supportContactLabel}：
-              <span className="font-medium text-gray-700">
+              <span className={`font-medium ${strongText}`}>
                 {supportContact}
               </span>
               ，提供任务编号
-              <span className="font-mono text-gray-700">{task.taskNo}</span>
+              <span className={`font-mono ${strongText}`}>{task.taskNo}</span>
             </div>
           )}
 
@@ -145,7 +177,7 @@ export function UpgradeStatusView({
                 href="https://chat.openai.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block rounded-lg bg-green-600 px-6 py-2 text-sm font-medium text-white hover:bg-green-700"
+                className={`inline-block rounded-lg px-6 py-2 text-sm font-medium ${ctaCls} ${isChannel ? 'channel-lift' : ''}`}
               >
                 前往 ChatGPT →
               </a>
@@ -155,7 +187,9 @@ export function UpgradeStatusView({
       ) : (
         !error && (
           <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+            <div
+              className={`h-8 w-8 animate-spin rounded-full border-2 border-t-transparent ${spinnerColor}`}
+            />
           </div>
         )
       )}

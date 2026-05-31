@@ -20,13 +20,16 @@ export default async function ChannelUpgradePage() {
   );
 
   return (
-    <UpgradeFlow
-      showSupportCard={false}
-      supportContact={null}
-      noticeConfig={noticeConfig}
-      submitErrorMessage="升级异常，请联系购卡渠道处理"
-      failedHelpText="升级异常，请联系购卡渠道处理，并提供任务编号。"
-      safetyIssueText="异常请联系购卡渠道处理"
-    />
+    <div className="channel-skin">
+      <UpgradeFlow
+        variant="channel"
+        showSupportCard={false}
+        supportContact={null}
+        noticeConfig={noticeConfig}
+        submitErrorMessage="升级异常，请联系购卡渠道处理"
+        failedHelpText="升级异常，请联系购卡渠道处理，并提供任务编号。"
+        safetyIssueText="异常请联系购卡渠道处理"
+      />
+    </div>
   );
 }

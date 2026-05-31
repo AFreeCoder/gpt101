@@ -9,9 +9,12 @@ export const metadata = {
 
 export default function ChannelUpgradeStatusPage() {
   return (
-    <UpgradeStatusView
-      supportContact={null}
-      failedHelpText="请联系购卡渠道处理，并提供任务编号："
-    />
+    <div className="channel-skin">
+      <UpgradeStatusView
+        variant="channel"
+        supportContact={null}
+        failedHelpText="请联系购卡渠道处理，并提供任务编号："
+      />
+    </div>
   );
 }
