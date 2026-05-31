@@ -40,6 +40,8 @@ export type UpgradeFlowProps = {
   failedHelpText?: string;
   safetyIssueText?: string;
   noticeConfig?: UpgradeNoticeConfig | null;
+  /** 'default' = /upgrade 现状（不可改动）；'channel' = /channel-upgrade D3 琥珀金 */
+  variant?: 'default' | 'channel';
 };
 
 const MEMBERSHIP_REFRESH_HINT =
@@ -53,7 +55,44 @@ export function UpgradeFlow({
   failedHelpText,
   safetyIssueText = '异常联系客服处理',
   noticeConfig = null,
+  variant = 'default',
 }: UpgradeFlowProps = {}) {
+  const isChannel = variant === 'channel';
+  // channel 语义色（避开站点蓝/绿/紫；成功=深金、警告=赤褐、错误走 --destructive 红）。
+  // default 值保持现状，保证 /upgrade 逐字不变。
+  const doneBadge = isChannel
+    ? 'bg-[#B45309] text-white'
+    : 'bg-emerald-500 text-white';
+  const successPill = isChannel
+    ? 'bg-[#FBF1DC] text-[#8A5A12]'
+    : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400';
+  const successBtn = isChannel
+    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+    : 'bg-emerald-600 text-white hover:bg-emerald-700';
+  const successCard = isChannel
+    ? 'border-[#E7C98F] bg-[#FCF6E8]'
+    : 'border-emerald-500/30 bg-emerald-50/50';
+  const successIconWrap = isChannel ? 'bg-[#FBF1DC]' : 'bg-emerald-500/10';
+  const successIconColor = isChannel ? 'text-[#B45309]' : 'text-emerald-600';
+  const successTitle = isChannel
+    ? 'text-[#8A5A12]'
+    : 'text-emerald-700 dark:text-emerald-400';
+  const successSubtle = isChannel
+    ? 'text-[#8A6A2E]'
+    : 'text-emerald-700/80 dark:text-emerald-300/80';
+  const warnBox = isChannel
+    ? 'border-[#F0DBCB] bg-[#FBF3EC]'
+    : 'border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10';
+  const warnTitle = isChannel
+    ? 'text-[#9A3412]'
+    : 'text-amber-800 dark:text-amber-300';
+  const warnSub = isChannel
+    ? 'text-[#9A3412]/85'
+    : 'text-sky-700 dark:text-sky-300';
+  const btnSpinner = isChannel
+    ? 'border-[#7a4a08]/40 border-t-[#7a4a08]'
+    : 'border-white/30 border-t-white';
+
   const [code, setCode] = useState('');
   const [sessionToken, setSessionToken] = useState('');
   const [productCode, setProductCode] = useState('');
@@ -375,14 +414,22 @@ export function UpgradeFlow({
             showCloseButton={false}
             onInteractOutside={(event) => event.preventDefault()}
             onEscapeKeyDown={(event) => event.preventDefault()}
-            className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[560px]"
+            className={`flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[560px] ${isChannel ? 'channel-skin' : ''}`}
           >
-            <div className="shrink-0 border-b bg-amber-50 px-6 py-5 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+            <div
+              className={`shrink-0 border-b px-6 py-5 ${isChannel ? 'bg-[#FBF1DC] text-[#5A4A2E]' : 'bg-amber-50 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100'}`}
+            >
               <DialogHeader>
                 <DialogTitle className="text-xl">
                   {noticeConfig.title}
                 </DialogTitle>
-                <DialogDescription className="text-amber-900/80 dark:text-amber-100/75">
+                <DialogDescription
+                  className={
+                    isChannel
+                      ? 'text-[#8A6A2E]'
+                      : 'text-amber-900/80 dark:text-amber-100/75'
+                  }
+                >
                   {noticeConfig.description}
                 </DialogDescription>
               </DialogHeader>
@@ -396,7 +443,9 @@ export function UpgradeFlow({
                 <ul className="space-y-3">
                   {noticeConfig.items.map((item, idx) => (
                     <li key={item} className="flex gap-3 text-sm leading-6">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-amber-100 text-xs font-semibold text-amber-900 dark:bg-amber-400/20 dark:text-amber-100">
+                      <span
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${isChannel ? 'bg-[#FBF1DC] text-[#8A5A12]' : 'bg-amber-100 text-amber-900 dark:bg-amber-400/20 dark:text-amber-100'}`}
+                      >
                         {idx + 1}
                       </span>
                       <span className="text-foreground">{item}</span>
@@ -425,7 +474,7 @@ export function UpgradeFlow({
               <button
                 type="button"
                 onClick={handleNoticeAck}
-                className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+                className={`w-full rounded-lg px-4 py-3 text-sm font-semibold shadow-sm transition-colors ${successBtn} ${isChannel ? 'channel-lift' : ''}`}
               >
                 {noticeConfig.buttonText || '我已了解，继续升级'}
               </button>
@@ -433,52 +482,106 @@ export function UpgradeFlow({
           </DialogContent>
         </Dialog>
       )}
-      {/* 背景装饰 */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="bg-primary/5 absolute -top-40 -right-40 h-96 w-96 rounded-full blur-3xl" />
-        <div className="bg-primary/5 absolute -bottom-40 -left-40 h-96 w-96 rounded-full blur-3xl" />
-      </div>
+      {/* 背景装饰：default 紫色光晕；channel 由 .channel-skin 提供金色光晕 */}
+      {!isChannel && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="bg-primary/5 absolute -top-40 -right-40 h-96 w-96 rounded-full blur-3xl" />
+          <div className="bg-primary/5 absolute -bottom-40 -left-40 h-96 w-96 rounded-full blur-3xl" />
+        </div>
+      )}
 
-      <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
+      <div
+        className={`relative mx-auto px-4 py-10 sm:px-6 sm:py-16 ${isChannel ? 'channel-stage max-w-2xl' : 'max-w-5xl'}`}
+      >
         {/* 标题区 */}
-        <div className="mb-10 text-center">
-          <div className="border-primary/20 bg-primary/5 text-primary mb-3 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium">
-            <svg
-              className="h-3.5 w-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-            自助升级服务
+        {isChannel ? (
+          <div className="mb-8 text-center">
+            <h1 className="text-foreground text-3xl font-extrabold tracking-tight sm:text-4xl">
+              GPT Plus 自助升级
+            </h1>
+            <p className="text-muted-foreground mt-2 text-sm">
+              全自动处理，通常 1-2 分钟完成升级
+            </p>
           </div>
-          <h1 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            GPT 会员升级
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            全自动处理，通常 1-2 分钟完成升级
-          </p>
-        </div>
+        ) : (
+          <div className="mb-10 text-center">
+            <div className="border-primary/20 bg-primary/5 text-primary mb-3 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium">
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              自助升级服务
+            </div>
+            <h1 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+              GPT 会员升级
+            </h1>
+            <p className="text-muted-foreground mt-2 text-sm">
+              全自动处理，通常 1-2 分钟完成升级
+            </p>
+          </div>
+        )}
 
-        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-          <p className="font-semibold">邮箱风险提示</p>
-          <p className="mt-1">
-            因官方风控问题，GPT 账号为 outlook 或 hotmail 邮箱的用户，
-            需要更换为 gmail、QQ 等其他邮箱。
-          </p>
-          <p className="mt-1 text-sky-700 dark:text-sky-300">
-            更换步骤：网页登录
-            ChatGPT，点击【头像—设置—账户—电子邮件】，进行修改。
-          </p>
-        </div>
+        {/* 邮箱风险提示：channel 不显示（Step2 检测到 outlook 邮箱时另有提示）*/}
+        {!isChannel && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            <p className="font-semibold">邮箱风险提示</p>
+            <p className="mt-1">
+              因官方风控问题，GPT 账号为 outlook 或 hotmail 邮箱的用户，
+              需要更换为 gmail、QQ 等其他邮箱。
+            </p>
+            <p className={`mt-1 ${warnSub}`}>
+              更换步骤：网页登录
+              ChatGPT，点击【头像—设置—账户—电子邮件】，进行修改。
+            </p>
+          </div>
+        )}
 
-        <div className="flex flex-col gap-8 lg:flex-row">
+        {isChannel && (
+          <div className="mb-6 flex items-center px-1">
+            {[
+              { n: 1, label: '核验卡密' },
+              { n: 2, label: '核验 Token' },
+              { n: 3, label: '确认升级' },
+            ].map((s, i) => (
+              <div key={s.n} className="contents">
+                {i > 0 && (
+                  <div
+                    className={`mb-[22px] h-0.5 flex-1 rounded ${currentStep > i ? 'bg-primary' : 'bg-border'}`}
+                  />
+                )}
+                <div className="flex flex-col items-center gap-1.5">
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                      currentStep > s.n
+                        ? doneBadge
+                        : currentStep === s.n
+                          ? 'bg-primary text-primary-foreground channel-pulse'
+                          : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {currentStep > s.n ? '✓' : s.n}
+                  </div>
+                  <span
+                    className={`text-xs font-medium ${currentStep >= s.n ? 'text-foreground' : 'text-muted-foreground'}`}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className={`flex flex-col gap-8 ${isChannel ? '' : 'lg:flex-row'}`}>
           {/* 左侧：主操作区 */}
           <div className="min-w-0 flex-1">
             <div className="space-y-1">
@@ -488,7 +591,7 @@ export function UpgradeFlow({
               >
                 <div className="mb-4 flex items-center gap-3">
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${codeVerified ? 'bg-emerald-500 text-white' : currentStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${codeVerified ? doneBadge : currentStep === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                   >
                     {codeVerified ? (
                       <svg
@@ -545,11 +648,13 @@ export function UpgradeFlow({
                       codeVerified ||
                       !!taskNo
                     }
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 rounded-xl px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
+                    className={`bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 rounded-xl px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${isChannel ? 'channel-lift' : ''}`}
                   >
                     {loading === 'code' ? (
                       <span className="flex items-center gap-1.5">
-                        <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        <span
+                          className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 ${btnSpinner}`}
+                        />
                         验证中
                       </span>
                     ) : codeVerified ? (
@@ -592,7 +697,7 @@ export function UpgradeFlow({
                   </div>
                 )}
                 {codeVerified && (
-                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+                  <div className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${successPill} ${isChannel ? 'channel-popin' : ''}`}>
                     <svg
                       className="h-4 w-4 shrink-0"
                       fill="none"
@@ -617,7 +722,7 @@ export function UpgradeFlow({
               >
                 <div className="mb-4 flex items-center gap-3">
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${tokenParsed ? 'bg-emerald-500 text-white' : currentStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${tokenParsed ? doneBadge : currentStep === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                   >
                     {tokenParsed ? (
                       <svg
@@ -726,11 +831,13 @@ export function UpgradeFlow({
                       tokenParsed ||
                       !!taskNo
                     }
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40"
+                    className={`bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${isChannel ? 'channel-lift' : ''}`}
                   >
                     {loading === 'token' ? (
                       <span className="flex items-center gap-1.5">
-                        <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        <span
+                          className={`inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 ${btnSpinner}`}
+                        />
                         解析中
                       </span>
                     ) : tokenParsed ? (
@@ -759,7 +866,7 @@ export function UpgradeFlow({
                 )}
                 {tokenParsed && (
                   <>
-                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+                    <div className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${successPill} ${isChannel ? 'channel-popin' : ''}`}>
                       <svg
                         className="h-4 w-4 shrink-0"
                         fill="none"
@@ -776,12 +883,14 @@ export function UpgradeFlow({
                       Token 验证通过
                     </div>
                     {shouldShowOutlookEmailWarning && (
-                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-500/30 dark:bg-amber-500/10">
-                        <p className="font-medium text-amber-800 dark:text-amber-300">
+                      <div
+                        className={`mt-3 rounded-lg border px-3 py-2.5 text-sm ${warnBox}`}
+                      >
+                        <p className={`font-medium ${warnTitle}`}>
                           因官方风控问题，outlook / hotmail
                           邮箱账号存在封号风险，请修改。
                         </p>
-                        <p className="mt-1 text-sky-700 dark:text-sky-300">
+                        <p className={`mt-1 ${warnSub}`}>
                           {
                             '更换步骤：网页登录 ChatGPT，点击【头像—设置—账户—电子邮件】，进行修改。'
                           }
@@ -798,7 +907,7 @@ export function UpgradeFlow({
               >
                 <div className="mb-4 flex items-center gap-3">
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${taskNo ? 'bg-emerald-500 text-white' : currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold transition-colors ${taskNo ? doneBadge : currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                   >
                     {taskNo ? (
                       <svg
@@ -891,11 +1000,13 @@ export function UpgradeFlow({
                           handleSubmit();
                         }}
                         disabled={loading === 'submit' || !canConfirmUpgrade}
-                        className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                        className={`flex-1 rounded-xl py-3 text-sm font-semibold shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 ${successBtn} ${isChannel ? 'channel-lift' : ''}`}
                       >
                         {loading === 'submit' ? (
                           <span className="flex items-center justify-center gap-2">
-                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            <span
+                              className={`inline-block h-4 w-4 animate-spin rounded-full border-2 ${btnSpinner}`}
+                            />
                             提交中...
                           </span>
                         ) : taskStatus === 'failed' ? (
@@ -912,7 +1023,7 @@ export function UpgradeFlow({
               {/* 升级结果（独立卡片，在 Step 3 下方） */}
               {taskNo && (
                 <div
-                  className={`rounded-2xl border p-4 ${taskStatus === 'succeeded' ? 'border-emerald-500/30 bg-emerald-50/50' : 'border-border/50 bg-card'}`}
+                  className={`rounded-2xl border p-4 ${taskStatus === 'succeeded' ? successCard : 'border-border/50 bg-card'}`}
                 >
                   {polling ? (
                     <div className="flex flex-col items-center gap-4 py-4">
@@ -937,9 +1048,11 @@ export function UpgradeFlow({
                     </div>
                   ) : taskStatus === 'succeeded' ? (
                     <div className="flex flex-col items-center gap-3 py-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10">
+                      <div
+                        className={`flex h-14 w-14 items-center justify-center rounded-2xl ${successIconWrap} ${isChannel ? 'channel-popin' : ''}`}
+                      >
                         <svg
-                          className="h-7 w-7 text-emerald-600"
+                          className={`h-7 w-7 ${successIconColor}`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -952,10 +1065,10 @@ export function UpgradeFlow({
                           />
                         </svg>
                       </div>
-                      <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                      <p className={`text-lg font-bold ${successTitle}`}>
                         {taskMessage}
                       </p>
-                      <p className="max-w-md text-center text-sm text-emerald-700/80 dark:text-emerald-300/80">
+                      <p className={`max-w-md text-center text-sm ${successSubtle}`}>
                         {MEMBERSHIP_REFRESH_HINT}
                       </p>
                       <div className="flex gap-3">
@@ -963,7 +1076,7 @@ export function UpgradeFlow({
                           href="https://chat.openai.com"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md"
+                          className={`inline-flex items-center gap-1.5 rounded-xl px-6 py-2.5 text-sm font-medium shadow-sm transition-all hover:shadow-md ${successBtn} ${isChannel ? 'channel-lift' : ''}`}
                         >
                           前往 ChatGPT
                           <svg
@@ -1027,10 +1140,25 @@ export function UpgradeFlow({
                 </div>
               )}
             </div>
+
+            {isChannel && (
+              <div className="text-muted-foreground mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+                <span className="inline-flex items-center gap-1.5">
+                  🔒 数据加密传输
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  ⚡ 通常 1-2 分钟完成
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  🛡️ {safetyIssueText}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* 右侧：信息面板 */}
-          <div className="w-full shrink-0 space-y-4 lg:w-72">
+          {/* 右侧信息面板：channel 不渲染（信息已由顶部进度条 + 底部安全保障承载）*/}
+          {!isChannel && (
+            <div className="w-full shrink-0 space-y-4 lg:w-72">
             {/* 流程指引 */}
             <div className="border-border/50 bg-card rounded-2xl border p-6 shadow-sm">
               <h3 className="text-muted-foreground mb-5 text-sm font-bold tracking-wider uppercase">
@@ -1105,7 +1233,8 @@ export function UpgradeFlow({
                 </p>
               </div>
             )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
