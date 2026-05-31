@@ -1,6 +1,11 @@
 import '@/config/style/global.css';
 
-import { JetBrains_Mono, Merriweather, Noto_Sans_Mono } from 'next/font/google';
+import {
+  JetBrains_Mono,
+  Manrope,
+  Merriweather,
+  Noto_Sans_Mono,
+} from 'next/font/google';
 import { headers } from 'next/headers';
 import { getLocale, setRequestLocale } from 'next-intl/server';
 import NextTopLoader from 'nextjs-toploader';
@@ -35,6 +40,14 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-mono',
   display: 'swap',
   preload: true,
+});
+
+// 仅供 /channel-upgrade（.channel-skin 作用域）使用
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-channel',
+  display: 'swap',
+  preload: false,
 });
 
 export default async function RootLayout({
@@ -114,7 +127,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${notoSansMono.variable} ${merriweather.variable} ${jetbrainsMono.variable}`}
+      className={`${notoSansMono.variable} ${merriweather.variable} ${jetbrainsMono.variable} ${manrope.variable}`}
       suppressHydrationWarning
     >
       <head>

@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './theme.css';
+@import './channel-skin.css';
 
 @custom-variant dark (&:is(.dark *));
 

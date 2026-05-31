@@ -1,0 +1,124 @@
+/* ============================================================
+   /channel-upgrade —— D3 琥珀金 浅色清新主题（作用域 .channel-skin）
+   仅作用于该容器，重定义语义变量 + 字体 + 背景，不影响 /upgrade 与全站。
+   ============================================================ */
+.channel-skin {
+  --background: #fdfaf2;
+  --foreground: #2a2316;
+  --card: #ffffff;
+  --card-foreground: #2a2316;
+  --popover: #ffffff;
+  --popover-foreground: #2a2316;
+  --primary: #c77c12; /* 琥珀金 主色 */
+  --primary-foreground: #ffffff;
+  --secondary: #f6eedd;
+  --secondary-foreground: #5a4a2e;
+  --muted: #f4eedd;
+  --muted-foreground: #897f66;
+  --accent: #fbf1dc;
+  --accent-foreground: #5a4a2e;
+  --destructive: #dc2626; /* 错误红 */
+  --destructive-foreground: #ffffff;
+  --border: #efe6cf;
+  --input: #efe6cf;
+  --ring: #c77c12; /* 聚焦金环 */
+
+  --font-sans: var(--font-channel), 'Manrope', ui-sans-serif, system-ui,
+    sans-serif;
+  font-family: var(--font-sans);
+
+  min-height: 100vh;
+  color: var(--foreground);
+  background-color: var(--background);
+  background-image: radial-gradient(
+    68% 42% at 50% -6%,
+    rgba(199, 124, 18, 0.1),
+    transparent 70%
+  );
+}
+
+/* ---- channel 动效（尊重 reduce-motion）---- */
+@keyframes channel-fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes channel-popin {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes channel-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(199, 124, 18, 0.42);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(199, 124, 18, 0);
+  }
+}
+.channel-skin .channel-stage > * {
+  opacity: 0;
+  animation: channel-fadeup 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.channel-skin .channel-stage > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.channel-skin .channel-stage > *:nth-child(2) {
+  animation-delay: 0.13s;
+}
+.channel-skin .channel-stage > *:nth-child(3) {
+  animation-delay: 0.21s;
+}
+.channel-skin .channel-stage > *:nth-child(4) {
+  animation-delay: 0.29s;
+}
+.channel-skin .channel-stage > *:nth-child(5) {
+  animation-delay: 0.37s;
+}
+.channel-skin .channel-stage > *:nth-child(6) {
+  animation-delay: 0.45s;
+}
+.channel-skin .channel-pulse {
+  animation: channel-pulse 2s infinite;
+}
+.channel-skin .channel-popin {
+  animation: channel-popin 0.4s ease both;
+}
+.channel-skin .channel-lift {
+  transition:
+    transform 0.15s,
+    box-shadow 0.2s;
+}
+.channel-skin .channel-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(199, 124, 18, 0.32);
+}
+.channel-skin .channel-lift:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .channel-skin .channel-stage > *,
+  .channel-skin .channel-pulse,
+  .channel-skin .channel-popin {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .channel-skin .channel-lift {
+    transition: none !important;
+  }
+}
