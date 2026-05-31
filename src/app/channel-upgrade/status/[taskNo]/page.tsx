@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function ChannelUpgradeStatusPage() {
   return (
-    <div className="channel-skin">
+    <div className="channel-skin channel-tokens">
       <UpgradeStatusView
         variant="channel"
         supportContact={null}

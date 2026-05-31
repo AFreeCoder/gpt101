@@ -20,7 +20,7 @@ export default async function ChannelUpgradePage() {
   );
 
   return (
-    <div className="channel-skin">
+    <div className="channel-skin channel-tokens">
       <UpgradeFlow
         variant="channel"
         showSupportCard={false}

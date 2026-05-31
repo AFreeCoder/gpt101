@@ -414,7 +414,7 @@ export function UpgradeFlow({
             showCloseButton={false}
             onInteractOutside={(event) => event.preventDefault()}
             onEscapeKeyDown={(event) => event.preventDefault()}
-            className={`flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[560px] ${isChannel ? 'channel-skin' : ''}`}
+            className={`flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[560px] ${isChannel ? 'channel-tokens' : ''}`}
           >
             <div
               className={`shrink-0 border-b px-6 py-5 ${isChannel ? 'bg-[#FBF1DC] text-[#5A4A2E]' : 'bg-amber-50 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100'}`}

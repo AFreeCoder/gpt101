@@ -1,8 +1,11 @@
 /* ============================================================
-   /channel-upgrade —— D3 琥珀金 浅色清新主题（作用域 .channel-skin）
-   仅作用于该容器，重定义语义变量 + 字体 + 背景，不影响 /upgrade 与全站。
+   /channel-upgrade —— D3 琥珀金 浅色清新主题
+   拆为两层：
+   - .channel-tokens：纯语义变量 + 字体 + 动效（可安全用于弹窗 portal）
+   - .channel-skin：页面级外观（整页高度 + 背景光晕），仅用于整页容器
+   仅作用于这两个作用域，不影响 /upgrade 与全站。
    ============================================================ */
-.channel-skin {
+.channel-tokens {
   --background: #fdfaf2;
   --foreground: #2a2316;
   --card: #ffffff;
@@ -10,7 +13,8 @@
   --popover: #ffffff;
   --popover-foreground: #2a2316;
   --primary: #c77c12; /* 琥珀金 主色 */
-  --primary-foreground: #ffffff;
+  /* 金底白字对比度仅 3.32:1（未达 WCAG AA）；改用深褐前景，4.68:1 达标 */
+  --primary-foreground: #2a2316;
   --secondary: #f6eedd;
   --secondary-foreground: #5a4a2e;
   --muted: #f4eedd;
@@ -26,9 +30,13 @@
   --font-sans: var(--font-channel), 'Manrope', ui-sans-serif, system-ui,
     sans-serif;
   font-family: var(--font-sans);
-
-  min-height: 100vh;
   color: var(--foreground);
+}
+
+/* 页面级外观：仅用于整页容器，依赖同元素上的 .channel-tokens 提供变量。
+   不可用于 portal/弹窗，否则 min-height:100vh 会撑破弹窗的 max-h 滚动设计。 */
+.channel-skin {
+  min-height: 100vh;
   background-color: var(--background);
   background-image: radial-gradient(
     68% 42% at 50% -6%,
@@ -37,7 +45,7 @@
   );
 }
 
-/* ---- channel 动效（尊重 reduce-motion）---- */
+/* ---- channel 动效（作用域 .channel-tokens，页面与弹窗内均可用；尊重 reduce-motion）---- */
 @keyframes channel-fadeup {
   from {
     opacity: 0;
@@ -70,55 +78,55 @@
     box-shadow: 0 0 0 5px rgba(199, 124, 18, 0);
   }
 }
-.channel-skin .channel-stage > * {
+.channel-tokens .channel-stage > * {
   opacity: 0;
   animation: channel-fadeup 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
-.channel-skin .channel-stage > *:nth-child(1) {
+.channel-tokens .channel-stage > *:nth-child(1) {
   animation-delay: 0.05s;
 }
-.channel-skin .channel-stage > *:nth-child(2) {
+.channel-tokens .channel-stage > *:nth-child(2) {
   animation-delay: 0.13s;
 }
-.channel-skin .channel-stage > *:nth-child(3) {
+.channel-tokens .channel-stage > *:nth-child(3) {
   animation-delay: 0.21s;
 }
-.channel-skin .channel-stage > *:nth-child(4) {
+.channel-tokens .channel-stage > *:nth-child(4) {
   animation-delay: 0.29s;
 }
-.channel-skin .channel-stage > *:nth-child(5) {
+.channel-tokens .channel-stage > *:nth-child(5) {
   animation-delay: 0.37s;
 }
-.channel-skin .channel-stage > *:nth-child(6) {
+.channel-tokens .channel-stage > *:nth-child(6) {
   animation-delay: 0.45s;
 }
-.channel-skin .channel-pulse {
+.channel-tokens .channel-pulse {
   animation: channel-pulse 2s infinite;
 }
-.channel-skin .channel-popin {
+.channel-tokens .channel-popin {
   animation: channel-popin 0.4s ease both;
 }
-.channel-skin .channel-lift {
+.channel-tokens .channel-lift {
   transition:
     transform 0.15s,
     box-shadow 0.2s;
 }
-.channel-skin .channel-lift:hover {
+.channel-tokens .channel-lift:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(199, 124, 18, 0.32);
 }
-.channel-skin .channel-lift:active {
+.channel-tokens .channel-lift:active {
   transform: translateY(0) scale(0.98);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .channel-skin .channel-stage > *,
-  .channel-skin .channel-pulse,
-  .channel-skin .channel-popin {
+  .channel-tokens .channel-stage > *,
+  .channel-tokens .channel-pulse,
+  .channel-tokens .channel-popin {
     animation: none !important;
     opacity: 1 !important;
   }
-  .channel-skin .channel-lift {
+  .channel-tokens .channel-lift {
     transition: none !important;
   }
 }
