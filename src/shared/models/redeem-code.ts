@@ -4,7 +4,11 @@ import { db } from '@/core/db';
 import { redeemCode, redeemCodeBatch, upgradeTask } from '@/config/db/schema';
 import { dbTimestampNow } from '@/shared/lib/db-time';
 import { getUuid } from '@/shared/lib/hash';
-import { generateRedeemCode } from '@/shared/lib/redeem-code';
+import {
+  generateRedeemCode,
+  normalizeRedeemCodePrefix,
+  validateRedeemCodePrefix,
+} from '@/shared/lib/redeem-code';
 
 export type RedeemCode = typeof redeemCode.$inferSelect;
 export type RedeemCodeBatch = typeof redeemCodeBatch.$inferSelect;
@@ -66,10 +70,16 @@ export async function generateBatch(args: {
   memberType: string;
   count: number;
   unitPrice: string; // 元，如 "179.00"
+  prefix?: string;
   createdBy?: string;
 }): Promise<{ batchId: string; title: string; codes: string[] }> {
   const batchId = generateBatchId();
-  const title = `${args.productCode}-${args.memberType}-${batchId}`;
+  const prefix = normalizeRedeemCodePrefix(args.prefix);
+  if (!validateRedeemCodePrefix(prefix)) {
+    throw new Error('卡密前缀只能包含 2-20 位字母或数字');
+  }
+
+  const title = `${args.productCode}-${args.memberType}-${prefix}-${batchId}`;
   const codes: string[] = [];
 
   await db().transaction(async (tx: any) => {
@@ -81,11 +91,13 @@ export async function generateBatch(args: {
       count: args.count,
       unitPrice: args.unitPrice,
       createdBy: args.createdBy,
-      note: args.createdBy ? `由 ${args.createdBy} 创建` : undefined,
+      note: args.createdBy
+        ? `由 ${args.createdBy} 创建，前缀 ${prefix}`
+        : `前缀 ${prefix}`,
     });
 
     for (let i = 0; i < args.count; i++) {
-      const code = generateRedeemCode();
+      const code = generateRedeemCode(prefix);
       const id = getUuid();
       try {
         await tx.insert(redeemCode).values({
@@ -99,7 +111,7 @@ export async function generateBatch(args: {
         codes.push(code);
       } catch {
         // unique 冲突，重试一次
-        const retryCode = generateRedeemCode();
+        const retryCode = generateRedeemCode(prefix);
         await tx.insert(redeemCode).values({
           id: getUuid(),
           batchId,

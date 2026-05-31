@@ -49,7 +49,7 @@ export default async function RootLayout({
   const isDebug = process.env.NEXT_PUBLIC_DEBUG === 'true';
   const headersList = await headers();
   const skipGlobalCustomerService = shouldSkipGlobalCustomerService(
-    headersList.get('host')
+    headersList.get('x-forwarded-host') || headersList.get('host')
   );
 
   // app url

@@ -50,3 +50,21 @@ test('upgrade task summary keeps only essential successful upgrade fields', () =
   assert.doesNotMatch(source, /提交前会员状态/);
   assert.doesNotMatch(source, /提交时间/);
 });
+
+test('upgrade cardkey APIs normalize code before validation and service calls', () => {
+  const verifySource = readFileSync(
+    path.join(repoRoot, 'src/app/api/upgrade/verify-code/route.ts'),
+    'utf8'
+  );
+  const submitSource = readFileSync(
+    path.join(repoRoot, 'src/app/api/upgrade/submit/route.ts'),
+    'utf8'
+  );
+
+  assert.match(verifySource, /normalizeRedeemCode/);
+  assert.match(verifySource, /validateRedeemCodeFormat\(normalizedCode\)/);
+  assert.match(verifySource, /verifyRedeemCode\(normalizedCode\)/);
+  assert.match(submitSource, /normalizeRedeemCode/);
+  assert.match(submitSource, /validateRedeemCodeFormat\(normalizedCode\)/);
+  assert.match(submitSource, /code: normalizedCode/);
+});

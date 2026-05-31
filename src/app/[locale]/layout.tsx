@@ -27,7 +27,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const headersList = await headers();
   const useMinimalIntlMessages = isUpgradeSubdomainHost(
-    headersList.get('host')
+    headersList.get('x-forwarded-host') || headersList.get('host')
   );
 
   return (

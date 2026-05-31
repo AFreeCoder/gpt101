@@ -5,13 +5,14 @@ import createIntlMiddleware from 'next-intl/middleware';
 import { routing } from '@/core/i18n/config';
 import {
   getUpgradeSubdomainRedirectPath,
-  shouldServeUpgradeSubdomainPath,
+  getUpgradeSubdomainRewritePath,
 } from '@/shared/lib/upgrade-subdomain';
 
 const intlMiddleware = createIntlMiddleware(routing);
 const PUBLIC_CACHE_CONTROL =
   'public, s-maxage=3600, stale-while-revalidate=14400';
 const QUERY_ROBOTS_HEADER = 'noindex, follow';
+const CHANNEL_UPGRADE_INTERNAL_PATH = '/channel-upgrade';
 
 function withPublicCacheHeaders(response: NextResponse, request: NextRequest) {
   response.headers.set('x-pathname', request.nextUrl.pathname);
@@ -48,6 +49,16 @@ function createUpgradeSubdomainRedirectUrl(
   );
 }
 
+function createUpgradeSubdomainRewriteUrl(
+  request: NextRequest,
+  pathname: string
+) {
+  const rewriteUrl = request.nextUrl.clone();
+  rewriteUrl.protocol = 'http:';
+  rewriteUrl.pathname = pathname;
+  return rewriteUrl;
+}
+
 function getForwardedHeaderValue(request: NextRequest, headerName: string) {
   const value = request.headers.get(headerName);
   return value?.split(',')[0]?.trim() || null;
@@ -57,9 +68,18 @@ function normalizeProtocol(protocol: string) {
   return protocol.endsWith(':') ? protocol.slice(0, -1) : protocol;
 }
 
+function isChannelUpgradeInternalPath(pathname: string) {
+  return (
+    pathname === CHANNEL_UPGRADE_INTERNAL_PATH ||
+    pathname.startsWith(`${CHANNEL_UPGRADE_INTERNAL_PATH}/status/`)
+  );
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const host = request.headers.get('host');
+  const host =
+    getForwardedHeaderValue(request, 'x-forwarded-host') ||
+    request.headers.get('host');
 
   const upgradeSubdomainRedirectPath = getUpgradeSubdomainRedirectPath(
     host,
@@ -71,7 +91,20 @@ export async function proxy(request: NextRequest) {
     );
   }
 
-  if (shouldServeUpgradeSubdomainPath(host, pathname)) {
+  const upgradeSubdomainRewritePath = getUpgradeSubdomainRewritePath(
+    host,
+    pathname
+  );
+  if (upgradeSubdomainRewritePath) {
+    return withPublicCacheHeaders(
+      NextResponse.rewrite(
+        createUpgradeSubdomainRewriteUrl(request, upgradeSubdomainRewritePath)
+      ),
+      request
+    );
+  }
+
+  if (isChannelUpgradeInternalPath(pathname)) {
     return withPublicCacheHeaders(NextResponse.next(), request);
   }
 

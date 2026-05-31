@@ -144,7 +144,9 @@ export default function RedeemCodeBatchQueryPage() {
           <textarea
             value={queryText}
             onChange={(event) => setQueryText(event.target.value)}
-            placeholder="GPT101-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+            placeholder={
+              'GPT101-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\nKOL88-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+            }
             rows={8}
             className="min-h-44 w-full rounded-lg border p-3 font-mono text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />

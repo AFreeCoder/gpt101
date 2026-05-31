@@ -1,16 +1,32 @@
-const UPGRADE_SUBDOMAIN_HOST = 'upgrade.gpt101.org';
+const DEFAULT_UPGRADE_PAGE_HOST = 'upgrade.gpt101.org';
+const UPGRADE_PAGE_HOSTS_ENV = 'UPGRADE_PAGE_HOSTS';
 const UPGRADE_PATH = '/upgrade';
+const CHANNEL_UPGRADE_PATH = '/channel-upgrade';
 const AGENT_UPGRADE_PATH = '/agent-upgrade';
 const SUPPORTED_LOCALE_SEGMENTS = new Set(['en', 'zh']);
 
 function normalizeHost(host: string | null | undefined): string {
-  return (host || '').split(':')[0].toLowerCase();
+  return (host || '')
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .split('/')[0]
+    .split(':')[0]
+    .toLowerCase();
+}
+
+function getUpgradePageHosts(): Set<string> {
+  const configuredHosts = (process.env[UPGRADE_PAGE_HOSTS_ENV] || '')
+    .split(',')
+    .map(normalizeHost)
+    .filter(Boolean);
+
+  return new Set([DEFAULT_UPGRADE_PAGE_HOST, ...configuredHosts]);
 }
 
 export function isUpgradeSubdomainHost(
   host: string | null | undefined
 ): boolean {
-  return normalizeHost(host) === UPGRADE_SUBDOMAIN_HOST;
+  return getUpgradePageHosts().has(normalizeHost(host));
 }
 
 export function getUpgradeSubdomainRedirectPath(
@@ -63,6 +79,26 @@ export function shouldServeUpgradeSubdomainPath(
     normalizedPathname === stripLeadingLocale(normalizedPathname) &&
     isCanonicalUpgradePath(normalizedPathname)
   );
+}
+
+export function getUpgradeSubdomainRewritePath(
+  host: string | null | undefined,
+  pathname: string
+): string | null {
+  if (!shouldServeUpgradeSubdomainPath(host, pathname)) {
+    return null;
+  }
+
+  const normalizedPathname = normalizePathname(pathname);
+  if (normalizedPathname === UPGRADE_PATH) {
+    return CHANNEL_UPGRADE_PATH;
+  }
+
+  if (normalizedPathname.startsWith(`${UPGRADE_PATH}/status/`)) {
+    return `${CHANNEL_UPGRADE_PATH}${normalizedPathname.slice(UPGRADE_PATH.length)}`;
+  }
+
+  return null;
 }
 
 export function shouldSkipGlobalCustomerService(

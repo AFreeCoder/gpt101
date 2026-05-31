@@ -224,7 +224,7 @@ test('verify-code API 对已成功卡密返回详情而不是错误', async () =
     const response = await verifyCodePost(
       new Request('http://localhost/api/upgrade/verify-code', {
         method: 'POST',
-        body: JSON.stringify({ code: seeded.code }),
+        body: JSON.stringify({ code: ` ${seeded.code.toLowerCase()} ` }),
       })
     );
     const payload = await response.json();

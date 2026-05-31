@@ -63,6 +63,22 @@ test('redeem codes admin page exposes code search while preserving filters', () 
   );
 });
 
+test('redeem code generator exposes configurable cardkey prefix', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/redeem-codes/generate/page.tsx'
+  );
+  const routeSource = readSource(
+    'src/app/api/admin/redeem-codes/generate/route.ts'
+  );
+
+  assert.match(pageSource, /卡密前缀/);
+  assert.match(pageSource, /validateRedeemCodePrefix/);
+  assert.match(pageSource, /normalizeRedeemCodePrefix/);
+  assert.match(pageSource, /prefix: normalizeRedeemCodePrefix\(prefix\)/);
+  assert.match(routeSource, /validateRedeemCodePrefix/);
+  assert.match(routeSource, /prefix: prefix \? String\(prefix\) : undefined/);
+});
+
 test('redeem code batch query admin page exposes textarea query and status filters', () => {
   const pageSource = readSource(
     'src/app/[locale]/(admin)/admin/redeem-codes/batch-query/page.tsx'

@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import {
   getUpgradeSubdomainRedirectPath,
+  getUpgradeSubdomainRewritePath,
   isUpgradeSubdomainHost,
   shouldServeUpgradeSubdomainPath,
   shouldSkipGlobalCustomerService,
@@ -12,12 +13,49 @@ import {
 
 const repoRoot = process.cwd();
 
-test('upgrade subdomain host detection accepts only upgrade.gpt101.org', () => {
+function restoreUpgradePageHosts(value: string | undefined) {
+  if (value === undefined) {
+    delete process.env.UPGRADE_PAGE_HOSTS;
+    return;
+  }
+
+  process.env.UPGRADE_PAGE_HOSTS = value;
+}
+
+test('upgrade host detection accepts default and configured reseller domains', () => {
+  const originalHosts = process.env.UPGRADE_PAGE_HOSTS;
+  process.env.UPGRADE_PAGE_HOSTS = 'up.partner-example.com, upgrade.gpt101.org';
+
   assert.equal(isUpgradeSubdomainHost('upgrade.gpt101.org'), true);
   assert.equal(isUpgradeSubdomainHost('upgrade.gpt101.org:443'), true);
+  assert.equal(isUpgradeSubdomainHost('up.partner-example.com'), true);
+  assert.equal(isUpgradeSubdomainHost('UP.PARTNER-EXAMPLE.COM:443'), true);
   assert.equal(isUpgradeSubdomainHost('gpt101.org'), false);
   assert.equal(isUpgradeSubdomainHost('new.gpt101.org'), false);
   assert.equal(isUpgradeSubdomainHost(null), false);
+
+  restoreUpgradePageHosts(originalHosts);
+});
+
+test('configured reseller domain canonicalizes and serves upgrade paths', () => {
+  const originalHosts = process.env.UPGRADE_PAGE_HOSTS;
+  process.env.UPGRADE_PAGE_HOSTS = 'up.partner-example.com';
+
+  assert.equal(
+    getUpgradeSubdomainRedirectPath('up.partner-example.com', '/'),
+    '/upgrade'
+  );
+  assert.equal(
+    shouldServeUpgradeSubdomainPath('up.partner-example.com', '/upgrade'),
+    true
+  );
+  assert.equal(
+    getUpgradeSubdomainRewritePath('up.partner-example.com', '/upgrade'),
+    '/channel-upgrade'
+  );
+  assert.equal(shouldSkipGlobalCustomerService('up.partner-example.com'), true);
+
+  restoreUpgradePageHosts(originalHosts);
 });
 
 test('upgrade subdomain canonicalizes public paths to /upgrade', () => {
@@ -87,16 +125,39 @@ test('upgrade subdomain serves only canonical /upgrade paths directly', () => {
   );
 });
 
+test('upgrade subdomain rewrites canonical external URLs to isolated channel pages', () => {
+  assert.equal(
+    getUpgradeSubdomainRewritePath('upgrade.gpt101.org', '/upgrade'),
+    '/channel-upgrade'
+  );
+  assert.equal(
+    getUpgradeSubdomainRewritePath(
+      'upgrade.gpt101.org',
+      '/upgrade/status/TS-20260424-0001'
+    ),
+    '/channel-upgrade/status/TS-20260424-0001'
+  );
+  assert.equal(getUpgradeSubdomainRewritePath('gpt101.org', '/upgrade'), null);
+});
+
 test('upgrade subdomain skips global customer service injection', () => {
   assert.equal(shouldSkipGlobalCustomerService('upgrade.gpt101.org'), true);
   assert.equal(shouldSkipGlobalCustomerService('gpt101.org'), false);
 });
 
-test('top-level upgrade pages serve reseller flow and old agent paths redirect to /upgrade', () => {
+test('external channel pages are isolated from the main /upgrade route', () => {
   const upgradePath = path.join(repoRoot, 'src/app/upgrade/page.tsx');
   const upgradeStatusPath = path.join(
     repoRoot,
     'src/app/upgrade/status/[taskNo]/page.tsx'
+  );
+  const channelUpgradePath = path.join(
+    repoRoot,
+    'src/app/channel-upgrade/page.tsx'
+  );
+  const channelUpgradeStatusPath = path.join(
+    repoRoot,
+    'src/app/channel-upgrade/status/[taskNo]/page.tsx'
   );
   const pagePath = path.join(
     repoRoot,
@@ -109,25 +170,40 @@ test('top-level upgrade pages serve reseller flow and old agent paths redirect t
 
   assert.equal(existsSync(upgradePath), true);
   assert.equal(existsSync(upgradeStatusPath), true);
+  assert.equal(existsSync(channelUpgradePath), true);
+  assert.equal(existsSync(channelUpgradeStatusPath), true);
   assert.equal(existsSync(pagePath), true);
   assert.equal(existsSync(statusPath), true);
 
   const upgradeSource = readFileSync(upgradePath, 'utf8');
   const upgradeStatusSource = readFileSync(upgradeStatusPath, 'utf8');
+  const channelUpgradeSource = readFileSync(channelUpgradePath, 'utf8');
+  const channelUpgradeStatusSource = readFileSync(
+    channelUpgradeStatusPath,
+    'utf8'
+  );
   const pageSource = readFileSync(pagePath, 'utf8');
   const statusSource = readFileSync(statusPath, 'utf8');
 
-  assert.match(upgradeSource, /showSupportCard=\{false\}/);
-  assert.match(upgradeSource, /supportContact=\{null\}/);
-  assert.match(upgradeStatusSource, /supportContact=\{null\}/);
+  assert.doesNotMatch(upgradeSource, /presentation="channel"/);
+  assert.doesNotMatch(upgradeStatusSource, /presentation="channel"/);
+  assert.match(channelUpgradeSource, /showSupportCard=\{false\}/);
+  assert.match(channelUpgradeSource, /supportContact=\{null\}/);
+  assert.match(channelUpgradeStatusSource, /supportContact=\{null\}/);
+  assert.doesNotMatch(channelUpgradeSource, /presentation="channel"/);
+  assert.doesNotMatch(channelUpgradeStatusSource, /presentation="channel"/);
+  assert.doesNotMatch(
+    channelUpgradeSource,
+    /headingKicker|headingTitle|headingDescription|卡密兑换服务台|PARTNER SERVICE DESK/
+  );
   assert.match(pageSource, /redirect\('\/upgrade'\)/);
   assert.match(statusSource, /redirect\(`\/upgrade\/status\/\$\{taskNo\}`\)/);
   assert.doesNotMatch(
-    upgradeSource,
+    channelUpgradeSource,
     /AFreeCoder01|联系客服微信|Footer|Header|TopBanner/
   );
   assert.doesNotMatch(
-    upgradeStatusSource,
+    channelUpgradeStatusSource,
     /AFreeCoder01|联系客服微信|Footer|Header|TopBanner/
   );
 });
@@ -136,9 +212,9 @@ test('proxy bypasses intl middleware for canonical upgrade subdomain paths', () 
   const proxySource = readFileSync(path.join(repoRoot, 'src/proxy.ts'), 'utf8');
 
   assert.match(proxySource, /getUpgradeSubdomainRedirectPath/);
-  assert.match(proxySource, /shouldServeUpgradeSubdomainPath/);
+  assert.match(proxySource, /getUpgradeSubdomainRewritePath/);
   assert.match(proxySource, /createUpgradeSubdomainRedirectUrl/);
   assert.match(proxySource, /x-forwarded-host/);
   assert.match(proxySource, /x-forwarded-proto/);
-  assert.match(proxySource, /NextResponse\.next\(\)/);
+  assert.match(proxySource, /NextResponse\.rewrite/);
 });

@@ -27,16 +27,12 @@ export const PRODUCT_TYPES: ProductType[] = [
   {
     code: 'claude',
     label: 'Claude',
-    members: [
-      { code: 'pro', label: 'Pro' },
-    ],
+    members: [{ code: 'pro', label: 'Pro' }],
   },
   {
     code: 'gemini',
     label: 'Gemini',
-    members: [
-      { code: 'advanced', label: 'Advanced' },
-    ],
+    members: [{ code: 'advanced', label: 'Advanced' }],
   },
   {
     code: 'grok',
@@ -65,7 +61,10 @@ export function getMemberTypes(productCode: string): MemberType[] {
 /**
  * 获取产品+会员的显示名
  */
-export function getProductMemberLabel(productCode: string, memberType: string): string {
+export function getProductMemberLabel(
+  productCode: string,
+  memberType: string
+): string {
   const product = PRODUCT_TYPES.find((p) => p.code === productCode);
   if (!product) return `${productCode}/${memberType}`;
   const member = product.members.find((m) => m.code === memberType);
@@ -75,7 +74,10 @@ export function getProductMemberLabel(productCode: string, memberType: string): 
 /**
  * 获取会员类型的显示名（不含产品名）
  */
-export function getMemberLabel(productCode: string, memberType: string): string {
+export function getMemberLabel(
+  productCode: string,
+  memberType: string
+): string {
   const product = PRODUCT_TYPES.find((p) => p.code === productCode);
   if (!product) return memberType;
   const member = product.members.find((m) => m.code === memberType);
@@ -86,24 +88,50 @@ export function getMemberLabel(productCode: string, memberType: string): string 
 
 const CODE_CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const CODE_BODY_LENGTH = 32;
+const DEFAULT_CODE_PREFIX = 'GPT101';
+const CODE_PREFIX_PATTERN = /^[A-Z0-9]{2,20}$/;
+const CODE_FORMAT_PATTERN = /^[A-Z0-9]{2,20}-[A-Z0-9]{32}$/;
+
+function getRandomCodeChar(): string {
+  const values = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(values);
+  return CODE_CHARSET[values[0] % CODE_CHARSET.length];
+}
+
+export function normalizeRedeemCodePrefix(prefix?: string | null): string {
+  return (prefix || DEFAULT_CODE_PREFIX).trim().toUpperCase();
+}
+
+export function validateRedeemCodePrefix(prefix: string): boolean {
+  return CODE_PREFIX_PATTERN.test(prefix.trim().toUpperCase());
+}
+
+export function normalizeRedeemCode(code: string): string {
+  return code.trim().toUpperCase();
+}
 
 /**
  * 生成单个卡密
- * 格式：GPT101-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX（前缀 + 32 位大写字母+数字）
+ * 格式：PREFIX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX（前缀 + 32 位大写字母+数字）
  */
-export function generateRedeemCode(): string {
+export function generateRedeemCode(prefix?: string | null): string {
+  const normalizedPrefix = normalizeRedeemCodePrefix(prefix);
+  if (!validateRedeemCodePrefix(normalizedPrefix)) {
+    throw new Error('卡密前缀只能包含 2-20 位大写字母或数字');
+  }
+
   let body = '';
   for (let i = 0; i < CODE_BODY_LENGTH; i++) {
-    body += CODE_CHARSET[Math.floor(Math.random() * CODE_CHARSET.length)];
+    body += getRandomCodeChar();
   }
-  return `GPT101-${body}`;
+  return `${normalizedPrefix}-${body}`;
 }
 
 /**
  * 校验卡密格式是否合法（不查库）
  */
 export function validateRedeemCodeFormat(code: string): boolean {
-  return /^GPT101-[A-Z0-9]{32}$/.test(code.toUpperCase());
+  return CODE_FORMAT_PATTERN.test(normalizeRedeemCode(code));
 }
 
 // --- 状态显示 ---

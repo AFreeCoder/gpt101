@@ -1,4 +1,7 @@
-import { validateRedeemCodeFormat } from '@/shared/lib/redeem-code';
+import {
+  normalizeRedeemCode,
+  validateRedeemCodeFormat,
+} from '@/shared/lib/redeem-code';
 import { respData, respErr } from '@/shared/lib/resp';
 import { verifyRedeemCode } from '@/shared/services/upgrade-task';
 
@@ -7,11 +10,12 @@ export async function POST(req: Request) {
     const { code } = await req.json();
     if (!code) return respErr('请输入卡密');
 
-    if (!validateRedeemCodeFormat(code)) {
+    const normalizedCode = normalizeRedeemCode(String(code));
+    if (!validateRedeemCodeFormat(normalizedCode)) {
       return respErr('卡密格式不正确');
     }
 
-    const result = await verifyRedeemCode(code);
+    const result = await verifyRedeemCode(normalizedCode);
     if (!result.valid) {
       if (result.task) {
         return respData(result);
