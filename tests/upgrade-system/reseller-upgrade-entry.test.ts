@@ -43,7 +43,11 @@ test('upgpt.app 作为内置 upgrade 域名指向 channel-upgrade', () => {
   assert.equal(isUpgradeSubdomainHost('UPGPT.APP'), true);
   assert.equal(isUpgradeSubdomainHost('upgpt.app:443'), true);
   assert.equal(isUpgradeSubdomainHost('https://upgpt.app/'), true);
-  assert.equal(getUpgradeSubdomainRedirectPath('upgpt.app', '/'), '/upgrade');
+  assert.equal(getUpgradeSubdomainRedirectPath('upgpt.app', '/'), null);
+  assert.equal(
+    getUpgradeSubdomainRewritePath('upgpt.app', '/'),
+    '/channel-upgrade'
+  );
   assert.equal(
     getUpgradeSubdomainRewritePath('upgpt.app', '/upgrade'),
     '/channel-upgrade'
@@ -63,7 +67,11 @@ test('configured reseller domain canonicalizes and serves upgrade paths', () => 
 
   assert.equal(
     getUpgradeSubdomainRedirectPath('up.partner-example.com', '/'),
-    '/upgrade'
+    null
+  );
+  assert.equal(
+    shouldServeUpgradeSubdomainPath('up.partner-example.com', '/'),
+    true
   );
   assert.equal(
     shouldServeUpgradeSubdomainPath('up.partner-example.com', '/upgrade'),
@@ -78,10 +86,10 @@ test('configured reseller domain canonicalizes and serves upgrade paths', () => 
   restoreUpgradePageHosts(originalHosts);
 });
 
-test('upgrade subdomain canonicalizes public paths to /upgrade', () => {
+test('upgrade subdomain keeps root path while canonicalizing legacy public paths', () => {
   assert.equal(
     getUpgradeSubdomainRedirectPath('upgrade.gpt101.org', '/'),
-    '/upgrade'
+    null
   );
   assert.equal(
     getUpgradeSubdomainRedirectPath('upgrade.gpt101.org', '/upgrade'),
@@ -119,10 +127,10 @@ test('upgrade subdomain canonicalizes public paths to /upgrade', () => {
   assert.equal(getUpgradeSubdomainRedirectPath('gpt101.org', '/'), null);
 });
 
-test('upgrade subdomain serves only canonical /upgrade paths directly', () => {
+test('upgrade subdomain serves root and canonical /upgrade paths directly', () => {
   assert.equal(
     shouldServeUpgradeSubdomainPath('upgrade.gpt101.org', '/'),
-    false
+    true
   );
   assert.equal(
     shouldServeUpgradeSubdomainPath('upgrade.gpt101.org', '/upgrade'),
@@ -146,6 +154,10 @@ test('upgrade subdomain serves only canonical /upgrade paths directly', () => {
 });
 
 test('upgrade subdomain rewrites canonical external URLs to isolated channel pages', () => {
+  assert.equal(
+    getUpgradeSubdomainRewritePath('upgrade.gpt101.org', '/'),
+    '/channel-upgrade'
+  );
   assert.equal(
     getUpgradeSubdomainRewritePath('upgrade.gpt101.org', '/upgrade'),
     '/channel-upgrade'

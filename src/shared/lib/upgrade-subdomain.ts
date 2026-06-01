@@ -1,4 +1,4 @@
-// 内置的官方 upgrade 域名（命中后 /upgrade 会 rewrite 到 /channel-upgrade）
+// 内置的官方 upgrade 域名（命中后 / 或 /upgrade 会 rewrite 到 /channel-upgrade）
 const DEFAULT_UPGRADE_PAGE_HOSTS = ['upgrade.gpt101.org', 'upgpt.app'];
 const UPGRADE_PAGE_HOSTS_ENV = 'UPGRADE_PAGE_HOSTS';
 const UPGRADE_PATH = '/upgrade';
@@ -41,10 +41,6 @@ export function getUpgradeSubdomainRedirectPath(
   const normalizedPathname = normalizePathname(pathname);
   const pathWithoutLocale = stripLeadingLocale(normalizedPathname);
 
-  if (pathWithoutLocale === '/') {
-    return UPGRADE_PATH;
-  }
-
   if (
     normalizedPathname !== pathWithoutLocale &&
     isCanonicalUpgradePath(pathWithoutLocale)
@@ -78,7 +74,7 @@ export function shouldServeUpgradeSubdomainPath(
   const normalizedPathname = normalizePathname(pathname);
   return (
     normalizedPathname === stripLeadingLocale(normalizedPathname) &&
-    isCanonicalUpgradePath(normalizedPathname)
+    (normalizedPathname === '/' || isCanonicalUpgradePath(normalizedPathname))
   );
 }
 
@@ -91,7 +87,7 @@ export function getUpgradeSubdomainRewritePath(
   }
 
   const normalizedPathname = normalizePathname(pathname);
-  if (normalizedPathname === UPGRADE_PATH) {
+  if (normalizedPathname === '/' || normalizedPathname === UPGRADE_PATH) {
     return CHANNEL_UPGRADE_PATH;
   }
 
