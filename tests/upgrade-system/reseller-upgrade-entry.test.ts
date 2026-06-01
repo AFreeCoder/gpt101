@@ -37,6 +37,26 @@ test('upgrade host detection accepts default and configured reseller domains', (
   restoreUpgradePageHosts(originalHosts);
 });
 
+test('upgpt.app 作为内置 upgrade 域名指向 channel-upgrade', () => {
+  // 不依赖 UPGRADE_PAGE_HOSTS 环境变量——upgpt.app 已内置于代码默认集合
+  assert.equal(isUpgradeSubdomainHost('upgpt.app'), true);
+  assert.equal(isUpgradeSubdomainHost('UPGPT.APP'), true);
+  assert.equal(isUpgradeSubdomainHost('upgpt.app:443'), true);
+  assert.equal(isUpgradeSubdomainHost('https://upgpt.app/'), true);
+  assert.equal(getUpgradeSubdomainRedirectPath('upgpt.app', '/'), '/upgrade');
+  assert.equal(
+    getUpgradeSubdomainRewritePath('upgpt.app', '/upgrade'),
+    '/channel-upgrade'
+  );
+  assert.equal(
+    getUpgradeSubdomainRewritePath(
+      'upgpt.app',
+      '/upgrade/status/TS-20260601-0001'
+    ),
+    '/channel-upgrade/status/TS-20260601-0001'
+  );
+});
+
 test('configured reseller domain canonicalizes and serves upgrade paths', () => {
   const originalHosts = process.env.UPGRADE_PAGE_HOSTS;
   process.env.UPGRADE_PAGE_HOSTS = 'up.partner-example.com';

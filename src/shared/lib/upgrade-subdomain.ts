@@ -1,4 +1,5 @@
-const DEFAULT_UPGRADE_PAGE_HOST = 'upgrade.gpt101.org';
+// 内置的官方 upgrade 域名（命中后 /upgrade 会 rewrite 到 /channel-upgrade）
+const DEFAULT_UPGRADE_PAGE_HOSTS = ['upgrade.gpt101.org', 'upgpt.app'];
 const UPGRADE_PAGE_HOSTS_ENV = 'UPGRADE_PAGE_HOSTS';
 const UPGRADE_PATH = '/upgrade';
 const CHANNEL_UPGRADE_PATH = '/channel-upgrade';
@@ -20,7 +21,7 @@ function getUpgradePageHosts(): Set<string> {
     .map(normalizeHost)
     .filter(Boolean);
 
-  return new Set([DEFAULT_UPGRADE_PAGE_HOST, ...configuredHosts]);
+  return new Set([...DEFAULT_UPGRADE_PAGE_HOSTS, ...configuredHosts]);
 }
 
 export function isUpgradeSubdomainHost(
