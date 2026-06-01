@@ -32,6 +32,8 @@ test('.channel-skin 主题样式已定义并接入 global.css', () => {
   assert.match(skin, /--primary:\s*#c77c12/i);
   // 防回退：金底前景须为深色（白字对比度仅 3.32:1，不达 WCAG AA）
   assert.match(skin, /--primary-foreground:\s*#2a2316/i);
+  // 防回退：muted 次要文本须达对比度（原 #897f66 仅 3.8:1，未达 AA）
+  assert.doesNotMatch(skin, /--muted-foreground:\s*#897f66/i);
   const global = read('src/config/style/global.css');
   assert.match(global, /channel-skin\.css/);
 });

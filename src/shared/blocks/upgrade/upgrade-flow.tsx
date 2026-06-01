@@ -92,6 +92,8 @@ export function UpgradeFlow({
   const btnSpinner = isChannel
     ? 'border-[#7a4a08]/40 border-t-[#7a4a08]'
     : 'border-white/30 border-t-white';
+  // 金色文字（链接/状态文案）：金 #c77c12 作文字仅 3.32:1，channel 改深金 5.67:1
+  const accentText = isChannel ? 'text-[#8a5a12]' : 'text-primary';
 
   const [code, setCode] = useState('');
   const [sessionToken, setSessionToken] = useState('');
@@ -530,20 +532,22 @@ export function UpgradeFlow({
           </div>
         )}
 
-        {/* 邮箱风险提示：channel 不显示（Step2 检测到 outlook 邮箱时另有提示）*/}
-        {!isChannel && (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-            <p className="font-semibold">邮箱风险提示</p>
-            <p className="mt-1">
-              因官方风控问题，GPT 账号为 outlook 或 hotmail 邮箱的用户，
-              需要更换为 gmail、QQ 等其他邮箱。
-            </p>
-            <p className={`mt-1 ${warnSub}`}>
-              更换步骤：网页登录
-              ChatGPT，点击【头像—设置—账户—电子邮件】，进行修改。
-            </p>
-          </div>
-        )}
+        {/* 邮箱风险提示（channel 与 default 都显示，作为 token 上传前的前置告知；channel 用赤褐金化）*/}
+        <div
+          className={`mb-6 rounded-xl border px-4 py-3 text-sm ${isChannel ? warnBox : 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200'}`}
+        >
+          <p className={`font-semibold ${isChannel ? warnTitle : ''}`}>
+            邮箱风险提示
+          </p>
+          <p className={`mt-1 ${isChannel ? warnTitle : ''}`}>
+            因官方风控问题，GPT 账号为 outlook 或 hotmail 邮箱的用户，
+            需要更换为 gmail、QQ 等其他邮箱。
+          </p>
+          <p className={`mt-1 ${warnSub}`}>
+            更换步骤：网页登录
+            ChatGPT，点击【头像—设置—账户—电子邮件】，进行修改。
+          </p>
+        </div>
 
         {isChannel && (
           <div className="mb-6 flex items-center px-1">
@@ -764,7 +768,7 @@ export function UpgradeFlow({
                         href="https://chatgpt.com"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className={`${accentText} hover:underline`}
                       >
                         chatgpt.com
                       </a>
@@ -775,7 +779,7 @@ export function UpgradeFlow({
                         href="https://chatgpt.com/api/auth/session"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className={`${accentText} hover:underline`}
                       >
                         chatgpt.com/api/auth/session
                       </a>
@@ -1038,7 +1042,7 @@ export function UpgradeFlow({
                         />
                       </div>
                       <div className="text-center">
-                        <p className="text-primary text-sm font-medium">
+                        <p className={`${accentText} text-sm font-medium`}>
                           {taskMessage}
                         </p>
                         <p className="text-muted-foreground mt-1.5 text-xs">

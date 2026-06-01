@@ -18,7 +18,7 @@
   --secondary: #f6eedd;
   --secondary-foreground: #5a4a2e;
   --muted: #f4eedd;
-  --muted-foreground: #897f66;
+  --muted-foreground: #766c54; /* 调深至 4.98:1 达 WCAG AA（原 #897f66 仅 3.8:1）*/
   --accent: #fbf1dc;
   --accent-foreground: #5a4a2e;
   --destructive: #dc2626; /* 错误红 */
