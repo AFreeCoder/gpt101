@@ -43,6 +43,29 @@ export interface RedeemCodeUsageBatchResult {
   };
 }
 
+function maskPublicEmail(email: string | null | undefined) {
+  if (!email) return null;
+
+  const [localPart, domain] = email.split('@');
+  if (!localPart || !domain) return '***';
+
+  const visibleLocal =
+    localPart.length <= 2 ? localPart.slice(0, 1) : localPart.slice(0, 2);
+  return `${visibleLocal}***@${domain}`;
+}
+
+export function maskRedeemCodeUsagePublicResult(
+  result: RedeemCodeUsageBatchResult
+): RedeemCodeUsageBatchResult {
+  return {
+    ...result,
+    items: result.items.map((item) => ({
+      ...item,
+      usedByEmail: maskPublicEmail(item.usedByEmail),
+    })),
+  };
+}
+
 interface RedeemCodeUsageQueryRow {
   code: string;
   status: string;

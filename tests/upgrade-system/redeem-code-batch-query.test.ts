@@ -10,6 +10,7 @@ import {
 } from '../../src/config/db/schema';
 import { db } from '../../src/core/db';
 import {
+  maskRedeemCodeUsagePublicResult,
   normalizeRedeemCodeBatchInput,
   queryRedeemCodeUsageBatch,
 } from '../../src/shared/models/redeem-code';
@@ -71,6 +72,62 @@ test('批量查询输入会去掉空行、统一大写并限制最多 100 个卡
       ),
     /最多查询 100 个卡密/
   );
+});
+
+test('公开批量查询结果会脱敏使用者邮箱但保留状态统计', () => {
+  const result = maskRedeemCodeUsagePublicResult({
+    items: [
+      {
+        code: 'GPT101-USED',
+        state: 'used',
+        used: true,
+        status: 'consumed',
+        productCode: 'gpt',
+        memberType: 'plus',
+        usedAt: new Date('2026-06-02T10:20:30.000Z'),
+        usedByEmail: 'used@example.com',
+      },
+      {
+        code: 'GPT101-SHORT',
+        state: 'used',
+        used: true,
+        status: 'consumed',
+        productCode: 'gpt',
+        memberType: 'plus',
+        usedAt: new Date('2026-06-02T10:20:30.000Z'),
+        usedByEmail: 'a@b.com',
+      },
+      {
+        code: 'GPT101-EMPTY',
+        state: 'unused',
+        used: false,
+        status: 'available',
+        productCode: 'gpt',
+        memberType: 'plus',
+        usedAt: null,
+        usedByEmail: null,
+      },
+    ],
+    summary: {
+      total: 3,
+      used: 2,
+      unused: 1,
+      disabled: 0,
+      notFound: 0,
+    },
+  });
+
+  assert.deepEqual(
+    result.items.map((item) => item.usedByEmail),
+    ['us***@example.com', 'a***@b.com', null]
+  );
+  assert.deepEqual(result.summary, {
+    total: 3,
+    used: 2,
+    unused: 1,
+    disabled: 0,
+    notFound: 0,
+  });
 });
 
 test('批量查询本站卡密会按输入顺序返回使用状态、使用时间和使用者邮箱', async () => {
