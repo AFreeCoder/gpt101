@@ -585,7 +585,9 @@ export function UpgradeFlow({
           </div>
         )}
 
-        <div className={`flex flex-col gap-8 ${isChannel ? '' : 'lg:flex-row'}`}>
+        <div
+          className={`flex flex-col gap-8 ${isChannel ? '' : 'lg:flex-row'}`}
+        >
           {/* 左侧：主操作区 */}
           <div className="min-w-0 flex-1">
             <div className="space-y-1">
@@ -701,7 +703,9 @@ export function UpgradeFlow({
                   </div>
                 )}
                 {codeVerified && (
-                  <div className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${successPill} ${isChannel ? 'channel-popin' : ''}`}>
+                  <div
+                    className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${successPill} ${isChannel ? 'channel-popin' : ''}`}
+                  >
                     <svg
                       className="h-4 w-4 shrink-0"
                       fill="none"
@@ -763,7 +767,7 @@ export function UpgradeFlow({
                   </p>
                   <ol className="list-inside list-decimal space-y-0.5">
                     <li>
-                      登录 ChatGPT 官网：
+                      浏览器登录 ChatGPT 官网：
                       <a
                         href="https://chatgpt.com"
                         target="_blank"
@@ -774,7 +778,7 @@ export function UpgradeFlow({
                       </a>
                     </li>
                     <li>
-                      打开{' '}
+                      点击{' '}
                       <a
                         href="https://chatgpt.com/api/auth/session"
                         target="_blank"
@@ -783,7 +787,7 @@ export function UpgradeFlow({
                       >
                         chatgpt.com/api/auth/session
                       </a>
-                      ，复制页面全部内容
+                      ，打开页面，复制页面全部内容
                     </li>
                   </ol>
                 </div>
@@ -870,7 +874,9 @@ export function UpgradeFlow({
                 )}
                 {tokenParsed && (
                   <>
-                    <div className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${successPill} ${isChannel ? 'channel-popin' : ''}`}>
+                    <div
+                      className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${successPill} ${isChannel ? 'channel-popin' : ''}`}
+                    >
                       <svg
                         className="h-4 w-4 shrink-0"
                         fill="none"
@@ -1072,7 +1078,9 @@ export function UpgradeFlow({
                       <p className={`text-lg font-bold ${successTitle}`}>
                         {taskMessage}
                       </p>
-                      <p className={`max-w-md text-center text-sm ${successSubtle}`}>
+                      <p
+                        className={`max-w-md text-center text-sm ${successSubtle}`}
+                      >
                         {MEMBERSHIP_REFRESH_HINT}
                       </p>
                       <div className="flex gap-3">
@@ -1163,80 +1171,80 @@ export function UpgradeFlow({
           {/* 右侧信息面板：channel 不渲染（信息已由顶部进度条 + 底部安全保障承载）*/}
           {!isChannel && (
             <div className="w-full shrink-0 space-y-4 lg:w-72">
-            {/* 流程指引 */}
-            <div className="border-border/50 bg-card rounded-2xl border p-6 shadow-sm">
-              <h3 className="text-muted-foreground mb-5 text-sm font-bold tracking-wider uppercase">
-                充值流程
-              </h3>
-              <div className="space-y-5">
-                {[
-                  {
-                    n: '01',
-                    title: '核验卡密',
-                    desc: '粘贴卡密并核验，系统自动判定是否可用。',
-                  },
-                  {
-                    n: '02',
-                    title: '核验 Token',
-                    desc: '输入 Token 确认账号信息和充值条件。',
-                  },
-                  {
-                    n: '03',
-                    title: '确认升级',
-                    desc: '确认后自动处理，实时查看升级进度。',
-                  },
-                ].map((s, i) => (
-                  <div key={s.n} className="flex gap-3">
-                    <span
-                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentStep > i + 1 ? 'bg-emerald-500 text-white' : currentStep === i + 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
-                    >
-                      {currentStep > i + 1 ? '✓' : s.n}
-                    </span>
-                    <div>
-                      <p
-                        className={`text-sm font-medium ${currentStep >= i + 1 ? 'text-foreground' : 'text-muted-foreground'}`}
+              {/* 流程指引 */}
+              <div className="border-border/50 bg-card rounded-2xl border p-6 shadow-sm">
+                <h3 className="text-muted-foreground mb-5 text-sm font-bold tracking-wider uppercase">
+                  充值流程
+                </h3>
+                <div className="space-y-5">
+                  {[
+                    {
+                      n: '01',
+                      title: '核验卡密',
+                      desc: '粘贴卡密并核验，系统自动判定是否可用。',
+                    },
+                    {
+                      n: '02',
+                      title: '核验 Token',
+                      desc: '输入 Token 确认账号信息和充值条件。',
+                    },
+                    {
+                      n: '03',
+                      title: '确认升级',
+                      desc: '确认后自动处理，实时查看升级进度。',
+                    },
+                  ].map((s, i) => (
+                    <div key={s.n} className="flex gap-3">
+                      <span
+                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentStep > i + 1 ? 'bg-emerald-500 text-white' : currentStep === i + 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                       >
-                        {s.title}
-                      </p>
-                      <p className="text-muted-foreground/70 mt-0.5 text-xs leading-relaxed">
-                        {s.desc}
-                      </p>
+                        {currentStep > i + 1 ? '✓' : s.n}
+                      </span>
+                      <div>
+                        <p
+                          className={`text-sm font-medium ${currentStep >= i + 1 ? 'text-foreground' : 'text-muted-foreground'}`}
+                        >
+                          {s.title}
+                        </p>
+                        <p className="text-muted-foreground/70 mt-0.5 text-xs leading-relaxed">
+                          {s.desc}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* 安全保障 */}
-            <div className="border-border/50 bg-card rounded-2xl border p-5">
-              <div className="space-y-3">
-                {[
-                  { icon: '🔒', text: '数据加密传输' },
-                  { icon: '⚡', text: '通常 1-2 分钟完成' },
-                  { icon: '🛡️', text: safetyIssueText },
-                ].map((item) => (
-                  <div
-                    key={item.text}
-                    className="text-muted-foreground flex items-center gap-2.5 text-sm"
-                  >
-                    <span className="text-base">{item.icon}</span>
-                    {item.text}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 客服 */}
-            {showSupportCard && supportContact && (
+              {/* 安全保障 */}
               <div className="border-border/50 bg-card rounded-2xl border p-5">
-                <p className="text-muted-foreground text-xs">
-                  遇到问题？联系客服
-                </p>
-                <p className="text-foreground mt-1 text-sm font-semibold">
-                  {supportContactLabel}：{supportContact}
-                </p>
+                <div className="space-y-3">
+                  {[
+                    { icon: '🔒', text: '数据加密传输' },
+                    { icon: '⚡', text: '通常 1-2 分钟完成' },
+                    { icon: '🛡️', text: safetyIssueText },
+                  ].map((item) => (
+                    <div
+                      key={item.text}
+                      className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                    >
+                      <span className="text-base">{item.icon}</span>
+                      {item.text}
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+
+              {/* 客服 */}
+              {showSupportCard && supportContact && (
+                <div className="border-border/50 bg-card rounded-2xl border p-5">
+                  <p className="text-muted-foreground text-xs">
+                    遇到问题？联系客服
+                  </p>
+                  <p className="text-foreground mt-1 text-sm font-semibold">
+                    {supportContactLabel}：{supportContact}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
