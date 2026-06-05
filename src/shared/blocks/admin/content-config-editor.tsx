@@ -40,10 +40,12 @@ function moveItem<T>(items: T[], from: number, to: number) {
 
 function FaqEditor({
   title,
+  description = '使用结构化字段编辑，保存后会同步影响页面 FAQ 和 FAQ JSON-LD。',
   value,
   onChange,
 }: {
   title: string;
+  description?: string;
   value: FaqContentConfig;
   onChange: (value: FaqContentConfig) => void;
 }) {
@@ -62,9 +64,7 @@ function FaqEditor({
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            使用结构化字段编辑，保存后会同步影响页面 FAQ 和 FAQ JSON-LD。
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">{description}</p>
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -189,6 +189,16 @@ function FaqEditor({
                 rows={3}
                 className="bg-background rounded-md border px-3 py-2 text-sm"
               />
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={item.featured === true}
+                  onChange={(event) =>
+                    updateItem(index, { featured: event.target.checked })
+                  }
+                />
+                首页精选
+              </label>
             </div>
           </div>
         ))}
@@ -204,6 +214,7 @@ function FaqEditor({
                   category: value.categories[0] || '',
                   question: '',
                   answer: '',
+                  featured: false,
                 },
               ],
             })
@@ -332,7 +343,8 @@ export function ContentConfigEditor({
   return (
     <div className="max-w-5xl space-y-6">
       <FaqEditor
-        title="首页 FAQ"
+        title="通用 FAQ"
+        description="/faq 展示全部常见问题，首页只展示勾选“首页精选”的问题；若没有勾选项，首页默认展示前 6 条。"
         value={value.homepageFaqConfig}
         onChange={(homepageFaqConfig) =>
           setValue((current) => ({ ...current, homepageFaqConfig }))

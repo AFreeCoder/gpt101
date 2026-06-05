@@ -29,6 +29,11 @@
           "icon": "BookOpenText"
         },
         {
+          "title": "FAQ",
+          "url": "/faq",
+          "icon": "HelpCircle"
+        },
+        {
           "title": "Support",
           "url": "/#customer-support",
           "icon": "Headphones"
@@ -102,6 +107,16 @@
         {
           "title": "Support",
           "children": [
+            {
+              "title": "FAQ",
+              "url": "/faq",
+              "target": "_self"
+            },
+            {
+              "title": "Card Status Query",
+              "url": "/query",
+              "target": "_self"
+            },
             {
               "title": "Customer Support",
               "url": "/#customer-support",

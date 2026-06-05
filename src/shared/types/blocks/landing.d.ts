@@ -84,6 +84,7 @@ export interface FAQItem extends SectionItem {
   question?: string;
   answer?: string;
   category?: string;
+  featured?: boolean;
 }
 
 export interface FAQ extends Section {

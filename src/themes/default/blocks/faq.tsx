@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { Link } from '@/core/i18n/navigation';
 import {
   Accordion,
   AccordionContent,
@@ -112,6 +113,20 @@ export function Faq({
                 </AccordionItem>
               ))}
             </Accordion>
+            {section.buttons && section.buttons.length > 0 && (
+              <div className="mt-6 flex flex-wrap gap-3">
+                {section.buttons.map((button, index) => (
+                  <Link
+                    key={index}
+                    href={button.url || ''}
+                    target={button.target || '_self'}
+                    className="border-border bg-background hover:bg-muted inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium transition-colors"
+                  >
+                    {button.title || button.text || ''}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </ScrollAnimation>
       </div>

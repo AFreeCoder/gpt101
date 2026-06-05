@@ -18,6 +18,7 @@ export * from './logos';
 export * from './stats';
 export * from './testimonials';
 export * from './faq';
+export * from './faq-page';
 export * from './cta';
 export * from './subscribe';
 export * from './pricing';

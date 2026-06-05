@@ -42,6 +42,7 @@ export type FaqContentConfig = {
     category?: string;
     question: string;
     answer: string;
+    featured?: boolean;
   }>;
   tip?: string;
 };
@@ -67,6 +68,7 @@ const faqContentConfigSchema = z.object({
         category: z.string().max(40).optional().default(''),
         question: z.string().min(1).max(MAX_TITLE_LENGTH),
         answer: z.string().min(1).max(MAX_ANSWER_LENGTH),
+        featured: z.boolean().optional().default(false),
       })
     )
     .max(MAX_ITEMS)
@@ -156,6 +158,7 @@ function sanitizeFaqConfig(config: FaqContentConfig): FaqContentConfig {
       category: sanitizeText(item.category || '', 40),
       question: sanitizeText(item.question, MAX_TITLE_LENGTH),
       answer: sanitizeText(item.answer, MAX_ANSWER_LENGTH),
+      featured: item.featured === true,
     }))
     .filter((item) => item.question && item.answer);
 
@@ -224,9 +227,23 @@ export function faqSectionToContentConfig(faq: FAQ): FaqContentConfig {
       category: item.category || '',
       question: item.question || item.title || '',
       answer: item.answer || item.description || '',
+      featured: item.featured === true,
     })),
     tip: faq.tip || '',
   };
+}
+
+export function selectHomepageFaqItems(
+  items: FAQ['items'] = [],
+  limit = 6
+): NonNullable<FAQ['items']> {
+  const featuredItems = items.filter((item) => item.featured === true);
+
+  if (featuredItems.length > 0) {
+    return featuredItems;
+  }
+
+  return items.slice(0, limit);
 }
 
 export function resolveFaqConfig(

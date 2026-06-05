@@ -6,6 +6,7 @@ import {
   getContentConfigValue,
   HOMEPAGE_FAQ_CONFIG_KEY,
   resolveFaqConfig,
+  selectHomepageFaqItems,
 } from '@/shared/lib/content-config';
 import {
   buildFaqJsonLd,
@@ -39,9 +40,21 @@ export default async function LandingPage({
       items: [],
     }) as FAQ
   );
+  const homepageFaqItems = selectHomepageFaqItems(resolvedFaq.items || []);
+  const homepageFaq: FAQ = {
+    ...resolvedFaq,
+    items: homepageFaqItems,
+    buttons: [
+      {
+        title: locale === 'zh' ? '查看全部常见问题' : 'View all FAQs',
+        url: '/faq',
+        variant: 'outline',
+      },
+    ],
+  };
   page.sections = {
     ...page.sections,
-    faq: resolvedFaq,
+    faq: homepageFaq,
   };
 
   // load page component
@@ -63,7 +76,7 @@ export default async function LandingPage({
       providerUrl: appUrl,
       serviceType: 'GPT Plus 代充',
     }),
-    buildFaqJsonLd(resolvedFaq.items || []),
+    buildFaqJsonLd(homepageFaqItems),
   ].filter(Boolean);
 
   return (

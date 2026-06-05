@@ -29,6 +29,11 @@
           "icon": "BookOpenText"
         },
         {
+          "title": "常见问题",
+          "url": "/faq",
+          "icon": "HelpCircle"
+        },
+        {
           "title": "客服支持",
           "url": "/#customer-support",
           "icon": "Headphones"
@@ -103,6 +108,16 @@
         {
           "title": "支持",
           "children": [
+            {
+              "title": "常见问题",
+              "url": "/faq",
+              "target": "_self"
+            },
+            {
+              "title": "卡密状态查询",
+              "url": "/query",
+              "target": "_self"
+            },
             {
               "title": "客服支持",
               "url": "/#customer-support",

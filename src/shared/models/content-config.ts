@@ -24,9 +24,10 @@ function assertAllowedContentConfigKey(
 function revalidateContentPaths() {
   revalidateTag(CACHE_TAG_CONFIGS, 'max');
 
-  const basePaths = ['/', '/chatgpt-mirror', '/upgrade'];
+  const basePaths = ['/', '/faq', '/chatgpt-mirror', '/upgrade'];
   const localizedPaths = locales.flatMap((locale) => [
     `/${locale}`,
+    `/${locale}/faq`,
     `/${locale}/chatgpt-mirror`,
     `/${locale}/upgrade`,
   ]);

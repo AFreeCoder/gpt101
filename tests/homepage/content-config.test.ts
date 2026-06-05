@@ -12,6 +12,7 @@ import {
   resolveFaqConfig,
   resolveFaqContentConfigForAdmin,
   resolveUpgradeNoticeConfig,
+  selectHomepageFaqItems,
   UPGRADE_NOTICE_CONFIG_KEY,
 } from '../../src/shared/lib/content-config';
 
@@ -107,6 +108,53 @@ test('resolveFaqConfig accepts structured FAQ JSON and sanitizes unsafe text', (
   assert.doesNotMatch(resolved.description || '', /<script/i);
   assert.doesNotMatch(resolved.items?.[0].answer || '', /javascript:/i);
   assert.doesNotMatch(resolved.items?.[0].answer || '', /</);
+});
+
+test('resolveFaqConfig preserves sanitized featured flags for FAQ items', () => {
+  const resolved = resolveFaqConfig(
+    JSON.stringify({
+      enabled: true,
+      title: '通用 FAQ',
+      items: [
+        {
+          category: '购买前咨询',
+          question: '首页精选问题？',
+          answer: '首页需要展示。',
+          featured: true,
+        },
+        {
+          category: '发票开具',
+          question: '只在 FAQ 页展示？',
+          answer: '首页不展示。',
+          featured: false,
+        },
+      ],
+    }),
+    fallbackFaq
+  );
+
+  assert.equal(resolved.items?.[0].featured, true);
+  assert.equal(resolved.items?.[1].featured, false);
+});
+
+test('selectHomepageFaqItems uses featured FAQ items and falls back to first six', () => {
+  const items = Array.from({ length: 8 }, (_, index) => ({
+    question: `问题 ${index + 1}`,
+    answer: `答案 ${index + 1}`,
+    featured: index === 1 || index === 6,
+  }));
+
+  assert.deepEqual(
+    selectHomepageFaqItems(items).map((item) => item.question),
+    ['问题 2', '问题 7']
+  );
+
+  assert.deepEqual(
+    selectHomepageFaqItems(
+      items.map((item) => ({ ...item, featured: false }))
+    ).map((item) => item.question),
+    ['问题 1', '问题 2', '问题 3', '问题 4', '问题 5', '问题 6']
+  );
 });
 
 test('resolveFaqConfig can disable a FAQ section without breaking page rendering', () => {
