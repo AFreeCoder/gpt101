@@ -20,25 +20,25 @@ function readSource(filePath: string) {
   return readFileSync(path.join(process.cwd(), filePath), 'utf8');
 }
 
-test('中文 landing header 打开登录入口', () => {
+test('中文 landing header 隐藏公开登录入口', () => {
   const header = readLandingHeader('zh');
 
-  assert.equal(header.show_sign, true);
+  assert.equal(header.show_sign, false);
 });
 
-test('英文 landing header 打开登录入口', () => {
+test('英文 landing header 隐藏公开登录入口', () => {
   const header = readLandingHeader('en');
 
-  assert.equal(header.show_sign, true);
+  assert.equal(header.show_sign, false);
 });
 
-test('landing header 登录入口固定回跳 admin', () => {
-  const headerSource = readSource('src/themes/default/blocks/header.tsx');
-  const signUserSource = readSource('src/shared/blocks/sign/sign-user.tsx');
+test('管理员登录页默认回跳 admin', () => {
+  const signInPageSource = readSource(
+    'src/app/[locale]/(auth)/sign-in/page.tsx'
+  );
 
   assert.match(
-    headerSource,
-    /<SignUser\s+userNav=\{header\.user_nav\}\s+callbackUrl="\/admin"\s*\/>/s
+    signInPageSource,
+    /<SignIn[\s\S]*callbackUrl=\{callbackUrl \|\| '\/admin'\}/
   );
-  assert.match(signUserSource, /<SignModal callbackUrl=\{callbackUrl\} \/>/);
 });
