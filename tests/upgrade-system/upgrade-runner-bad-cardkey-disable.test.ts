@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-
 import { eq, inArray, like } from 'drizzle-orm';
 
 import {
@@ -49,11 +48,11 @@ async function cleanupByPrefix(prefix: string) {
         .where(like(channelCardkey.cardkey, `${prefix}%`)),
     ]);
 
-  const taskIds = taskRows.map((row) => row.id);
-  const channelIds = channelRows.map((row) => row.id);
-  const batchIds = batchRows.map((row) => row.id);
-  const codeIds = codeRows.map((row) => row.id);
-  const cardkeyIds = cardkeyRows.map((row) => row.id);
+  const taskIds = taskRows.map((row: { id: string }) => row.id);
+  const channelIds = channelRows.map((row: { id: string }) => row.id);
+  const batchIds = batchRows.map((row: { id: string }) => row.id);
+  const codeIds = codeRows.map((row: { id: string }) => row.id);
+  const cardkeyIds = cardkeyRows.map((row: { id: string }) => row.id);
 
   if (taskIds.length > 0) {
     await tx
@@ -91,14 +90,16 @@ async function seedSingleChannelRetryCase(prefix: string, driver: string) {
   const badCardkeyId = uid(`${prefix}_bad`);
   const goodCardkeyId = uid(`${prefix}_good`);
 
-  await db().insert(redeemCodeBatch).values({
-    id: batchId,
-    title: `${prefix}-batch-title`,
-    productCode: 'plus',
-    memberType: 'month',
-    count: 1,
-    unitPrice: '0.00',
-  });
+  await db()
+    .insert(redeemCodeBatch)
+    .values({
+      id: batchId,
+      title: `${prefix}-batch-title`,
+      productCode: 'plus',
+      memberType: 'month',
+      count: 1,
+      unitPrice: '0.00',
+    });
 
   await db().insert(redeemCode).values({
     id: redeemCodeId,
@@ -111,53 +112,59 @@ async function seedSingleChannelRetryCase(prefix: string, driver: string) {
     usedAt: new Date(),
   });
 
-  await db().insert(upgradeTask).values({
-    id: taskId,
-    taskNo,
-    redeemCodeId,
-    redeemCodePlain,
-    productCode: 'plus',
-    memberType: 'month',
-    sessionToken: JSON.stringify({
-      user: { id: 'user_123', email: 'user@example.com' },
-      account: { id: 'account_123', planType: 'free' },
-      accessToken: 'header.payload.signature',
-    }),
-    chatgptEmail: 'user@example.com',
-    chatgptAccountId: 'account_123',
-    chatgptCurrentPlan: 'free',
-    status: UpgradeTaskStatus.PENDING,
-  });
-
-  await db().insert(upgradeChannel).values({
-    id: channelId,
-    code: `${prefix}-987ai`,
-    name: `${prefix} 987ai`,
-    driver,
-    supportedProducts: 'plus',
-    status: 'active',
-    priority: 1,
-    requiresCardkey: true,
-  });
-
-  await db().insert(channelCardkey).values([
-    {
-      id: badCardkeyId,
-      channelId,
-      cardkey: `${prefix}-BAD-CARD`,
+  await db()
+    .insert(upgradeTask)
+    .values({
+      id: taskId,
+      taskNo,
+      redeemCodeId,
+      redeemCodePlain,
       productCode: 'plus',
       memberType: 'month',
-      status: 'available',
-    },
-    {
-      id: goodCardkeyId,
-      channelId,
-      cardkey: `${prefix}-GOOD-CARD`,
-      productCode: 'plus',
-      memberType: 'month',
-      status: 'available',
-    },
-  ]);
+      sessionToken: JSON.stringify({
+        user: { id: 'user_123', email: 'user@example.com' },
+        account: { id: 'account_123', planType: 'free' },
+        accessToken: 'header.payload.signature',
+      }),
+      chatgptEmail: 'user@example.com',
+      chatgptAccountId: 'account_123',
+      chatgptCurrentPlan: 'free',
+      status: UpgradeTaskStatus.PENDING,
+    });
+
+  await db()
+    .insert(upgradeChannel)
+    .values({
+      id: channelId,
+      code: `${prefix}-987ai`,
+      name: `${prefix} 987ai`,
+      driver,
+      supportedProducts: 'plus',
+      status: 'active',
+      priority: 1,
+      requiresCardkey: true,
+    });
+
+  await db()
+    .insert(channelCardkey)
+    .values([
+      {
+        id: badCardkeyId,
+        channelId,
+        cardkey: `${prefix}-BAD-CARD`,
+        productCode: 'plus',
+        memberType: 'month',
+        status: 'available',
+      },
+      {
+        id: goodCardkeyId,
+        channelId,
+        cardkey: `${prefix}-GOOD-CARD`,
+        productCode: 'plus',
+        memberType: 'month',
+        status: 'available',
+      },
+    ]);
 
   return {
     taskId,

@@ -242,6 +242,25 @@ export async function disableCardkey(cardkeyId: string, reason?: string) {
     .where(eq(channelCardkey.id, cardkeyId));
 }
 
+/**
+ * 取消禁用渠道卡密（仅从 disabled 恢复到 available）。
+ */
+export async function enableCardkey(cardkeyId: string) {
+  await db()
+    .update(channelCardkey)
+    .set({
+      status: ChannelCardkeyStatus.AVAILABLE,
+      lockedByTaskId: null,
+      disabledReason: null,
+    })
+    .where(
+      and(
+        eq(channelCardkey.id, cardkeyId),
+        eq(channelCardkey.status, ChannelCardkeyStatus.DISABLED)
+      )
+    );
+}
+
 // --- 批量操作 ---
 
 /**
@@ -288,4 +307,32 @@ export async function batchDisableCardkeys(
     .where(eligibleWhere);
 
   return { disabledCount: total };
+}
+
+/**
+ * 批量取消禁用（仅恢复已禁用库存）。
+ */
+export async function batchEnableCardkeys(
+  cardkeyIds: string[]
+): Promise<{ enabledCount: number }> {
+  const eligibleWhere = and(
+    inArray(channelCardkey.id, cardkeyIds),
+    eq(channelCardkey.status, ChannelCardkeyStatus.DISABLED)
+  );
+
+  const [{ total }] = await db()
+    .select({ total: count() })
+    .from(channelCardkey)
+    .where(eligibleWhere);
+
+  await db()
+    .update(channelCardkey)
+    .set({
+      status: ChannelCardkeyStatus.AVAILABLE,
+      lockedByTaskId: null,
+      disabledReason: null,
+    })
+    .where(eligibleWhere);
+
+  return { enabledCount: total };
 }

@@ -185,6 +185,36 @@ export default function ChannelCardkeysPage() {
     setActionLoading(false);
   };
 
+  const handleBatchEnable = async () => {
+    const enableable = cardkeys.filter(
+      (c) => selectedIds.has(c.id) && c.status === 'disabled'
+    );
+    if (enableable.length === 0) {
+      alert('选中的卡密中没有可取消禁用的（仅可恢复已禁用状态）');
+      return;
+    }
+    if (!confirm(`确定取消禁用 ${enableable.length} 张卡密？`)) return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/channel-cardkeys/enable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: enableable.map((c) => c.id),
+        }),
+      });
+      const data = await res.json();
+      if (data.code === 0) {
+        setSelectedIds(new Set());
+        fetchData();
+      } else alert(data.message);
+    } catch {
+      alert('取消禁用失败');
+    }
+    setActionLoading(false);
+  };
+
   // 导入
   const handleImport = async () => {
     setError('');
@@ -254,374 +284,392 @@ export default function ChannelCardkeysPage() {
     <>
       <Header />
       <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">渠道卡密管理</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={handleExport}
-            disabled={cardkeys.length === 0}
-            className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
-          >
-            导出
-          </button>
-          <button
-            onClick={() => {
-              setShowImport(true);
-              setError('');
-            }}
-            className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            导入卡密
-          </button>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">渠道卡密管理</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              disabled={cardkeys.length === 0}
+              className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
+            >
+              导出
+            </button>
+            <button
+              onClick={() => {
+                setShowImport(true);
+                setError('');
+              }}
+              className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              导入卡密
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* 筛选 */}
-      <div className="mb-4 flex flex-wrap gap-3">
-        <select
-          value={channelId}
-          onChange={(e) => {
-            setChannelId(e.target.value);
-            setPage(1);
-            setSelectedIds(new Set());
-          }}
-          className="rounded-lg border px-3 py-1.5 text-sm"
-        >
-          <option value="">选择渠道</option>
-          {channels.map((ch) => (
-            <option key={ch.id} value={ch.id}>
-              {ch.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={productCode}
-          onChange={(e) => {
-            setProductCode(e.target.value);
-            setMemberType('');
-            setPage(1);
-          }}
-          className="rounded-lg border px-3 py-1.5 text-sm"
-        >
-          <option value="">全部产品</option>
-          {PRODUCT_TYPES.map((p) => (
-            <option key={p.code} value={p.code}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-
-        {productCode && memberTypes.length > 0 && (
+        {/* 筛选 */}
+        <div className="mb-4 flex flex-wrap gap-3">
           <select
-            value={memberType}
+            value={channelId}
             onChange={(e) => {
-              setMemberType(e.target.value);
+              setChannelId(e.target.value);
+              setPage(1);
+              setSelectedIds(new Set());
+            }}
+            className="rounded-lg border px-3 py-1.5 text-sm"
+          >
+            <option value="">选择渠道</option>
+            {channels.map((ch) => (
+              <option key={ch.id} value={ch.id}>
+                {ch.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={productCode}
+            onChange={(e) => {
+              setProductCode(e.target.value);
+              setMemberType('');
               setPage(1);
             }}
             className="rounded-lg border px-3 py-1.5 text-sm"
           >
-            <option value="">全部会员</option>
-            {memberTypes.map((m) => (
-              <option key={m.code} value={m.code}>
-                {m.label}
+            <option value="">全部产品</option>
+            {PRODUCT_TYPES.map((p) => (
+              <option key={p.code} value={p.code}>
+                {p.label}
               </option>
             ))}
           </select>
+
+          {productCode && memberTypes.length > 0 && (
+            <select
+              value={memberType}
+              onChange={(e) => {
+                setMemberType(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border px-3 py-1.5 text-sm"
+            >
+              <option value="">全部会员</option>
+              {memberTypes.map((m) => (
+                <option key={m.code} value={m.code}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          )}
+
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-lg border px-3 py-1.5 text-sm"
+          >
+            <option value="">全部状态</option>
+            <option value="available">可用</option>
+            <option value="locked">锁定</option>
+            <option value="used">已使用</option>
+            <option value="disabled">已禁用</option>
+          </select>
+        </div>
+
+        {/* 批量操作 */}
+        {selectedIds.size > 0 && (
+          <div className="mb-4 flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-2">
+            <span className="text-sm text-blue-700">
+              已选 {selectedIds.size} 项
+            </span>
+            <button
+              onClick={handleBatchDelete}
+              disabled={actionLoading}
+              className="rounded bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600 disabled:opacity-50"
+            >
+              批量删除
+            </button>
+            <button
+              onClick={handleBatchDisable}
+              disabled={actionLoading}
+              className="rounded bg-amber-500 px-3 py-1 text-xs text-white hover:bg-amber-600 disabled:opacity-50"
+            >
+              批量禁用
+            </button>
+            <button
+              onClick={handleBatchEnable}
+              disabled={actionLoading}
+              className="rounded bg-emerald-600 px-3 py-1 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              批量取消禁用
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              取消选择
+            </button>
+          </div>
         )}
 
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border px-3 py-1.5 text-sm"
-        >
-          <option value="">全部状态</option>
-          <option value="available">可用</option>
-          <option value="locked">锁定</option>
-          <option value="used">已使用</option>
-          <option value="disabled">已禁用</option>
-        </select>
-      </div>
-
-      {/* 批量操作 */}
-      {selectedIds.size > 0 && (
-        <div className="mb-4 flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-2">
-          <span className="text-sm text-blue-700">
-            已选 {selectedIds.size} 项
-          </span>
-          <button
-            onClick={handleBatchDelete}
-            disabled={actionLoading}
-            className="rounded bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600 disabled:opacity-50"
-          >
-            批量删除
-          </button>
-          <button
-            onClick={handleBatchDisable}
-            disabled={actionLoading}
-            className="rounded bg-amber-500 px-3 py-1 text-xs text-white hover:bg-amber-600 disabled:opacity-50"
-          >
-            批量禁用
-          </button>
-          <button
-            onClick={() => setSelectedIds(new Set())}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            取消选择
-          </button>
-        </div>
-      )}
-
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-3 py-2 text-left">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedIds.size === cardkeys.length && cardkeys.length > 0
-                  }
-                  onChange={toggleAll}
-                />
-              </th>
-              <th className="px-3 py-2 text-left">卡密</th>
-              <th className="px-3 py-2 text-left">渠道</th>
-              <th className="px-3 py-2 text-left">产品/会员</th>
-              <th className="px-3 py-2 text-left">状态</th>
-              <th className="px-3 py-2 text-left">创建时间</th>
-              <th className="px-3 py-2 text-left">使用时间</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
-                  加载中...
-                </td>
+                <th className="px-3 py-2 text-left">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedIds.size === cardkeys.length &&
+                      cardkeys.length > 0
+                    }
+                    onChange={toggleAll}
+                  />
+                </th>
+                <th className="px-3 py-2 text-left">卡密</th>
+                <th className="px-3 py-2 text-left">渠道</th>
+                <th className="px-3 py-2 text-left">产品/会员</th>
+                <th className="px-3 py-2 text-left">状态</th>
+                <th className="px-3 py-2 text-left">创建时间</th>
+                <th className="px-3 py-2 text-left">使用时间</th>
               </tr>
-            ) : cardkeys.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
-                  暂无卡密
-                </td>
-              </tr>
-            ) : (
-              cardkeys.map((ck) => (
-                <tr key={ck.id} className="border-t hover:bg-gray-50">
-                  <td className="px-3 py-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(ck.id)}
-                      onChange={() => toggleOne(ck.id)}
-                      disabled={ck.status === 'used' || ck.status === 'locked'}
-                    />
-                  </td>
-                  <td className="px-3 py-2 font-mono text-xs">{ck.cardkey}</td>
-                  <td className="px-3 py-2 text-xs">
-                    <div>{getChannelLabel(ck)}</div>
-                    {ck.channelCode && (
-                      <div className="font-mono text-gray-400">
-                        {ck.channelCode}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-xs">
-                    {getProductMemberLabel(ck.productCode, ck.memberType)}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[ck.status]?.color || ''}`}
-                    >
-                      {STATUS_MAP[ck.status]?.label || ck.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
-                    {formatTimestampWithoutTimeZone(ck.createdAt)}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-gray-500">
-                    {formatTimestampWithoutTimeZone(ck.usedAt)}
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-3 py-8 text-center text-gray-400"
+                  >
+                    加载中...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* 分页 */}
-      {total > 30 && (
-        <div className="mt-4 flex justify-center gap-2">
-          {page > 1 && (
-            <button
-              onClick={() => setPage(page - 1)}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-            >
-              上一页
-            </button>
-          )}
-          <span className="px-3 py-1 text-sm text-gray-500">
-            第 {page} 页，共 {Math.ceil(total / 30)} 页
-          </span>
-          {page * 30 < total && (
-            <button
-              onClick={() => setPage(page + 1)}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-            >
-              下一页
-            </button>
-          )}
+              ) : cardkeys.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-3 py-8 text-center text-gray-400"
+                  >
+                    暂无卡密
+                  </td>
+                </tr>
+              ) : (
+                cardkeys.map((ck) => (
+                  <tr key={ck.id} className="border-t hover:bg-gray-50">
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(ck.id)}
+                        onChange={() => toggleOne(ck.id)}
+                        disabled={
+                          ck.status === 'used' || ck.status === 'locked'
+                        }
+                      />
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      {ck.cardkey}
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{getChannelLabel(ck)}</div>
+                      {ck.channelCode && (
+                        <div className="font-mono text-gray-400">
+                          {ck.channelCode}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      {getProductMemberLabel(ck.productCode, ck.memberType)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[ck.status]?.color || ''}`}
+                      >
+                        {STATUS_MAP[ck.status]?.label || ck.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-xs text-gray-500">
+                      {formatTimestampWithoutTimeZone(ck.createdAt)}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-gray-500">
+                      {formatTimestampWithoutTimeZone(ck.usedAt)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
 
-      {/* 导入弹窗 */}
-      {showImport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowImport(false)}
-          />
-          <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
-            <h3 className="mb-4 text-lg font-semibold">导入渠道卡密</h3>
-            {error && (
-              <div className="mb-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">
-                {error}
-              </div>
+        {/* 分页 */}
+        {total > 30 && (
+          <div className="mt-4 flex justify-center gap-2">
+            {page > 1 && (
+              <button
+                onClick={() => setPage(page - 1)}
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+              >
+                上一页
+              </button>
             )}
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">渠道</label>
-                <select
-                  value={importChannelId}
-                  onChange={(e) => setImportChannelId(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                >
-                  <option value="">请选择</option>
-                  {channels.map((ch) => (
-                    <option key={ch.id} value={ch.id}>
-                      {ch.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  产品类型
-                </label>
-                <select
-                  value={importProductCode}
-                  onChange={(e) => {
-                    setImportProductCode(e.target.value);
-                    setImportMemberType('');
-                  }}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                >
-                  <option value="">请选择</option>
-                  {PRODUCT_TYPES.map((p) => (
-                    <option key={p.code} value={p.code}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  会员类型
-                </label>
-                <select
-                  value={importMemberType}
-                  onChange={(e) => setImportMemberType(e.target.value)}
-                  disabled={!importProductCode}
-                  className="w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-50"
-                >
-                  <option value="">请选择</option>
-                  {importMemberTypes.map((m) => (
-                    <option key={m.code} value={m.code}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  卡密（一行一个）
-                </label>
-                <textarea
-                  value={importText}
-                  onChange={(e) => setImportText(e.target.value)}
-                  rows={8}
-                  placeholder="粘贴渠道卡密，每行一个..."
-                  className="w-full rounded-lg border px-3 py-2 font-mono text-sm"
-                />
-              </div>
-            </div>
-            <div className="mt-4 flex gap-3">
+            <span className="px-3 py-1 text-sm text-gray-500">
+              第 {page} 页，共 {Math.ceil(total / 30)} 页
+            </span>
+            {page * 30 < total && (
               <button
-                onClick={() => setShowImport(false)}
-                className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
+                onClick={() => setPage(page + 1)}
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
               >
-                取消
+                下一页
               </button>
-              <button
-                onClick={handleImport}
-                disabled={importing}
-                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {importing ? '导入中...' : '导入'}
-              </button>
-            </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 导出弹窗 */}
-      {showExport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowExport(false)}
-          />
-          <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
-                导出卡密（{cardkeys.length} 张）
-              </h3>
-              <button
-                onClick={() => setShowExport(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            <textarea
-              readOnly
-              value={exportText}
-              rows={12}
-              className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-sm"
+        {/* 导入弹窗 */}
+        {showImport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowImport(false)}
             />
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={async () => {
-                  await navigator.clipboard.writeText(exportText);
-                  alert('已复制');
-                }}
-                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                一键复制全部
-              </button>
-              <button
-                onClick={() => setShowExport(false)}
-                className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
-              >
-                关闭
-              </button>
+            <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+              <h3 className="mb-4 text-lg font-semibold">导入渠道卡密</h3>
+              {error && (
+                <div className="mb-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">渠道</label>
+                  <select
+                    value={importChannelId}
+                    onChange={(e) => setImportChannelId(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <option value="">请选择</option>
+                    {channels.map((ch) => (
+                      <option key={ch.id} value={ch.id}>
+                        {ch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    产品类型
+                  </label>
+                  <select
+                    value={importProductCode}
+                    onChange={(e) => {
+                      setImportProductCode(e.target.value);
+                      setImportMemberType('');
+                    }}
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <option value="">请选择</option>
+                    {PRODUCT_TYPES.map((p) => (
+                      <option key={p.code} value={p.code}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    会员类型
+                  </label>
+                  <select
+                    value={importMemberType}
+                    onChange={(e) => setImportMemberType(e.target.value)}
+                    disabled={!importProductCode}
+                    className="w-full rounded-lg border px-3 py-2 text-sm disabled:opacity-50"
+                  >
+                    <option value="">请选择</option>
+                    {importMemberTypes.map((m) => (
+                      <option key={m.code} value={m.code}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    卡密（一行一个）
+                  </label>
+                  <textarea
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    rows={8}
+                    placeholder="粘贴渠道卡密，每行一个..."
+                    className="w-full rounded-lg border px-3 py-2 font-mono text-sm"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => setShowImport(false)}
+                  className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleImport}
+                  disabled={importing}
+                  className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {importing ? '导入中...' : '导入'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* 导出弹窗 */}
+        {showExport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowExport(false)}
+            />
+            <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">
+                  导出卡密（{cardkeys.length} 张）
+                </h3>
+                <button
+                  onClick={() => setShowExport(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={exportText}
+                rows={12}
+                className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-sm"
+              />
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(exportText);
+                    alert('已复制');
+                  }}
+                  className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  一键复制全部
+                </button>
+                <button
+                  onClick={() => setShowExport(false)}
+                  className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

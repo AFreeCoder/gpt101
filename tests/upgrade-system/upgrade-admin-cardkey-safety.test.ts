@@ -13,6 +13,7 @@ import {
 import { db } from '../../src/core/db';
 import {
   batchDisableCardkeys,
+  batchEnableCardkeys,
   ChannelCardkeyStatus,
 } from '../../src/shared/models/channel-cardkey';
 import {
@@ -406,6 +407,83 @@ test('批量禁用渠道卡密只处理可用卡密，不改动已使用和锁�
     assert.equal(result.disabledCount, 1);
     assert.equal(byId.get(availableId)?.status, ChannelCardkeyStatus.DISABLED);
     assert.equal(byId.get(availableId)?.disabledReason, 'admin batch disable');
+    assert.equal(byId.get(usedId)?.status, ChannelCardkeyStatus.USED);
+    assert.equal(byId.get(lockedId)?.status, ChannelCardkeyStatus.LOCKED);
+  } finally {
+    await cleanupByPrefix(prefix);
+  }
+});
+
+test('批量启用渠道卡密只恢复已禁用卡密，不改动可用、已使用和锁定卡密', async () => {
+  const prefix = `batchenable${Date.now()}`;
+  await cleanupByPrefix(prefix);
+
+  const seeded = await seedChannelOnly(prefix);
+  const disabledId = uid(`${prefix}_disabled_card`);
+  const availableId = uid(`${prefix}_available_card`);
+  const usedId = uid(`${prefix}_used_card`);
+  const lockedId = uid(`${prefix}_locked_card`);
+
+  try {
+    await db()
+      .insert(channelCardkey)
+      .values([
+        {
+          id: disabledId,
+          channelId: seeded.channelId,
+          cardkey: `${prefix}-DISABLED-CARD`,
+          productCode: 'plus',
+          memberType: 'month',
+          status: ChannelCardkeyStatus.DISABLED,
+          disabledReason: '线下升级预占',
+        },
+        {
+          id: availableId,
+          channelId: seeded.channelId,
+          cardkey: `${prefix}-AVAILABLE-CARD`,
+          productCode: 'plus',
+          memberType: 'month',
+          status: ChannelCardkeyStatus.AVAILABLE,
+        },
+        {
+          id: usedId,
+          channelId: seeded.channelId,
+          cardkey: `${prefix}-USED-CARD`,
+          productCode: 'plus',
+          memberType: 'month',
+          status: ChannelCardkeyStatus.USED,
+          usedAt: new Date(),
+        },
+        {
+          id: lockedId,
+          channelId: seeded.channelId,
+          cardkey: `${prefix}-LOCKED-CARD`,
+          productCode: 'plus',
+          memberType: 'month',
+          status: ChannelCardkeyStatus.LOCKED,
+          lockedByTaskId: uid(`${prefix}_other_task`),
+        },
+      ]);
+
+    const result = await batchEnableCardkeys([
+      disabledId,
+      availableId,
+      usedId,
+      lockedId,
+    ]);
+
+    const rows = await db()
+      .select()
+      .from(channelCardkey)
+      .where(
+        inArray(channelCardkey.id, [disabledId, availableId, usedId, lockedId])
+      );
+    const byId = new Map<string, any>(rows.map((row: any) => [row.id, row]));
+
+    assert.equal(result.enabledCount, 1);
+    assert.equal(byId.get(disabledId)?.status, ChannelCardkeyStatus.AVAILABLE);
+    assert.equal(byId.get(disabledId)?.disabledReason, null);
+    assert.equal(byId.get(availableId)?.status, ChannelCardkeyStatus.AVAILABLE);
     assert.equal(byId.get(usedId)?.status, ChannelCardkeyStatus.USED);
     assert.equal(byId.get(lockedId)?.status, ChannelCardkeyStatus.LOCKED);
   } finally {

@@ -50,13 +50,20 @@ test('upgrade tasks admin page explains manual-required failures', () => {
 });
 
 test('channel cardkeys admin page shows channel and offers batch disable', () => {
-  const source = readSource(
+  const pageSource = readSource(
     'src/app/[locale]/(admin)/admin/channel-cardkeys/page.tsx'
   );
+  const routeSource = readSource(
+    'src/app/api/admin/channel-cardkeys/enable/route.ts'
+  );
 
-  assert.match(source, /<th[^>]*>\s*渠道\s*<\/th>/);
-  assert.match(source, /批量禁用/);
-  assert.match(source, /\/api\/admin\/channel-cardkeys\/disable/);
+  assert.match(pageSource, /<th[^>]*>\s*渠道\s*<\/th>/);
+  assert.match(pageSource, /批量禁用/);
+  assert.match(pageSource, /批量取消禁用/);
+  assert.match(pageSource, /\/api\/admin\/channel-cardkeys\/disable/);
+  assert.match(pageSource, /\/api\/admin\/channel-cardkeys\/enable/);
+  assert.match(routeSource, /PERMISSIONS\.CHANNEL_CARDKEY_WRITE/);
+  assert.match(routeSource, /batchEnableCardkeys/);
 });
 
 test('redeem codes admin page exposes code search while preserving filters', () => {
@@ -79,6 +86,20 @@ test('redeem codes admin page exposes code search while preserving filters', () 
     source,
     /status,[\s\S]*productCode,[\s\S]*memberType,[\s\S]*batchId,[\s\S]*search/
   );
+});
+
+test('redeem codes admin page offers batch enable for disabled codes', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/redeem-codes/page.tsx'
+  );
+  const routeSource = readSource(
+    'src/app/api/admin/redeem-codes/enable/route.ts'
+  );
+
+  assert.match(pageSource, /批量取消禁用/);
+  assert.match(pageSource, /\/api\/admin\/redeem-codes\/enable/);
+  assert.match(routeSource, /PERMISSIONS\.REDEEM_WRITE/);
+  assert.match(routeSource, /batchEnable/);
 });
 
 test('redeem code generator exposes configurable cardkey prefix', () => {

@@ -853,12 +853,14 @@ export async function createManualUpgradeTask(
       .for('update');
 
     if (!code) throw new Error(getRedeemCodeErrorMessage('not_found'));
-    if (code.status === RedeemCodeStatus.DISABLED) {
-      throw new Error(getRedeemCodeErrorMessage('disabled'));
+    if (code.status === RedeemCodeStatus.CONSUMED) {
+      throw new Error(
+        code.usedByTaskId
+          ? '本站卡密已被其他任务占用'
+          : getRedeemCodeErrorMessage('already_consumed')
+      );
     }
-    if (code.status === RedeemCodeStatus.CONSUMED && code.usedByTaskId) {
-      throw new Error('本站卡密已被其他任务占用');
-    }
+    const originalRedeemCodeStatus = code.status;
 
     const [{ total: existingTaskCount }] = await tx
       .select({ total: count() })
@@ -870,6 +872,7 @@ export async function createManualUpgradeTask(
     }
 
     let successChannelCardkeyId: string | null = null;
+    let originalChannelCardkeyStatus: string | undefined;
     if (normalized.channelId && normalized.channelCardkey) {
       const [manualCardkey] = await tx
         .select()
@@ -892,6 +895,12 @@ export async function createManualUpgradeTask(
       ) {
         throw new Error('渠道卡密与本站卡密的商品不一致');
       }
+      if (manualCardkey.status === ChannelInventoryStatus.LOCKED) {
+        throw new Error('该渠道卡密正被其他任务锁定');
+      }
+      if (manualCardkey.status === ChannelInventoryStatus.USED) {
+        throw new Error('该渠道卡密已标记为已使用');
+      }
       if (manualCardkey.lockedByTaskId) {
         throw new Error('该渠道卡密正被其他任务锁定');
       }
@@ -909,6 +918,7 @@ export async function createManualUpgradeTask(
       }
 
       successChannelCardkeyId = manualCardkey.id;
+      originalChannelCardkeyStatus = manualCardkey.status;
       await tx
         .update(channelCardkey)
         .set({
@@ -916,6 +926,7 @@ export async function createManualUpgradeTask(
           lockedByTaskId: null,
           usedByAttemptId: null,
           usedAt: dbTimestampFromDate(now),
+          disabledReason: null,
         })
         .where(eq(channelCardkey.id, manualCardkey.id));
     }
@@ -946,6 +957,8 @@ export async function createManualUpgradeTask(
         manualSuccessChannelId: normalized.channelId,
         manualSuccessChannelName: channelName,
         manualSuccessChannelCardkey: normalized.channelCardkey,
+        manualEntryRedeemCodeOriginalStatus: originalRedeemCodeStatus,
+        manualEntryChannelCardkeyOriginalStatus: originalChannelCardkeyStatus,
       }),
     });
 
@@ -955,6 +968,8 @@ export async function createManualUpgradeTask(
         status: RedeemCodeStatus.CONSUMED,
         usedByTaskId: newTaskId,
         usedAt: dbTimestampFromDate(now),
+        disabledAt: null,
+        disabledReason: null,
       })
       .where(eq(redeemCode.id, code.id));
   });

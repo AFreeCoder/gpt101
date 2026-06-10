@@ -206,6 +206,133 @@ test('后台任务补录会创建成功任务并占用本站卡密和上游渠�
   }
 });
 
+test('后台任务补录支持已禁用的本站卡密和上游渠道卡密', async () => {
+  const prefix = `manualdisabled${Date.now()}`;
+  await cleanupByPrefix(prefix);
+  const seeded = await seedManualEntryInventory(prefix);
+  const sessionToken = JSON.stringify({
+    user: { id: 'disabled_manual_user', email: 'disabled@example.com' },
+    account: { id: 'disabled_manual_account', planType: 'free' },
+    accessToken: 'disabled-manual-access-token',
+  });
+
+  try {
+    await db()
+      .update(redeemCode)
+      .set({
+        status: 'disabled',
+        disabledReason: '线下升级预占，避免误用',
+        disabledAt: new Date(),
+      })
+      .where(like(redeemCode.code, seeded.code));
+    await db()
+      .update(channelCardkey)
+      .set({
+        status: 'disabled',
+        disabledReason: '线下升级预占，避免误用',
+      })
+      .where(like(channelCardkey.cardkey, seeded.manualChannelCardkey));
+
+    const result = await createManualUpgradeTask({
+      redeemCode: seeded.code,
+      sessionToken,
+      chatgptEmail: 'offline-disabled@example.com',
+      channelId: seeded.channelId,
+      channelCardkey: seeded.manualChannelCardkey,
+      note: '禁用卡密线下升级补录',
+    });
+
+    const [taskRow] = await db()
+      .select()
+      .from(upgradeTask)
+      .where(like(upgradeTask.taskNo, result.taskNo));
+    const [redeemRow] = await db()
+      .select()
+      .from(redeemCode)
+      .where(like(redeemCode.code, seeded.code));
+    const [cardkeyRow] = await db()
+      .select()
+      .from(channelCardkey)
+      .where(like(channelCardkey.cardkey, seeded.manualChannelCardkey));
+
+    assert.equal(taskRow.status, UpgradeTaskStatus.SUCCEEDED);
+    assert.equal(taskRow.chatgptEmail, 'offline-disabled@example.com');
+    assert.equal(taskRow.successChannelCardkeyId, seeded.channelCardkeyId);
+    assert.equal(redeemRow.status, 'consumed');
+    assert.equal(redeemRow.usedByTaskId, taskRow.id);
+    assert.equal(cardkeyRow.status, 'used');
+    assert.equal(cardkeyRow.usedByAttemptId, null);
+
+    const metadata = JSON.parse(taskRow.metadata || '{}');
+    assert.equal(metadata.manualEntry, true);
+    assert.equal(metadata.manualEntryRedeemCodeOriginalStatus, 'disabled');
+    assert.equal(metadata.manualEntryChannelCardkeyOriginalStatus, 'disabled');
+  } finally {
+    await cleanupByPrefix(prefix);
+  }
+});
+
+test('后台任务补录拒绝已使用状态的上游渠道卡密', async () => {
+  const prefix = `manualusedcard${Date.now()}`;
+  await cleanupByPrefix(prefix);
+  const seeded = await seedManualEntryInventory(prefix);
+
+  try {
+    await db()
+      .update(channelCardkey)
+      .set({
+        status: 'used',
+        usedAt: new Date(),
+      })
+      .where(like(channelCardkey.cardkey, seeded.manualChannelCardkey));
+
+    await assert.rejects(
+      () =>
+        createManualUpgradeTask({
+          redeemCode: seeded.code,
+          sessionToken: '{}',
+          chatgptEmail: 'offline@example.com',
+          channelId: seeded.channelId,
+          channelCardkey: seeded.manualChannelCardkey,
+        }),
+      /该渠道卡密已标记为已使用/
+    );
+  } finally {
+    await cleanupByPrefix(prefix);
+  }
+});
+
+test('后台任务补录拒绝已使用但未绑定任务的本站卡密', async () => {
+  const prefix = `manualconsumed${Date.now()}`;
+  await cleanupByPrefix(prefix);
+  const seeded = await seedManualEntryInventory(prefix);
+
+  try {
+    await db()
+      .update(redeemCode)
+      .set({
+        status: 'consumed',
+        usedByTaskId: null,
+        usedAt: new Date(),
+      })
+      .where(like(redeemCode.code, seeded.code));
+
+    await assert.rejects(
+      () =>
+        createManualUpgradeTask({
+          redeemCode: seeded.code,
+          sessionToken: '{}',
+          chatgptEmail: 'offline@example.com',
+          channelId: seeded.channelId,
+          channelCardkey: seeded.manualChannelCardkey,
+        }),
+      /该卡密已被使用/
+    );
+  } finally {
+    await cleanupByPrefix(prefix);
+  }
+});
+
 test('后台任务补录拒绝已被其他任务占用的本站卡密', async () => {
   const prefix = `manualdup${Date.now()}`;
   await cleanupByPrefix(prefix);

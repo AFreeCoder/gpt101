@@ -122,17 +122,32 @@ export default function RedeemCodesPage() {
   };
 
   // 批量操作
-  const handleBatchAction = async (action: 'disable' | 'delete') => {
+  const handleBatchAction = async (action: 'disable' | 'enable' | 'delete') => {
     if (selectedIds.size === 0) return;
-    const label = action === 'disable' ? '禁用' : '删除';
-    if (!confirm(`确定${label}选中的 ${selectedIds.size} 张卡密？`)) return;
+    const selectedCodes = codes.filter((code) => selectedIds.has(code.id));
+    const targetCodes =
+      action === 'enable'
+        ? selectedCodes.filter((code) => code.status === 'disabled')
+        : selectedCodes;
+    const label =
+      action === 'disable' ? '禁用' : action === 'enable' ? '取消禁用' : '删除';
+    const endpoint =
+      action === 'enable'
+        ? '/api/admin/redeem-codes/enable'
+        : `/api/admin/redeem-codes/${action}`;
+
+    if (targetCodes.length === 0) {
+      alert(`选中的卡密中没有可${label}的卡密`);
+      return;
+    }
+    if (!confirm(`确定${label} ${targetCodes.length} 张卡密？`)) return;
 
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/redeem-codes/${action}`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+        body: JSON.stringify({ ids: targetCodes.map((code) => code.id) }),
       });
       const data = await res.json();
       if (data.code === 0) {
@@ -285,6 +300,13 @@ export default function RedeemCodesPage() {
               className="rounded bg-orange-500 px-3 py-1 text-xs text-white hover:bg-orange-600 disabled:opacity-50"
             >
               批量禁用
+            </button>
+            <button
+              onClick={() => handleBatchAction('enable')}
+              disabled={actionLoading}
+              className="rounded bg-emerald-600 px-3 py-1 text-xs text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              批量取消禁用
             </button>
             <button
               onClick={() => handleBatchAction('delete')}
