@@ -22,6 +22,7 @@ import {
 import { getChannelById } from '@/shared/models/upgrade-channel';
 import { resolveVerifiedSessionAccount } from '@/shared/services/upgrade-account-resolver';
 import {
+  extractSessionAccountSnapshot,
   mergeUpgradeTaskMetadata,
   parseUpgradeTaskMetadata,
   replaceSessionAccountFields,
@@ -771,6 +772,195 @@ export async function getTaskById(taskId: string) {
 }
 
 // --- 管理员操作 ---
+
+export interface ManualUpgradeTaskInput {
+  redeemCode: string;
+  sessionToken: string;
+  chatgptEmail: string;
+  channelId?: string;
+  channelCardkey?: string;
+  note?: string;
+}
+
+function normalizeManualEntryInput(input: ManualUpgradeTaskInput) {
+  const redeemCodeValue = input.redeemCode?.trim().toUpperCase();
+  const sessionToken = input.sessionToken?.trim();
+  const chatgptEmail = input.chatgptEmail?.trim().toLowerCase();
+  const channelId = input.channelId?.trim();
+  const channelCardkey = input.channelCardkey?.trim();
+  const note = input.note?.trim();
+
+  if (!redeemCodeValue) {
+    throw new Error('请输入本站卡密');
+  }
+  if (!sessionToken) {
+    throw new Error('请输入用户 Token');
+  }
+  if (!chatgptEmail) {
+    throw new Error('请输入用户邮箱');
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(chatgptEmail)) {
+    throw new Error('用户邮箱格式不正确');
+  }
+  if (channelCardkey && !channelId) {
+    throw new Error('填写上游渠道卡密时必须选择渠道');
+  }
+
+  return {
+    redeemCode: redeemCodeValue,
+    sessionToken,
+    chatgptEmail,
+    channelId,
+    channelCardkey,
+    note,
+  };
+}
+
+function readOptionalSessionAccountSnapshot(sessionToken: string) {
+  try {
+    return extractSessionAccountSnapshot(sessionToken);
+  } catch {
+    return null;
+  }
+}
+
+export async function createManualUpgradeTask(
+  input: ManualUpgradeTaskInput
+): Promise<{ taskId: string; taskNo: string }> {
+  const normalized = normalizeManualEntryInput(input);
+  const accountSnapshot = readOptionalSessionAccountSnapshot(
+    normalized.sessionToken
+  );
+  const newTaskId = getUuid();
+  const newTaskNo = generateTaskNo();
+  const now = new Date();
+
+  let channelName: string | undefined;
+  if (normalized.channelId) {
+    const channel = await getChannelById(normalized.channelId);
+    if (!channel) {
+      throw new Error('渠道不存在');
+    }
+    channelName = channel.name;
+  }
+
+  await db().transaction(async (tx: any) => {
+    const [code] = await tx
+      .select()
+      .from(redeemCode)
+      .where(eq(redeemCode.code, normalized.redeemCode))
+      .limit(1)
+      .for('update');
+
+    if (!code) throw new Error(getRedeemCodeErrorMessage('not_found'));
+    if (code.status === RedeemCodeStatus.DISABLED) {
+      throw new Error(getRedeemCodeErrorMessage('disabled'));
+    }
+    if (code.status === RedeemCodeStatus.CONSUMED && code.usedByTaskId) {
+      throw new Error('本站卡密已被其他任务占用');
+    }
+
+    const [{ total: existingTaskCount }] = await tx
+      .select({ total: count() })
+      .from(upgradeTask)
+      .where(eq(upgradeTask.redeemCodeId, code.id));
+
+    if (existingTaskCount > 0) {
+      throw new Error('本站卡密已有升级任务记录，请在原任务上处理');
+    }
+
+    let successChannelCardkeyId: string | null = null;
+    if (normalized.channelId && normalized.channelCardkey) {
+      const [manualCardkey] = await tx
+        .select()
+        .from(channelCardkey)
+        .where(
+          and(
+            eq(channelCardkey.channelId, normalized.channelId),
+            eq(channelCardkey.cardkey, normalized.channelCardkey)
+          )
+        )
+        .limit(1)
+        .for('update');
+
+      if (!manualCardkey) {
+        throw new Error('渠道库存中未找到该卡密');
+      }
+      if (
+        manualCardkey.productCode !== code.productCode ||
+        manualCardkey.memberType !== code.memberType
+      ) {
+        throw new Error('渠道卡密与本站卡密的商品不一致');
+      }
+      if (manualCardkey.lockedByTaskId) {
+        throw new Error('该渠道卡密正被其他任务锁定');
+      }
+      if (manualCardkey.usedByAttemptId) {
+        throw new Error('该渠道卡密已有自动任务使用记录');
+      }
+
+      const [{ total: otherTaskCount }] = await tx
+        .select({ total: count() })
+        .from(upgradeTask)
+        .where(eq(upgradeTask.successChannelCardkeyId, manualCardkey.id));
+
+      if (otherTaskCount > 0) {
+        throw new Error('该渠道卡密已绑定其他成功任务');
+      }
+
+      successChannelCardkeyId = manualCardkey.id;
+      await tx
+        .update(channelCardkey)
+        .set({
+          status: ChannelInventoryStatus.USED,
+          lockedByTaskId: null,
+          usedByAttemptId: null,
+          usedAt: dbTimestampFromDate(now),
+        })
+        .where(eq(channelCardkey.id, manualCardkey.id));
+    }
+
+    await tx.insert(upgradeTask).values({
+      id: newTaskId,
+      taskNo: newTaskNo,
+      redeemCodeId: code.id,
+      redeemCodePlain: normalized.redeemCode,
+      productCode: code.productCode,
+      memberType: code.memberType,
+      sessionToken: normalized.sessionToken,
+      chatgptEmail: normalized.chatgptEmail,
+      chatgptAccountId: accountSnapshot?.accountId || null,
+      chatgptCurrentPlan: accountSnapshot?.currentPlan || null,
+      status: UpgradeTaskStatus.SUCCEEDED,
+      attemptCount: 0,
+      successChannelId: normalized.channelId || null,
+      successChannelCardkeyId,
+      lastError: null,
+      resultMessage: '管理员补录线下升级成功',
+      startedAt: dbTimestampFromDate(now),
+      finishedAt: dbTimestampFromDate(now),
+      metadata: mergeUpgradeTaskMetadata(null, {
+        manualEntry: true,
+        manualEntryAt: now.toISOString(),
+        adminNote: normalized.note,
+        manualSuccessChannelId: normalized.channelId,
+        manualSuccessChannelName: channelName,
+        manualSuccessChannelCardkey: normalized.channelCardkey,
+      }),
+    });
+
+    await tx
+      .update(redeemCode)
+      .set({
+        status: RedeemCodeStatus.CONSUMED,
+        usedByTaskId: newTaskId,
+        usedAt: dbTimestampFromDate(now),
+      })
+      .where(eq(redeemCode.id, code.id));
+  });
+
+  return { taskId: newTaskId, taskNo: newTaskNo };
+}
 
 export async function markTaskSuccess(
   taskId: string,

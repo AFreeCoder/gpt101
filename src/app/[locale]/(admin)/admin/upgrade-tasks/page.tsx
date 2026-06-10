@@ -28,6 +28,26 @@ interface Task {
   finishedAt: string | null;
 }
 
+interface ManualEntryForm {
+  redeemCode: string;
+  chatgptEmail: string;
+  sessionToken: string;
+  channelId: string;
+  channelCardkey: string;
+  note: string;
+}
+
+function getEmptyManualEntryForm(): ManualEntryForm {
+  return {
+    redeemCode: '',
+    chatgptEmail: '',
+    sessionToken: '',
+    channelId: '',
+    channelCardkey: '',
+    note: '',
+  };
+}
+
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
   pending: { label: '排队中', color: 'text-yellow-600 bg-yellow-50' },
   running: { label: '执行中', color: 'text-blue-600 bg-blue-50' },
@@ -55,6 +75,11 @@ export default function UpgradeTasksPage() {
   const [rbChannelCardkey, setRbChannelCardkey] = useState('');
   const [rbNote, setRbNote] = useState('');
   const [rbSaving, setRbSaving] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualEntry, setManualEntry] = useState<ManualEntryForm>(
+    getEmptyManualEntryForm()
+  );
+  const [manualEntrySaving, setManualEntrySaving] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -151,427 +176,619 @@ export default function UpgradeTasksPage() {
     setRbSaving(false);
   };
 
+  const updateManualEntry = (patch: Partial<ManualEntryForm>) => {
+    setManualEntry((current) => ({ ...current, ...patch }));
+  };
+
+  const openManualEntryModal = () => {
+    setManualEntry(getEmptyManualEntryForm());
+    setShowManualEntry(true);
+  };
+
+  const handleManualEntry = async () => {
+    if (!manualEntry.redeemCode.trim()) {
+      alert('请输入本站卡密');
+      return;
+    }
+    if (!manualEntry.chatgptEmail.trim()) {
+      alert('请输入用户邮箱');
+      return;
+    }
+    if (!manualEntry.sessionToken.trim()) {
+      alert('请输入用户 Token');
+      return;
+    }
+    if (manualEntry.channelCardkey.trim() && !manualEntry.channelId) {
+      alert('填写上游渠道卡密时必须选择渠道');
+      return;
+    }
+
+    setManualEntrySaving(true);
+    try {
+      const res = await fetch('/api/admin/upgrade-tasks/manualEntry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          redeemCode: manualEntry.redeemCode,
+          chatgptEmail: manualEntry.chatgptEmail,
+          sessionToken: manualEntry.sessionToken,
+          channelId: manualEntry.channelId || undefined,
+          channelCardkey: manualEntry.channelCardkey || undefined,
+          note: manualEntry.note || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.code !== 0) alert(data.message);
+      else {
+        setShowManualEntry(false);
+        if (data.data?.taskNo) {
+          setStatusFilter('');
+          setSearch(data.data.taskNo);
+          setPage(1);
+        }
+        fetchData();
+      }
+    } catch {
+      alert('补录失败');
+    }
+    setManualEntrySaving(false);
+  };
+
   return (
     <>
       <Header />
       <div className="p-6">
-      <h2 className="mb-4 text-lg font-semibold">任务结果</h2>
-
-      {/* 状态 Tab */}
-      <div className="mb-4 flex gap-1 border-b">
-        {[
-          { key: '', label: '全部' },
-          { key: 'pending', label: '排队中' },
-          { key: 'running', label: '执行中' },
-          { key: 'succeeded', label: '成功' },
-          { key: 'failed', label: '失败' },
-          { key: 'canceled', label: '已取消' },
-        ].map((tab) => (
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">任务结果</h2>
           <button
-            key={tab.key}
-            onClick={() => {
-              setStatusFilter(tab.key);
-              setPage(1);
-            }}
-            className={`px-4 py-2 text-sm ${statusFilter === tab.key ? 'border-b-2 border-blue-600 font-medium text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={openManualEntryModal}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
-            {tab.label}
+            任务补录
           </button>
-        ))}
-      </div>
+        </div>
 
-      {/* 搜索 */}
-      <div className="mb-4">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              setPage(1);
-              fetchData();
-            }
-          }}
-          placeholder="搜索任务编号、卡密、邮箱"
-          className="w-80 rounded-lg border px-3 py-1.5 text-sm"
-        />
-      </div>
+        {/* 状态 Tab */}
+        <div className="mb-4 flex gap-1 border-b">
+          {[
+            { key: '', label: '全部' },
+            { key: 'pending', label: '排队中' },
+            { key: 'running', label: '执行中' },
+            { key: 'succeeded', label: '成功' },
+            { key: 'failed', label: '失败' },
+            { key: 'canceled', label: '已取消' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => {
+                setStatusFilter(tab.key);
+                setPage(1);
+              }}
+              className={`px-4 py-2 text-sm ${statusFilter === tab.key ? 'border-b-2 border-blue-600 font-medium text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-3 py-2 text-left">本站卡密</th>
-              <th className="px-3 py-2 text-left">用户邮箱</th>
-              <th className="px-3 py-2 text-left">状态</th>
-              <th className="px-3 py-2 text-left">渠道/卡密</th>
-              <th className="px-3 py-2 text-left">Token</th>
-              <th className="px-3 py-2 text-left">时间</th>
-              <th className="px-3 py-2 text-left">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+        {/* 搜索 */}
+        <div className="mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setPage(1);
+                fetchData();
+              }
+            }}
+            placeholder="搜索任务编号、卡密、邮箱"
+            className="w-80 rounded-lg border px-3 py-1.5 text-sm"
+          />
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
-                  加载中...
-                </td>
+                <th className="px-3 py-2 text-left">本站卡密</th>
+                <th className="px-3 py-2 text-left">用户邮箱</th>
+                <th className="px-3 py-2 text-left">状态</th>
+                <th className="px-3 py-2 text-left">渠道/卡密</th>
+                <th className="px-3 py-2 text-left">Token</th>
+                <th className="px-3 py-2 text-left">时间</th>
+                <th className="px-3 py-2 text-left">操作</th>
               </tr>
-            ) : tasks.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
-                  暂无数据
-                </td>
-              </tr>
-            ) : (
-              tasks.map((t) => (
-                <tr key={t.id} className="border-t hover:bg-gray-50">
-                  <td className="px-3 py-2 font-mono text-xs">
-                    {t.redeemCodePlain}
-                  </td>
-                  <td className="px-3 py-2 text-xs">{t.chatgptEmail}</td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[t.status]?.color || ''}`}
-                    >
-                      {STATUS_MAP[t.status]?.label || t.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-xs">
-                    {t.status === 'succeeded' ? (
-                      <div>
-                        <span>{t.successChannelName}</span>
-                        {t.successChannelCardkey && (
-                          <div
-                            className="max-w-32 truncate font-mono text-gray-400"
-                            title={t.successChannelCardkey}
-                          >
-                            {t.successChannelCardkey}
-                          </div>
-                        )}
-                      </div>
-                    ) : t.status === 'failed' ? (
-                      <span
-                        className="block max-w-36 truncate text-gray-400"
-                        title={t.lastError || ''}
-                      >
-                        {t.lastError || '-'}
-                      </span>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                  <td className="px-3 py-2">
-                    <button
-                      onClick={() => setViewToken(t.sessionToken)}
-                      className="text-xs text-blue-600 hover:underline"
-                    >
-                      查看
-                    </button>
-                  </td>
-                  <td className="px-3 py-2 text-xs whitespace-nowrap text-gray-500">
-                    {formatTimestampWithoutTimeZone(t.createdAt)}
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="flex gap-2">
-                      {(t.status === 'failed' || t.status === 'canceled') && (
-                        <>
-                          {!t.manualRequired && (
-                            <button
-                              onClick={() => handleAction(t.id, 'retry')}
-                              className="text-xs text-blue-600 hover:underline"
-                            >
-                              重试
-                            </button>
-                          )}
-                          {t.manualRequired && (
-                            <span
-                              className="text-xs text-gray-400"
-                              title={
-                                t.manualRequiredReason ||
-                                t.lastError ||
-                                '该任务需人工处理，不能直接重试'
-                              }
-                            >
-                              需人工处理
-                            </span>
-                          )}
-                          <button
-                            onClick={() => {
-                              setShowMarkSuccess(t.id);
-                              setMsChannelId('');
-                              setMsChannelCardkey('');
-                              setMsNote('');
-                            }}
-                            className="text-xs text-green-600 hover:underline"
-                          >
-                            标记成功
-                          </button>
-                          {t.status === 'failed' && !t.manualRequired && (
-                            <button
-                              onClick={() => handleAction(t.id, 'cancel')}
-                              className="text-xs text-red-600 hover:underline"
-                            >
-                              取消
-                            </button>
-                          )}
-                        </>
-                      )}
-                      {t.status === 'pending' && (
-                        <button
-                          onClick={() => handleAction(t.id, 'cancel')}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          取消
-                        </button>
-                      )}
-                      {t.status === 'succeeded' && (
-                        <button
-                          onClick={() => openRebindModal(t)}
-                          className="text-xs text-blue-600 hover:underline"
-                        >
-                          更换卡密
-                        </button>
-                      )}
-                    </div>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-3 py-8 text-center text-gray-400"
+                  >
+                    加载中...
                   </td>
                 </tr>
-              ))
+              ) : tasks.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-3 py-8 text-center text-gray-400"
+                  >
+                    暂无数据
+                  </td>
+                </tr>
+              ) : (
+                tasks.map((t) => (
+                  <tr key={t.id} className="border-t hover:bg-gray-50">
+                    <td className="px-3 py-2 font-mono text-xs">
+                      {t.redeemCodePlain}
+                    </td>
+                    <td className="px-3 py-2 text-xs">{t.chatgptEmail}</td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_MAP[t.status]?.color || ''}`}
+                      >
+                        {STATUS_MAP[t.status]?.label || t.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      {t.status === 'succeeded' ? (
+                        <div>
+                          <span>{t.successChannelName}</span>
+                          {t.successChannelCardkey && (
+                            <div
+                              className="max-w-32 truncate font-mono text-gray-400"
+                              title={t.successChannelCardkey}
+                            >
+                              {t.successChannelCardkey}
+                            </div>
+                          )}
+                        </div>
+                      ) : t.status === 'failed' ? (
+                        <span
+                          className="block max-w-36 truncate text-gray-400"
+                          title={t.lastError || ''}
+                        >
+                          {t.lastError || '-'}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <button
+                        onClick={() => setViewToken(t.sessionToken)}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        查看
+                      </button>
+                    </td>
+                    <td className="px-3 py-2 text-xs whitespace-nowrap text-gray-500">
+                      {formatTimestampWithoutTimeZone(t.createdAt)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-2">
+                        {(t.status === 'failed' || t.status === 'canceled') && (
+                          <>
+                            {!t.manualRequired && (
+                              <button
+                                onClick={() => handleAction(t.id, 'retry')}
+                                className="text-xs text-blue-600 hover:underline"
+                              >
+                                重试
+                              </button>
+                            )}
+                            {t.manualRequired && (
+                              <span
+                                className="text-xs text-gray-400"
+                                title={
+                                  t.manualRequiredReason ||
+                                  t.lastError ||
+                                  '该任务需人工处理，不能直接重试'
+                                }
+                              >
+                                需人工处理
+                              </span>
+                            )}
+                            <button
+                              onClick={() => {
+                                setShowMarkSuccess(t.id);
+                                setMsChannelId('');
+                                setMsChannelCardkey('');
+                                setMsNote('');
+                              }}
+                              className="text-xs text-green-600 hover:underline"
+                            >
+                              标记成功
+                            </button>
+                            {t.status === 'failed' && !t.manualRequired && (
+                              <button
+                                onClick={() => handleAction(t.id, 'cancel')}
+                                className="text-xs text-red-600 hover:underline"
+                              >
+                                取消
+                              </button>
+                            )}
+                          </>
+                        )}
+                        {t.status === 'pending' && (
+                          <button
+                            onClick={() => handleAction(t.id, 'cancel')}
+                            className="text-xs text-red-600 hover:underline"
+                          >
+                            取消
+                          </button>
+                        )}
+                        {t.status === 'succeeded' && (
+                          <button
+                            onClick={() => openRebindModal(t)}
+                            className="text-xs text-blue-600 hover:underline"
+                          >
+                            更换卡密
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {total > 30 && (
+          <div className="mt-4 flex justify-center gap-2">
+            {page > 1 && (
+              <button
+                onClick={() => setPage(page - 1)}
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+              >
+                上一页
+              </button>
             )}
-          </tbody>
-        </table>
-      </div>
-
-      {total > 30 && (
-        <div className="mt-4 flex justify-center gap-2">
-          {page > 1 && (
-            <button
-              onClick={() => setPage(page - 1)}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-            >
-              上一页
-            </button>
-          )}
-          <span className="px-3 py-1 text-sm text-gray-500">
-            第 {page} 页，共 {Math.ceil(total / 30)} 页
-          </span>
-          {page * 30 < total && (
-            <button
-              onClick={() => setPage(page + 1)}
-              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-            >
-              下一页
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Session Token 查看弹窗 */}
-      {viewToken && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setViewToken('')}
-          />
-          <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Session Token</h3>
+            <span className="px-3 py-1 text-sm text-gray-500">
+              第 {page} 页，共 {Math.ceil(total / 30)} 页
+            </span>
+            {page * 30 < total && (
               <button
-                onClick={() => setViewToken('')}
-                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setPage(page + 1)}
+                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
               >
-                ✕
+                下一页
               </button>
-            </div>
-            <textarea
-              readOnly
-              value={viewToken}
-              rows={8}
-              className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-xs break-all"
+            )}
+          </div>
+        )}
+
+        {/* 任务补录弹窗 */}
+        {showManualEntry && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowManualEntry(false)}
             />
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={async () => {
-                  await navigator.clipboard.writeText(viewToken);
-                  alert('已复制');
-                }}
-                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                复制
-              </button>
-              <button
-                onClick={() => setViewToken('')}
-                className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
-              >
-                关闭
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* 标记成功弹窗 */}
-      {showMarkSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowMarkSuccess(null)}
-          />
-          <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-            <h3 className="mb-4 text-lg font-semibold">标记任务成功</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  使用的渠道
-                </label>
-                <select
-                  value={msChannelId}
-                  onChange={(e) => setMsChannelId(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
+            <div className="relative z-10 w-full max-w-2xl rounded-xl bg-white p-6 shadow-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">任务补录</h3>
+                <button
+                  onClick={() => setShowManualEntry(false)}
+                  className="text-gray-400 hover:text-gray-600"
                 >
-                  <option value="">请选择</option>
-                  {channels.map((ch) => (
-                    <option key={ch.id} value={ch.id}>
-                      {ch.name}
-                    </option>
-                  ))}
-                </select>
+                  ✕
+                </button>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  使用的渠道卡密
-                </label>
-                <input
-                  type="text"
-                  value={msChannelCardkey}
-                  onChange={(e) => setMsChannelCardkey(e.target.value)}
-                  placeholder="输入渠道卡密（如有）"
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">备注</label>
-                <input
-                  type="text"
-                  value={msNote}
-                  onChange={(e) => setMsNote(e.target.value)}
-                  placeholder="可选"
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-            <div className="mt-5 flex gap-3">
-              <button
-                onClick={() => setShowMarkSuccess(null)}
-                className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
-              >
-                取消
-              </button>
-              <button
-                disabled={msSaving}
-                onClick={async () => {
-                  setMsSaving(true);
-                  try {
-                    const res = await fetch(
-                      '/api/admin/upgrade-tasks/markSuccess',
-                      {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          taskId: showMarkSuccess,
-                          channelId: msChannelId || undefined,
-                          channelCardkey: msChannelCardkey || undefined,
-                          note: msNote || undefined,
-                        }),
-                      }
-                    );
-                    const data = await res.json();
-                    if (data.code !== 0) alert(data.message);
-                    else {
-                      setShowMarkSuccess(null);
-                      fetchData();
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    本站卡密
+                  </label>
+                  <input
+                    type="text"
+                    value={manualEntry.redeemCode}
+                    onChange={(e) =>
+                      updateManualEntry({ redeemCode: e.target.value })
                     }
-                  } catch {
-                    alert('操作失败');
-                  }
-                  setMsSaving(false);
-                }}
-                className="flex-1 rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-              >
-                {msSaving ? '处理中...' : '确认标记成功'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* 更换渠道卡密弹窗 */}
-      {showRebind && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowRebind(null)}
-          />
-          <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-            <h3 className="mb-4 text-lg font-semibold">更换绑定渠道卡密</h3>
-            <div className="mb-3 rounded-lg bg-yellow-50 p-3 text-xs text-yellow-800">
-              当前任务：{showRebind.taskNo}
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="mb-1 block text-sm font-medium">渠道</label>
-                <select
-                  value={rbChannelId}
-                  onChange={(e) => setRbChannelId(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                    className="w-full rounded-lg border px-3 py-2 font-mono text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    用户邮箱
+                  </label>
+                  <input
+                    type="email"
+                    value={manualEntry.chatgptEmail}
+                    onChange={(e) =>
+                      updateManualEntry({ chatgptEmail: e.target.value })
+                    }
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    使用渠道
+                  </label>
+                  <select
+                    value={manualEntry.channelId}
+                    onChange={(e) =>
+                      updateManualEntry({ channelId: e.target.value })
+                    }
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <option value="">未选择渠道</option>
+                    {channels.map((ch) => (
+                      <option key={ch.id} value={ch.id}>
+                        {ch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    上游渠道卡密
+                  </label>
+                  <input
+                    type="text"
+                    value={manualEntry.channelCardkey}
+                    onChange={(e) =>
+                      updateManualEntry({ channelCardkey: e.target.value })
+                    }
+                    className="w-full rounded-lg border px-3 py-2 font-mono text-sm"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-sm font-medium">
+                    用户 Token
+                  </label>
+                  <textarea
+                    value={manualEntry.sessionToken}
+                    onChange={(e) =>
+                      updateManualEntry({ sessionToken: e.target.value })
+                    }
+                    rows={7}
+                    className="w-full rounded-lg border px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-sm font-medium">备注</label>
+                  <input
+                    type="text"
+                    value={manualEntry.note}
+                    onChange={(e) =>
+                      updateManualEntry({ note: e.target.value })
+                    }
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex gap-3">
+                <button
+                  onClick={() => setShowManualEntry(false)}
+                  className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
                 >
-                  <option value="">请选择</option>
-                  {channels.map((ch) => (
-                    <option key={ch.id} value={ch.id}>
-                      {ch.name}
-                    </option>
-                  ))}
-                </select>
+                  取消
+                </button>
+                <button
+                  disabled={manualEntrySaving}
+                  onClick={handleManualEntry}
+                  className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {manualEntrySaving ? '保存中...' : '确认补录'}
+                </button>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  新渠道卡密
-                </label>
-                <input
-                  type="text"
-                  value={rbChannelCardkey}
-                  onChange={(e) => setRbChannelCardkey(e.target.value)}
-                  placeholder="输入正确的渠道卡密"
-                  className="w-full rounded-lg border px-3 py-2 font-mono text-sm"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">备注</label>
-                <input
-                  type="text"
-                  value={rbNote}
-                  onChange={(e) => setRbNote(e.target.value)}
-                  placeholder="可选"
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-            <div className="mt-5 flex gap-3">
-              <button
-                onClick={() => setShowRebind(null)}
-                className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
-              >
-                取消
-              </button>
-              <button
-                disabled={rbSaving}
-                onClick={handleRebind}
-                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {rbSaving ? '保存中...' : '确认更换'}
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Session Token 查看弹窗 */}
+        {viewToken && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setViewToken('')}
+            />
+            <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Session Token</h3>
+                <button
+                  onClick={() => setViewToken('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={viewToken}
+                rows={8}
+                className="w-full rounded-lg border bg-gray-50 p-3 font-mono text-xs break-all"
+              />
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(viewToken);
+                    alert('已复制');
+                  }}
+                  className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  复制
+                </button>
+                <button
+                  onClick={() => setViewToken('')}
+                  className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* 标记成功弹窗 */}
+        {showMarkSuccess && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowMarkSuccess(null)}
+            />
+            <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+              <h3 className="mb-4 text-lg font-semibold">标记任务成功</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    使用的渠道
+                  </label>
+                  <select
+                    value={msChannelId}
+                    onChange={(e) => setMsChannelId(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <option value="">请选择</option>
+                    {channels.map((ch) => (
+                      <option key={ch.id} value={ch.id}>
+                        {ch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    使用的渠道卡密
+                  </label>
+                  <input
+                    type="text"
+                    value={msChannelCardkey}
+                    onChange={(e) => setMsChannelCardkey(e.target.value)}
+                    placeholder="输入渠道卡密（如有）"
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">备注</label>
+                  <input
+                    type="text"
+                    value={msNote}
+                    onChange={(e) => setMsNote(e.target.value)}
+                    placeholder="可选"
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex gap-3">
+                <button
+                  onClick={() => setShowMarkSuccess(null)}
+                  className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
+                >
+                  取消
+                </button>
+                <button
+                  disabled={msSaving}
+                  onClick={async () => {
+                    setMsSaving(true);
+                    try {
+                      const res = await fetch(
+                        '/api/admin/upgrade-tasks/markSuccess',
+                        {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            taskId: showMarkSuccess,
+                            channelId: msChannelId || undefined,
+                            channelCardkey: msChannelCardkey || undefined,
+                            note: msNote || undefined,
+                          }),
+                        }
+                      );
+                      const data = await res.json();
+                      if (data.code !== 0) alert(data.message);
+                      else {
+                        setShowMarkSuccess(null);
+                        fetchData();
+                      }
+                    } catch {
+                      alert('操作失败');
+                    }
+                    setMsSaving(false);
+                  }}
+                  className="flex-1 rounded-lg bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  {msSaving ? '处理中...' : '确认标记成功'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* 更换渠道卡密弹窗 */}
+        {showRebind && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowRebind(null)}
+            />
+            <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+              <h3 className="mb-4 text-lg font-semibold">更换绑定渠道卡密</h3>
+              <div className="mb-3 rounded-lg bg-yellow-50 p-3 text-xs text-yellow-800">
+                当前任务：{showRebind.taskNo}
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">渠道</label>
+                  <select
+                    value={rbChannelId}
+                    onChange={(e) => setRbChannelId(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <option value="">请选择</option>
+                    {channels.map((ch) => (
+                      <option key={ch.id} value={ch.id}>
+                        {ch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">
+                    新渠道卡密
+                  </label>
+                  <input
+                    type="text"
+                    value={rbChannelCardkey}
+                    onChange={(e) => setRbChannelCardkey(e.target.value)}
+                    placeholder="输入正确的渠道卡密"
+                    className="w-full rounded-lg border px-3 py-2 font-mono text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">备注</label>
+                  <input
+                    type="text"
+                    value={rbNote}
+                    onChange={(e) => setRbNote(e.target.value)}
+                    placeholder="可选"
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 flex gap-3">
+                <button
+                  onClick={() => setShowRebind(null)}
+                  className="flex-1 rounded-lg border py-2 text-sm hover:bg-gray-50"
+                >
+                  取消
+                </button>
+                <button
+                  disabled={rbSaving}
+                  onClick={handleRebind}
+                  className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {rbSaving ? '保存中...' : '确认更换'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

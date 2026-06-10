@@ -18,6 +18,24 @@ test('upgrade tasks admin page exposes a rebind channel cardkey action', () => {
   assert.match(source, /\/api\/admin\/upgrade-tasks\/rebindCardkey/);
 });
 
+test('upgrade tasks admin page exposes manual task entry', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/upgrade-tasks/page.tsx'
+  );
+  const routeSource = readSource(
+    'src/app/api/admin/upgrade-tasks/manualEntry/route.ts'
+  );
+
+  assert.match(pageSource, /任务补录/);
+  assert.match(pageSource, /本站卡密/);
+  assert.match(pageSource, /用户 Token/);
+  assert.match(pageSource, /用户邮箱/);
+  assert.match(pageSource, /上游渠道卡密/);
+  assert.match(pageSource, /\/api\/admin\/upgrade-tasks\/manualEntry/);
+  assert.match(routeSource, /PERMISSIONS\.UPGRADE_TASK_WRITE/);
+  assert.match(routeSource, /createManualUpgradeTask/);
+});
+
 test('upgrade tasks admin page explains manual-required failures', () => {
   const pageSource = readSource(
     'src/app/[locale]/(admin)/admin/upgrade-tasks/page.tsx'
