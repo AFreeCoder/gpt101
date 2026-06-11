@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { RotateCcw, Search } from 'lucide-react';
+import { Ban, RotateCcw, Search, Trash2 } from 'lucide-react';
 
 import { Header } from '@/shared/blocks/dashboard';
 import { getProductMemberLabel } from '@/shared/lib/redeem-code';
@@ -26,6 +26,14 @@ interface BatchQuerySummary {
   unused: number;
   disabled: number;
   notFound: number;
+}
+
+interface BatchActionResult {
+  requestedCount: number;
+  uniqueCount: number;
+  matchedCount: number;
+  affectedCount: number;
+  skippedCount: number;
 }
 
 const EMPTY_SUMMARY: BatchQuerySummary = {
@@ -59,14 +67,29 @@ export default function RedeemCodeBatchQueryPage() {
   const [summary, setSummary] = useState<BatchQuerySummary>(EMPTY_SUMMARY);
   const [filterTab, setFilterTab] = useState<FilterTab>('all');
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
+  const [actionMessage, setActionMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
   const [hasQueried, setHasQueried] = useState(false);
 
   const inputCodes = useMemo(() => parseInputCodes(queryText), [queryText]);
+  const resultCodes = useMemo(() => items.map((item) => item.code), [items]);
   const filteredItems = useMemo(() => {
     if (filterTab === 'all') return items;
     return items.filter((item) => item.state === filterTab);
   }, [filterTab, items]);
+  const actionCounts = useMemo(
+    () => ({
+      disable: items.filter((item) => item.state === 'unused').length,
+      delete: items.filter(
+        (item) => item.state === 'unused' || item.state === 'disabled'
+      ).length,
+    }),
+    [items]
+  );
 
   const tabs: Array<{ key: FilterTab; label: string; count: number }> = [
     { key: 'all', label: '全部', count: summary.total },
@@ -76,15 +99,14 @@ export default function RedeemCodeBatchQueryPage() {
     { key: 'not_found', label: '未找到', count: summary.notFound },
   ];
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const runBatchQuery = async (codes: string[]) => {
     setError('');
 
-    if (inputCodes.length === 0) {
+    if (codes.length === 0) {
       setError('请粘贴至少一个卡密');
       return;
     }
-    if (inputCodes.length > 100) {
+    if (codes.length > 100) {
       setError('最多 100 个卡密');
       return;
     }
@@ -94,7 +116,7 @@ export default function RedeemCodeBatchQueryPage() {
       const res = await fetch('/api/admin/redeem-codes/batch-query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ codes: inputCodes }),
+        body: JSON.stringify({ codes }),
       });
       const data = await res.json();
       if (data.code === 0) {
@@ -112,13 +134,97 @@ export default function RedeemCodeBatchQueryPage() {
     }
   };
 
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setActionMessage(null);
+    await runBatchQuery(inputCodes);
+  };
+
+  const handleQueryTextChange = (text: string) => {
+    setQueryText(text);
+    setActionMessage(null);
+    if (!hasQueried) return;
+
+    setItems([]);
+    setSummary(EMPTY_SUMMARY);
+    setFilterTab('all');
+    setHasQueried(false);
+  };
+
   const handleClear = () => {
     setQueryText('');
     setItems([]);
     setSummary(EMPTY_SUMMARY);
     setFilterTab('all');
     setError('');
+    setActionMessage(null);
     setHasQueried(false);
+  };
+
+  const handleBatchCodeAction = async (action: 'disable' | 'delete') => {
+    setError('');
+    setActionMessage(null);
+
+    if (!hasQueried || resultCodes.length === 0) {
+      setError('请先批量查询卡密');
+      return;
+    }
+
+    const config =
+      action === 'disable'
+        ? {
+            endpoint: '/api/admin/redeem-codes/batch-disable-by-code',
+            label: '禁用',
+            confirmText: `确定禁用当前查询结果中的 ${actionCounts.disable} 张可用卡密？`,
+            emptyText: '当前查询结果中没有可禁用的可用卡密',
+            body: {
+              codes: resultCodes,
+              reason: '管理员按卡密批量禁用',
+            },
+            actionableCount: actionCounts.disable,
+          }
+        : {
+            endpoint: '/api/admin/redeem-codes/batch-delete-by-code',
+            label: '删除',
+            confirmText: `确定删除当前查询结果中的 ${actionCounts.delete} 张未使用/已禁用卡密？`,
+            emptyText: '当前查询结果中没有可删除的未使用或已禁用卡密',
+            body: { codes: resultCodes },
+            actionableCount: actionCounts.delete,
+          };
+
+    if (config.actionableCount === 0) {
+      setActionMessage({ type: 'error', text: config.emptyText });
+      return;
+    }
+
+    if (!confirm(config.confirmText)) return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch(config.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config.body),
+      });
+      const data = await res.json();
+      if (data.code === 0) {
+        const result = data.data as BatchActionResult;
+        await runBatchQuery(resultCodes);
+        setActionMessage({
+          type: 'success',
+          text: `已${config.label} ${result.affectedCount} 张，跳过 ${result.skippedCount} 张。`,
+        });
+      } else {
+        setActionMessage({
+          type: 'error',
+          text: data.message || `${config.label}失败`,
+        });
+      }
+    } catch {
+      setActionMessage({ type: 'error', text: `${config.label}失败` });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -143,7 +249,7 @@ export default function RedeemCodeBatchQueryPage() {
         <form onSubmit={handleSubmit} className="mb-6">
           <textarea
             value={queryText}
-            onChange={(event) => setQueryText(event.target.value)}
+            onChange={(event) => handleQueryTextChange(event.target.value)}
             placeholder={
               'GPT101-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\nKOL88-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
             }
@@ -196,6 +302,46 @@ export default function RedeemCodeBatchQueryPage() {
                   <div className="mt-1 text-2xl font-semibold">{tab.count}</div>
                 </button>
               ))}
+            </div>
+
+            <div className="mb-4 rounded-lg border bg-gray-50 px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="text-sm text-gray-600">
+                  当前结果可禁用 {actionCounts.disable} 张，可删除{' '}
+                  {actionCounts.delete} 张
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleBatchCodeAction('disable')}
+                    disabled={actionLoading || actionCounts.disable === 0}
+                    className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
+                  >
+                    <Ban className="h-4 w-4" />
+                    批量禁用可用卡密
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleBatchCodeAction('delete')}
+                    disabled={actionLoading || actionCounts.delete === 0}
+                    className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    批量删除未使用/已禁用卡密
+                  </button>
+                </div>
+              </div>
+              {actionMessage && (
+                <div
+                  className={`mt-3 rounded-md px-3 py-2 text-sm ${
+                    actionMessage.type === 'success'
+                      ? 'bg-green-50 text-green-700'
+                      : 'bg-red-50 text-red-600'
+                  }`}
+                >
+                  {actionMessage.text}
+                </div>
+              )}
             </div>
 
             <div className="overflow-x-auto rounded-lg border">

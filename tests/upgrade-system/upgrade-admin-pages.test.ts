@@ -144,6 +144,28 @@ test('redeem code batch query admin page exposes textarea query and status filte
   assert.match(routeSource, /最多查询 100 个卡密/);
 });
 
+test('redeem code batch query admin page offers pasted batch disable and delete actions', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/redeem-codes/batch-query/page.tsx'
+  );
+  const disableRouteSource = readSource(
+    'src/app/api/admin/redeem-codes/batch-disable-by-code/route.ts'
+  );
+  const deleteRouteSource = readSource(
+    'src/app/api/admin/redeem-codes/batch-delete-by-code/route.ts'
+  );
+
+  assert.match(pageSource, /批量禁用可用卡密/);
+  assert.match(pageSource, /批量删除未使用\/已禁用卡密/);
+  assert.match(pageSource, /\/api\/admin\/redeem-codes\/batch-disable-by-code/);
+  assert.match(pageSource, /\/api\/admin\/redeem-codes\/batch-delete-by-code/);
+  assert.match(pageSource, /affectedCount/);
+  assert.match(disableRouteSource, /PERMISSIONS\.REDEEM_WRITE/);
+  assert.match(deleteRouteSource, /PERMISSIONS\.REDEEM_DELETE/);
+  assert.match(disableRouteSource, /batchDisableCodesByText/);
+  assert.match(deleteRouteSource, /batchDeleteCodesByText/);
+});
+
 test('upgrade task attempts admin page and API include site redeem cardkey', () => {
   const pageSource = readSource(
     'src/app/[locale]/(admin)/admin/upgrade-task-attempts/page.tsx'

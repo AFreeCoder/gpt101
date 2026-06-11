@@ -43,6 +43,14 @@ export interface RedeemCodeUsageBatchResult {
   };
 }
 
+export interface RedeemCodeBatchTextActionResult {
+  requestedCount: number;
+  uniqueCount: number;
+  matchedCount: number;
+  affectedCount: number;
+  skippedCount: number;
+}
+
 function maskPublicEmail(email: string | null | undefined) {
   if (!email) return null;
 
@@ -463,6 +471,116 @@ export async function batchDelete(codeIds: string[]) {
         ])
       )
     );
+}
+
+async function getBatchTextActionCounts(
+  codes: string[],
+  eligibleStatuses: RedeemCodeStatus[]
+) {
+  if (codes.length === 0) {
+    return { matchedCount: 0, affectedCount: 0 };
+  }
+
+  const codeWhere = inArray(redeemCode.code, codes);
+  const eligibleWhere = and(
+    codeWhere,
+    inArray(redeemCode.status, eligibleStatuses)
+  );
+
+  const [{ total: matchedCount }] = await db()
+    .select({ total: count() })
+    .from(redeemCode)
+    .where(codeWhere);
+
+  const [{ total: affectedCount }] = await db()
+    .select({ total: count() })
+    .from(redeemCode)
+    .where(eligibleWhere);
+
+  return { matchedCount, affectedCount };
+}
+
+function buildBatchTextActionResult(args: {
+  requestedCount: number;
+  uniqueCount: number;
+  matchedCount: number;
+  affectedCount: number;
+}): RedeemCodeBatchTextActionResult {
+  return {
+    requestedCount: args.requestedCount,
+    uniqueCount: args.uniqueCount,
+    matchedCount: args.matchedCount,
+    affectedCount: args.affectedCount,
+    skippedCount: args.requestedCount - args.affectedCount,
+  };
+}
+
+export async function batchDisableCodesByText(
+  input: string[] | string,
+  reason: string = '管理员按卡密批量禁用'
+): Promise<RedeemCodeBatchTextActionResult> {
+  const codes = normalizeRedeemCodeBatchInput(input);
+  const uniqueCodes = Array.from(new Set(codes));
+  const { matchedCount, affectedCount } = await getBatchTextActionCounts(
+    uniqueCodes,
+    [RedeemCodeStatus.AVAILABLE]
+  );
+
+  if (affectedCount > 0) {
+    await db()
+      .update(redeemCode)
+      .set({
+        status: RedeemCodeStatus.DISABLED,
+        disabledAt: dbTimestampNow(),
+        disabledReason: reason,
+      })
+      .where(
+        and(
+          inArray(redeemCode.code, uniqueCodes),
+          eq(redeemCode.status, RedeemCodeStatus.AVAILABLE)
+        )
+      );
+  }
+
+  return buildBatchTextActionResult({
+    requestedCount: codes.length,
+    uniqueCount: uniqueCodes.length,
+    matchedCount,
+    affectedCount,
+  });
+}
+
+export async function batchDeleteCodesByText(
+  input: string[] | string
+): Promise<RedeemCodeBatchTextActionResult> {
+  const codes = normalizeRedeemCodeBatchInput(input);
+  const uniqueCodes = Array.from(new Set(codes));
+  const deletableStatuses = [
+    RedeemCodeStatus.AVAILABLE,
+    RedeemCodeStatus.DISABLED,
+  ];
+  const { matchedCount, affectedCount } = await getBatchTextActionCounts(
+    uniqueCodes,
+    deletableStatuses
+  );
+
+  if (affectedCount > 0) {
+    await db()
+      .delete(redeemCode)
+      .where(
+        and(
+          inArray(redeemCode.code, uniqueCodes),
+          inArray(redeemCode.status, deletableStatuses)
+        )
+      );
+  }
+
+  return buildBatchTextActionResult({
+    requestedCount: codes.length,
+    uniqueCount: uniqueCodes.length,
+    matchedCount,
+    affectedCount,
+  });
 }
 
 // --- 导出 ---
