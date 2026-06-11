@@ -1,7 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 import Script from 'next/script';
 
 import { AnalyticsConfigs, AnalyticsProvider } from '.';
+import { BaiduPageviewTracker } from './baidu-pageview-tracker';
 
 /**
  * 百度统计配置
@@ -24,6 +25,8 @@ export class BaiduAnalyticsProvider implements AnalyticsProvider {
   }
 
   getHeadScripts(): ReactNode {
+    const baiduId = JSON.stringify(this.configs.baiduId);
+
     return (
       <Script
         id={this.name}
@@ -33,13 +36,21 @@ export class BaiduAnalyticsProvider implements AnalyticsProvider {
             var _hmt = _hmt || [];
             (function() {
               var hm = document.createElement("script");
-              hm.src = "https://hm.baidu.com/hm.js?${this.configs.baiduId}";
+              hm.src = "https://hm.baidu.com/hm.js?" + ${baiduId};
               var s = document.getElementsByTagName("script")[0];
               s.parentNode.insertBefore(hm, s);
             })();
           `,
         }}
       />
+    );
+  }
+
+  getBodyScripts(): ReactNode {
+    return (
+      <Suspense fallback={null}>
+        <BaiduPageviewTracker />
+      </Suspense>
     );
   }
 }

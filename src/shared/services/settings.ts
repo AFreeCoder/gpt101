@@ -168,6 +168,13 @@ export async function getSettingGroups() {
       tab: 'analytics',
     },
     {
+      name: 'baidu_analytics',
+      title: t('groups.baidu_analytics'),
+      description:
+        'custom your <a href="https://tongji.baidu.com/" class="text-primary" target="_blank">Baidu Analytics</a> settings',
+      tab: 'analytics',
+    },
+    {
       name: 'clarity',
       title: t('groups.clarity'),
       description:
@@ -288,8 +295,7 @@ export async function getSettings() {
     {
       name: 'app_description',
       title: 'App Description',
-      placeholder:
-        'GPT101 - One-stop GPT subscription service.',
+      placeholder: 'GPT101 - One-stop GPT subscription service.',
       type: 'textarea',
       group: 'appinfo',
       tab: 'general',
@@ -650,6 +656,14 @@ export async function getSettings() {
       type: 'text',
       placeholder: '',
       group: 'google_analytics',
+      tab: 'analytics',
+    },
+    {
+      name: 'baidu_analytics_id',
+      title: 'Baidu Analytics ID',
+      type: 'text',
+      placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      group: 'baidu_analytics',
       tab: 'analytics',
     },
     {
