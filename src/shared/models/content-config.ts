@@ -1,4 +1,5 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
+import { PHASE_PRODUCTION_BUILD } from 'next/constants';
 import { inArray } from 'drizzle-orm';
 
 import { db } from '@/core/db';
@@ -54,6 +55,10 @@ async function readContentConfigValues(): Promise<ContentConfigValues> {
   return values;
 }
 
+function isNextProductionBuild() {
+  return process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD;
+}
+
 export async function getContentConfigValues(): Promise<ContentConfigValues> {
   if (!envConfigs.database_url) {
     return {};
@@ -62,10 +67,12 @@ export async function getContentConfigValues(): Promise<ContentConfigValues> {
   try {
     return await readContentConfigValues();
   } catch (error) {
-    console.warn(
-      '[content-config] failed to read content config:',
-      error instanceof Error ? error.message : error
-    );
+    if (!isNextProductionBuild()) {
+      console.warn(
+        '[content-config] failed to read content config:',
+        error instanceof Error ? error.message : error
+      );
+    }
     return {};
   }
 }

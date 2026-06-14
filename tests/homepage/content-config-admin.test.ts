@@ -21,12 +21,14 @@ test('content config model only saves whitelisted keys and revalidates public pa
   assert.match(libSource, /upgrade_notice_config/);
   assert.match(
     source,
-    /const basePaths = \['\/', '\/chatgpt-mirror', '\/upgrade'\]/
+    /const basePaths = \['\/', '\/faq', '\/chatgpt-mirror', '\/upgrade'\]/
   );
   assert.match(source, /locales\.flatMap/);
   assert.match(source, /\$\{locale\}\/chatgpt-mirror/);
   assert.match(source, /'\/chatgpt-mirror'/);
   assert.match(source, /'\/upgrade'/);
+  assert.match(source, /PHASE_PRODUCTION_BUILD/);
+  assert.match(source, /process\.env\.NEXT_PHASE/);
   assert.match(source, /\[content-config\] failed to read content config/);
   assert.match(source, /return values/);
   assert.match(source, /getContentConfigValuesStrict/);
