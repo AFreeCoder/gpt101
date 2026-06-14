@@ -93,14 +93,21 @@ function buildAdminFailureMessage(message: string): string {
   return `9977 渠道充值异常：${message}`;
 }
 
-function isMissingRechargeRecordMessage(message: string): boolean {
-  return message.includes('未找到对应的充值记录');
-}
-
 function normalizeStatus(payload: any): string {
   return String(payload?.status || '')
     .trim()
     .toLowerCase();
+}
+
+function isAvailableVerifyResult(payload: any): boolean {
+  const status = normalizeStatus(payload);
+  return (
+    payload?.success === true &&
+    (payload?.is_new === true ||
+      status === 'active' ||
+      status === 'available' ||
+      status === 'new')
+  );
 }
 
 function isUsedVerifyResult(payload: any): boolean {
@@ -188,25 +195,114 @@ export function create9977aiAdapter(
       }
     }
 
-    const missingRechargeRecord = isMissingRechargeRecordMessage(lastMessage);
-    if (!missingRechargeRecord) {
-      const confirmed = await confirmUsedCode(
-        jar,
-        channelCardkey,
+    return classifyFailedRecharge(
+      jar,
+      channelCardkey,
+      chatgptEmail,
+      attemptStartedAt,
+      lastMessage
+    );
+  }
+
+  function buildReuseFailureWithVerificationMessage(
+    verificationMessage: string,
+    lastMessage: string
+  ): string {
+    return buildAdminFailureMessage(
+      `submit_json 失败后自动复用 3 次仍未成功，${verificationMessage}：${lastMessage}`
+    );
+  }
+
+  function confirmUsedCodeFromVerifyData(
+    verifyData: any,
+    chatgptEmail: string,
+    attemptStartedAt: Date
+  ): UpgradeResult | null {
+    if (
+      isConfirmedCurrentRedemption({
+        isRedeemed: isUsedVerifyResult(verifyData),
+        redeemEmail: pickFirstPresentField(verifyData, [
+          'email',
+          'userEmail',
+          'redeemEmail',
+          'user_id',
+        ]),
+        redeemTime: pickFirstPresentField(verifyData, [
+          'updated_at',
+          'updatedAt',
+          'used_at',
+          'usedAt',
+          'redeemTime',
+          'timestamp',
+          'time',
+        ]),
         chatgptEmail,
-        attemptStartedAt
-      );
-      if (confirmed) return confirmed;
+        attemptStartedAt,
+        checkedAt: now(),
+      })
+    ) {
+      return {
+        ok: true,
+        message: '二次验卡确认渠道卡密已兑换到当前账号',
+      };
+    }
+
+    return null;
+  }
+
+  async function classifyFailedRecharge(
+    jar: CookieJar,
+    channelCardkey: string,
+    chatgptEmail: string,
+    attemptStartedAt: Date,
+    lastMessage: string
+  ): Promise<UpgradeResult> {
+    try {
+      const verifyData = await verifyCode(jar, channelCardkey);
+
+      if (isAvailableVerifyResult(verifyData)) {
+        return {
+          ok: false,
+          retryable: true,
+          cardkeyAction: 'release',
+          message: buildReuseFailureWithVerificationMessage(
+            '二次验卡仍有效，释放渠道卡密',
+            lastMessage
+          ),
+        };
+      }
+
+      if (isUsedVerifyResult(verifyData)) {
+        const confirmed = confirmUsedCodeFromVerifyData(
+          verifyData,
+          chatgptEmail,
+          attemptStartedAt
+        );
+        if (confirmed) return confirmed;
+      }
+    } catch (error: any) {
+      return {
+        ok: false,
+        retryable: false,
+        stopFallback: true,
+        preserveRedeemCode: true,
+        cardkeyAction: 'consume',
+        message: buildReuseFailureWithVerificationMessage(
+          `二次验卡失败，需人工处理：${error?.message || '网络异常'}`,
+          lastMessage
+        ),
+      };
     }
 
     return {
       ok: false,
       retryable: false,
       stopFallback: true,
-      preserveRedeemCode: missingRechargeRecord ? undefined : true,
-      cardkeyAction: missingRechargeRecord ? 'release' : 'consume',
-      message: buildAdminFailureMessage(
-        `submit_json 失败后自动复用 3 次仍未成功：${lastMessage}`
+      preserveRedeemCode: true,
+      cardkeyAction: 'consume',
+      message: buildReuseFailureWithVerificationMessage(
+        '二次验卡无法确认当前账号，需人工处理',
+        lastMessage
       ),
     };
   }
@@ -219,34 +315,11 @@ export function create9977aiAdapter(
   ): Promise<UpgradeResult | null> {
     try {
       const verifyData = await verifyCode(jar, channelCardkey);
-      if (
-        isConfirmedCurrentRedemption({
-          isRedeemed: isUsedVerifyResult(verifyData),
-          redeemEmail: pickFirstPresentField(verifyData, [
-            'email',
-            'userEmail',
-            'redeemEmail',
-            'user_id',
-          ]),
-          redeemTime: pickFirstPresentField(verifyData, [
-            'updated_at',
-            'updatedAt',
-            'used_at',
-            'usedAt',
-            'redeemTime',
-            'timestamp',
-            'time',
-          ]),
-          chatgptEmail,
-          attemptStartedAt,
-          checkedAt: now(),
-        })
-      ) {
-        return {
-          ok: true,
-          message: '二次验卡确认渠道卡密已兑换到当前账号',
-        };
-      }
+      return confirmUsedCodeFromVerifyData(
+        verifyData,
+        chatgptEmail,
+        attemptStartedAt
+      );
     } catch {
       // 无法确认时继续走原有人工处理兜底。
     }
