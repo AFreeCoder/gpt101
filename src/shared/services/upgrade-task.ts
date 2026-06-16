@@ -1,10 +1,22 @@
-import { and, asc, count, desc, eq, inArray, lte, sql } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  inArray,
+  lte,
+  sql,
+} from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import {
   channelCardkey,
   redeemCode,
   upgradeChannel,
+  upgradePartnerApp,
+  upgradePartnerOrder,
   upgradeTask,
   upgradeTaskAttempt,
 } from '@/config/db/schema';
@@ -30,6 +42,15 @@ import {
 } from '@/shared/services/upgrade-task-helpers';
 
 export type UpgradeTask = typeof upgradeTask.$inferSelect;
+export type UpgradeTaskSourceType = 'partner' | 'site';
+export type UpgradeTaskListItem = UpgradeTask & {
+  sourceType: UpgradeTaskSourceType;
+  partnerAppId: string | null;
+  partnerAppKey: string | null;
+  partnerAppName: string | null;
+  partnerOrderId: string | null;
+  externalOrderNo: string | null;
+};
 
 export enum UpgradeTaskStatus {
   PENDING = 'pending',
@@ -727,40 +748,245 @@ export async function pickAndRunTasks(maxCount: number = 5): Promise<number> {
 
 // --- 管理后台查询 ---
 
+function normalizeTaskSourceType(
+  sourceType?: string
+): UpgradeTaskSourceType | undefined {
+  if (sourceType === 'partner' || sourceType === 'site') return sourceType;
+  return undefined;
+}
+
+function getStringMetadataValue(
+  metadata: Record<string, unknown>,
+  key: string
+) {
+  const value = metadata[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function hasPartnerMetadata(metadataText: string | null) {
+  const metadata = parseUpgradeTaskMetadata(metadataText);
+  return Boolean(
+    getStringMetadataValue(metadata, 'partnerAppKey') ||
+      getStringMetadataValue(metadata, 'partnerOrderId') ||
+      getStringMetadataValue(metadata, 'externalOrderNo')
+  );
+}
+
+function buildTaskListConditions(args: {
+  status?: string;
+  search?: string;
+  sourceType?: string;
+}) {
+  const conditions = [];
+
+  if (args.status) conditions.push(eq(upgradeTask.status, args.status));
+  const search = args.search?.trim();
+  if (search) {
+    conditions.push(
+      sql`(${upgradeTask.redeemCodePlain} = ${search} OR ${upgradeTask.chatgptEmail} = ${search} OR ${upgradeTask.taskNo} = ${search} OR ${upgradePartnerOrder.externalOrderNo} = ${search} OR ${upgradePartnerApp.appKey} = ${search} OR ${upgradePartnerApp.name} = ${search})`
+    );
+  }
+
+  const sourceType = normalizeTaskSourceType(args.sourceType);
+  if (sourceType === 'partner') {
+    conditions.push(
+      sql`(${upgradePartnerOrder.id} IS NOT NULL OR ${upgradeTask.metadata} LIKE '%"partnerAppKey"%' OR ${upgradeTask.metadata} LIKE '%"partnerOrderId"%' OR ${upgradeTask.metadata} LIKE '%"externalOrderNo"%')`
+    );
+  }
+  if (sourceType === 'site') {
+    conditions.push(
+      sql`(${upgradePartnerOrder.id} IS NULL AND (${upgradeTask.metadata} IS NULL OR (${upgradeTask.metadata} NOT LIKE '%"partnerAppKey"%' AND ${upgradeTask.metadata} NOT LIKE '%"partnerOrderId"%' AND ${upgradeTask.metadata} NOT LIKE '%"externalOrderNo"%')))`
+    );
+  }
+
+  return conditions.length > 0 ? and(...conditions) : undefined;
+}
+
+function selectTaskListFields() {
+  return {
+    id: upgradeTask.id,
+    taskNo: upgradeTask.taskNo,
+    redeemCodeId: upgradeTask.redeemCodeId,
+    redeemCodePlain: upgradeTask.redeemCodePlain,
+    productCode: upgradeTask.productCode,
+    memberType: upgradeTask.memberType,
+    sessionToken: upgradeTask.sessionToken,
+    chatgptEmail: upgradeTask.chatgptEmail,
+    chatgptAccountId: upgradeTask.chatgptAccountId,
+    chatgptCurrentPlan: upgradeTask.chatgptCurrentPlan,
+    contactEmail: upgradeTask.contactEmail,
+    status: upgradeTask.status,
+    attemptCount: upgradeTask.attemptCount,
+    successChannelId: upgradeTask.successChannelId,
+    successChannelCardkeyId: upgradeTask.successChannelCardkeyId,
+    lastError: upgradeTask.lastError,
+    resultMessage: upgradeTask.resultMessage,
+    startedAt: upgradeTask.startedAt,
+    finishedAt: upgradeTask.finishedAt,
+    clientIp: upgradeTask.clientIp,
+    userAgent: upgradeTask.userAgent,
+    metadata: upgradeTask.metadata,
+    createdAt: upgradeTask.createdAt,
+    updatedAt: upgradeTask.updatedAt,
+    partnerAppId: upgradePartnerApp.id,
+    partnerAppKey: upgradePartnerApp.appKey,
+    partnerAppName: upgradePartnerApp.name,
+    partnerOrderId: upgradePartnerOrder.id,
+    externalOrderNo: upgradePartnerOrder.externalOrderNo,
+  };
+}
+
+function withTaskSource(row: any): UpgradeTaskListItem {
+  const metadata = parseUpgradeTaskMetadata(row.metadata);
+  const metadataPartnerAppKey = getStringMetadataValue(
+    metadata,
+    'partnerAppKey'
+  );
+  const metadataPartnerOrderId = getStringMetadataValue(
+    metadata,
+    'partnerOrderId'
+  );
+  const metadataExternalOrderNo = getStringMetadataValue(
+    metadata,
+    'externalOrderNo'
+  );
+  const partnerOrderId = row.partnerOrderId || metadataPartnerOrderId;
+  const partnerAppKey = row.partnerAppKey || metadataPartnerAppKey;
+  const externalOrderNo = row.externalOrderNo || metadataExternalOrderNo;
+  const sourceType: UpgradeTaskSourceType =
+    row.partnerOrderId || hasPartnerMetadata(row.metadata) ? 'partner' : 'site';
+
+  return {
+    ...row,
+    sourceType,
+    partnerAppId: row.partnerAppId || null,
+    partnerAppKey: partnerAppKey || null,
+    partnerAppName: row.partnerAppName || null,
+    partnerOrderId: partnerOrderId || null,
+    externalOrderNo: externalOrderNo || null,
+  };
+}
+
+function baseTaskListQuery(where: any) {
+  return db()
+    .select(selectTaskListFields())
+    .from(upgradeTask)
+    .leftJoin(
+      upgradePartnerOrder,
+      eq(upgradePartnerOrder.taskId, upgradeTask.id)
+    )
+    .leftJoin(
+      upgradePartnerApp,
+      eq(upgradePartnerApp.id, upgradePartnerOrder.partnerAppId)
+    )
+    .where(where);
+}
+
 export async function getTaskList(args: {
   page?: number;
   pageSize?: number;
   status?: string;
   search?: string;
+  sourceType?: string;
 }) {
   const { page = 1, pageSize = 20 } = args;
   const offset = (page - 1) * pageSize;
-  const conditions = [];
+  const where = buildTaskListConditions(args);
 
-  if (args.status) conditions.push(eq(upgradeTask.status, args.status));
-  if (args.search) {
-    const search = args.search.trim();
-    conditions.push(
-      sql`(${upgradeTask.redeemCodePlain} = ${search} OR ${upgradeTask.chatgptEmail} = ${search} OR ${upgradeTask.taskNo} = ${search})`
-    );
-  }
-
-  const where = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const items = await db()
-    .select()
-    .from(upgradeTask)
-    .where(where)
+  const rows = await baseTaskListQuery(where)
     .orderBy(desc(upgradeTask.createdAt))
     .limit(pageSize)
     .offset(offset);
 
   const [{ total }] = await db()
-    .select({ total: count() })
+    .select({ total: countDistinct(upgradeTask.id) })
     .from(upgradeTask)
+    .leftJoin(
+      upgradePartnerOrder,
+      eq(upgradePartnerOrder.taskId, upgradeTask.id)
+    )
+    .leftJoin(
+      upgradePartnerApp,
+      eq(upgradePartnerApp.id, upgradePartnerOrder.partnerAppId)
+    )
     .where(where);
 
-  return { items, total };
+  return { items: rows.map(withTaskSource), total };
+}
+
+function csvCell(value: unknown) {
+  const text = value == null ? '' : String(value);
+  if (!/[",\n\r]/.test(text)) return text;
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function formatCsvTimestamp(value: Date | string | null | undefined) {
+  if (!value) return '';
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function taskSourceLabel(sourceType: UpgradeTaskSourceType) {
+  return sourceType === 'partner' ? 'API接入' : '本站卡密充值';
+}
+
+export async function exportTaskListToCsv(args: {
+  status?: string;
+  search?: string;
+  sourceType?: string;
+}) {
+  const where = buildTaskListConditions(args);
+  const rows = await baseTaskListQuery(where).orderBy(
+    desc(upgradeTask.createdAt)
+  );
+  const items = rows.map(withTaskSource);
+  const header = [
+    '任务编号',
+    '接入方式',
+    '第三方来源',
+    '第三方AppKey',
+    '外部订单号/流水号',
+    '本站卡密',
+    '产品',
+    '会员类型',
+    '用户邮箱',
+    '当前套餐',
+    '状态',
+    '成功渠道ID',
+    '成功渠道卡密ID',
+    '失败原因',
+    '结果信息',
+    '创建时间',
+    '完成时间',
+  ];
+  const lines = [header.map(csvCell).join(',')];
+
+  for (const item of items) {
+    lines.push(
+      [
+        item.taskNo,
+        taskSourceLabel(item.sourceType),
+        item.partnerAppName || item.partnerAppKey || '',
+        item.partnerAppKey || '',
+        item.externalOrderNo || '',
+        item.redeemCodePlain,
+        item.productCode,
+        item.memberType,
+        item.chatgptEmail,
+        item.chatgptCurrentPlan || '',
+        item.status,
+        item.successChannelId || '',
+        item.successChannelCardkeyId || '',
+        item.lastError || '',
+        item.resultMessage || '',
+        formatCsvTimestamp(item.createdAt),
+        formatCsvTimestamp(item.finishedAt),
+      ]
+        .map(csvCell)
+        .join(',')
+    );
+  }
+
+  return lines.join('\n');
 }
 
 export async function getTaskById(taskId: string) {

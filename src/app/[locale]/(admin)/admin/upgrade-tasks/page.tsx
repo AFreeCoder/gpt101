@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 
 import { Header } from '@/shared/blocks/dashboard';
 import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
@@ -24,6 +25,12 @@ interface Task {
   resultMessage: string | null;
   manualRequired?: boolean;
   manualRequiredReason?: string;
+  sourceType: 'partner' | 'site';
+  partnerAppId: string | null;
+  partnerAppKey: string | null;
+  partnerAppName: string | null;
+  partnerOrderId: string | null;
+  externalOrderNo: string | null;
   createdAt: string;
   finishedAt: string | null;
 }
@@ -56,13 +63,29 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   canceled: { label: '已取消', color: 'text-gray-500 bg-gray-100' },
 };
 
+const SOURCE_FILTERS = [
+  { key: '', label: '全部接入方式' },
+  { key: 'partner', label: 'API接入' },
+  { key: 'site', label: '本站卡密充值' },
+];
+
+function getSourceLabel(task: Task) {
+  return task.sourceType === 'partner' ? 'API接入' : '本站卡密充值';
+}
+
+function getPartnerSourceName(task: Task) {
+  return task.partnerAppName || task.partnerAppKey || '';
+}
+
 export default function UpgradeTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
   const [viewToken, setViewToken] = useState('');
   const [showMarkSuccess, setShowMarkSuccess] = useState<string | null>(null); // taskId
   const [msChannelId, setMsChannelId] = useState('');
@@ -89,6 +112,7 @@ export default function UpgradeTasksPage() {
         pageSize: '30',
       });
       if (statusFilter) params.set('status', statusFilter);
+      if (sourceFilter) params.set('sourceType', sourceFilter);
       if (search) params.set('search', search);
       const res = await fetch(`/api/admin/upgrade-tasks/list?${params}`);
       const data = await res.json();
@@ -98,7 +122,7 @@ export default function UpgradeTasksPage() {
       }
     } catch {}
     setLoading(false);
-  }, [statusFilter, search, page]);
+  }, [statusFilter, sourceFilter, search, page]);
 
   useEffect(() => {
     fetchData();
@@ -131,6 +155,38 @@ export default function UpgradeTasksPage() {
       else fetchData();
     } catch {
       alert('操作失败');
+    }
+  };
+
+  const handleExport = async () => {
+    const params = new URLSearchParams();
+    if (statusFilter) params.set('status', statusFilter);
+    if (sourceFilter) params.set('sourceType', sourceFilter);
+    if (search) params.set('search', search);
+
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/admin/upgrade-tasks/export?${params}`);
+      const contentType = res.headers.get('Content-Type') || '';
+      if (!contentType.includes('text/csv')) {
+        const data = await res.json().catch(() => null);
+        alert(data?.message || '导出失败');
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `upgrade-tasks-${Date.now()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('导出失败');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -240,12 +296,22 @@ export default function UpgradeTasksPage() {
       <div className="p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">任务结果</h2>
-          <button
-            onClick={openManualEntryModal}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            任务补录
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              {exporting ? '导出中...' : '导出'}
+            </button>
+            <button
+              onClick={openManualEntryModal}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              任务补录
+            </button>
+          </div>
         </div>
 
         {/* 状态 Tab */}
@@ -272,7 +338,7 @@ export default function UpgradeTasksPage() {
         </div>
 
         {/* 搜索 */}
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap gap-2">
           <input
             type="text"
             value={search}
@@ -283,18 +349,35 @@ export default function UpgradeTasksPage() {
                 fetchData();
               }
             }}
-            placeholder="搜索任务编号、卡密、邮箱"
+            placeholder="搜索任务编号、卡密、邮箱、订单号"
             className="w-80 rounded-lg border px-3 py-1.5 text-sm"
           />
+          <select
+            value={sourceFilter}
+            onChange={(e) => {
+              setSourceFilter(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-lg border px-3 py-1.5 text-sm"
+            aria-label="接入方式"
+          >
+            {SOURCE_FILTERS.map((item) => (
+              <option key={item.key} value={item.key}>
+                {item.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
+          <table className="w-max min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-3 py-2 text-left">本站卡密</th>
                 <th className="px-3 py-2 text-left">用户邮箱</th>
                 <th className="px-3 py-2 text-left">状态</th>
+                <th className="px-3 py-2 text-left">接入方式/来源</th>
+                <th className="px-3 py-2 text-left">订单/流水号</th>
                 <th className="px-3 py-2 text-left">渠道/卡密</th>
                 <th className="px-3 py-2 text-left">Token</th>
                 <th className="px-3 py-2 text-left">时间</th>
@@ -305,7 +388,7 @@ export default function UpgradeTasksPage() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={9}
                     className="px-3 py-8 text-center text-gray-400"
                   >
                     加载中...
@@ -314,7 +397,7 @@ export default function UpgradeTasksPage() {
               ) : tasks.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={9}
                     className="px-3 py-8 text-center text-gray-400"
                   >
                     暂无数据
@@ -333,6 +416,31 @@ export default function UpgradeTasksPage() {
                       >
                         {STATUS_MAP[t.status]?.label || t.status}
                       </span>
+                    </td>
+                    <td className="px-3 py-2 text-xs whitespace-nowrap">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 font-medium ${t.sourceType === 'partner' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-600'}`}
+                      >
+                        {getSourceLabel(t)}
+                      </span>
+                      {t.sourceType === 'partner' &&
+                        getPartnerSourceName(t) && (
+                          <div
+                            className="mt-1 max-w-40 truncate text-gray-500"
+                            title={getPartnerSourceName(t)}
+                          >
+                            {getPartnerSourceName(t)}
+                          </div>
+                        )}
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
+                      {t.externalOrderNo ? (
+                        <span title={t.externalOrderNo}>
+                          {t.externalOrderNo}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
                     </td>
                     <td className="px-3 py-2 text-xs">
                       {t.status === 'succeeded' ? (

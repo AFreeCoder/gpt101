@@ -49,6 +49,28 @@ test('upgrade tasks admin page explains manual-required failures', () => {
   assert.match(routeSource, /manualRequiredReason/);
 });
 
+test('upgrade tasks admin page exposes source filtering and CSV export', () => {
+  const pageSource = readSource(
+    'src/app/[locale]/(admin)/admin/upgrade-tasks/page.tsx'
+  );
+  const listRouteSource = readSource(
+    'src/app/api/admin/upgrade-tasks/list/route.ts'
+  );
+  const exportRouteSource = readSource(
+    'src/app/api/admin/upgrade-tasks/export/route.ts'
+  );
+
+  assert.match(pageSource, /接入方式/);
+  assert.match(pageSource, /API接入/);
+  assert.match(pageSource, /本站卡密充值/);
+  assert.match(pageSource, /订单\/流水号/);
+  assert.match(pageSource, /\/api\/admin\/upgrade-tasks\/export/);
+  assert.match(listRouteSource, /sourceType/);
+  assert.match(exportRouteSource, /exportTaskListToCsv/);
+  assert.match(exportRouteSource, /text\/csv/);
+  assert.match(exportRouteSource, /PERMISSIONS\.UPGRADE_TASK_READ/);
+});
+
 test('channel cardkeys admin page shows channel and offers batch disable', () => {
   const pageSource = readSource(
     'src/app/[locale]/(admin)/admin/channel-cardkeys/page.tsx'

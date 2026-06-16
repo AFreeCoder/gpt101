@@ -21,6 +21,7 @@ export async function GET(req: Request) {
       pageSize: Number(url.searchParams.get('pageSize')) || 30,
       status: url.searchParams.get('status') || undefined,
       search: url.searchParams.get('search') || undefined,
+      sourceType: url.searchParams.get('sourceType') || undefined,
     });
 
     // 关联查渠道名和渠道卡密
