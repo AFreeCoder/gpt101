@@ -111,7 +111,7 @@
           },
           "right": {
             "title": "APIPool",
-            "description": "支持 Codex / Claude Code，GPT-5.4、Claude-Opus-4-6 现已上线，兼容 OpenClaw（小龙虾🦞）。",
+            "description": "支持 Codex / Claude Code，GPT-5.5、Claude-Opus-4-8 现已上线，兼容 OpenClaw（小龙虾🦞）。",
             "highlight": "官方价 0.5 折起！",
             "tags": ["官方直连", "按量计费", "稳定靠谱", "性价比极高"],
             "button_text": "立即使用",
