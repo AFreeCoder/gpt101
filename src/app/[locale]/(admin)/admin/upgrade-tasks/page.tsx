@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 
+import { ListPagination } from '@/shared/blocks/admin/list-pagination';
 import { Header } from '@/shared/blocks/dashboard';
 import { formatTimestampWithoutTimeZone } from '@/shared/lib/time';
 
@@ -64,17 +65,19 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 };
 
 const SOURCE_FILTERS = [
-  { key: '', label: '全部接入方式' },
-  { key: 'partner', label: 'API接入' },
+  { key: '', label: '按订单来源筛选' },
+  { key: 'partner', label: '第三方订单' },
   { key: 'site', label: '本站卡密充值' },
 ];
 
-function getSourceLabel(task: Task) {
-  return task.sourceType === 'partner' ? 'API接入' : '本站卡密充值';
-}
-
 function getPartnerSourceName(task: Task) {
   return task.partnerAppName || task.partnerAppKey || '';
+}
+
+function getOrderSourceLabel(task: Task) {
+  return task.sourceType === 'partner'
+    ? getPartnerSourceName(task) || '第三方接入'
+    : '本站卡密充值';
 }
 
 export default function UpgradeTasksPage() {
@@ -85,6 +88,7 @@ export default function UpgradeTasksPage() {
   const [sourceFilter, setSourceFilter] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(30);
   const [exporting, setExporting] = useState(false);
   const [viewToken, setViewToken] = useState('');
   const [showMarkSuccess, setShowMarkSuccess] = useState<string | null>(null); // taskId
@@ -109,7 +113,7 @@ export default function UpgradeTasksPage() {
     try {
       const params = new URLSearchParams({
         page: String(page),
-        pageSize: '30',
+        pageSize: String(pageSize),
       });
       if (statusFilter) params.set('status', statusFilter);
       if (sourceFilter) params.set('sourceType', sourceFilter);
@@ -122,7 +126,7 @@ export default function UpgradeTasksPage() {
       }
     } catch {}
     setLoading(false);
-  }, [statusFilter, sourceFilter, search, page]);
+  }, [statusFilter, sourceFilter, search, page, pageSize]);
 
   useEffect(() => {
     fetchData();
@@ -359,7 +363,7 @@ export default function UpgradeTasksPage() {
               setPage(1);
             }}
             className="rounded-lg border px-3 py-1.5 text-sm"
-            aria-label="接入方式"
+            aria-label="订单来源"
           >
             {SOURCE_FILTERS.map((item) => (
               <option key={item.key} value={item.key}>
@@ -376,7 +380,7 @@ export default function UpgradeTasksPage() {
                 <th className="px-3 py-2 text-left">本站卡密</th>
                 <th className="px-3 py-2 text-left">用户邮箱</th>
                 <th className="px-3 py-2 text-left">状态</th>
-                <th className="px-3 py-2 text-left">接入方式/来源</th>
+                <th className="px-3 py-2 text-left">订单来源</th>
                 <th className="px-3 py-2 text-left">订单/流水号</th>
                 <th className="px-3 py-2 text-left">渠道/卡密</th>
                 <th className="px-3 py-2 text-left">Token</th>
@@ -419,19 +423,11 @@ export default function UpgradeTasksPage() {
                     </td>
                     <td className="px-3 py-2 text-xs whitespace-nowrap">
                       <span
-                        className={`inline-block rounded-full px-2 py-0.5 font-medium ${t.sourceType === 'partner' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-600'}`}
+                        className={`inline-block max-w-40 truncate rounded-full px-2 py-0.5 align-middle font-medium ${t.sourceType === 'partner' ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-100 text-gray-600'}`}
+                        title={getOrderSourceLabel(t)}
                       >
-                        {getSourceLabel(t)}
+                        {getOrderSourceLabel(t)}
                       </span>
-                      {t.sourceType === 'partner' &&
-                        getPartnerSourceName(t) && (
-                          <div
-                            className="mt-1 max-w-40 truncate text-gray-500"
-                            title={getPartnerSourceName(t)}
-                          >
-                            {getPartnerSourceName(t)}
-                          </div>
-                        )}
                     </td>
                     <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
                       {t.externalOrderNo ? (
@@ -547,29 +543,16 @@ export default function UpgradeTasksPage() {
           </table>
         </div>
 
-        {total > 30 && (
-          <div className="mt-4 flex justify-center gap-2">
-            {page > 1 && (
-              <button
-                onClick={() => setPage(page - 1)}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                上一页
-              </button>
-            )}
-            <span className="px-3 py-1 text-sm text-gray-500">
-              第 {page} 页，共 {Math.ceil(total / 30)} 页
-            </span>
-            {page * 30 < total && (
-              <button
-                onClick={() => setPage(page + 1)}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                下一页
-              </button>
-            )}
-          </div>
-        )}
+        <ListPagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={(nextPageSize) => {
+            setPageSize(nextPageSize);
+            setPage(1);
+          }}
+        />
 
         {/* 任务补录弹窗 */}
         {showManualEntry && (

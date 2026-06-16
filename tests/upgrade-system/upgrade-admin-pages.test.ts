@@ -60,15 +60,48 @@ test('upgrade tasks admin page exposes source filtering and CSV export', () => {
     'src/app/api/admin/upgrade-tasks/export/route.ts'
   );
 
-  assert.match(pageSource, /接入方式/);
-  assert.match(pageSource, /API接入/);
+  assert.match(pageSource, /订单来源/);
+  assert.match(pageSource, /按订单来源筛选/);
   assert.match(pageSource, /本站卡密充值/);
+  assert.match(pageSource, /getOrderSourceLabel/);
+  assert.doesNotMatch(pageSource, /接入方式\/来源/);
+  assert.doesNotMatch(pageSource, /全部接入方式/);
+  assert.doesNotMatch(pageSource, /API接入/);
   assert.match(pageSource, /订单\/流水号/);
   assert.match(pageSource, /\/api\/admin\/upgrade-tasks\/export/);
   assert.match(listRouteSource, /sourceType/);
   assert.match(exportRouteSource, /exportTaskListToCsv/);
   assert.match(exportRouteSource, /text\/csv/);
   assert.match(exportRouteSource, /PERMISSIONS\.UPGRADE_TASK_READ/);
+});
+
+test('admin upgrade and cardkey list pages expose page jump and page size controls', () => {
+  const pagePaths = [
+    'src/app/[locale]/(admin)/admin/redeem-codes/page.tsx',
+    'src/app/[locale]/(admin)/admin/channel-cardkeys/page.tsx',
+    'src/app/[locale]/(admin)/admin/upgrade-tasks/page.tsx',
+    'src/app/[locale]/(admin)/admin/upgrade-task-attempts/page.tsx',
+  ];
+  const paginationSource = readSource(
+    'src/shared/blocks/admin/list-pagination.tsx'
+  );
+
+  assert.match(paginationSource, /PAGE_SIZE_OPTIONS/);
+  assert.match(paginationSource, /跳转/);
+  assert.match(paginationSource, /aria-label="跳转页码"/);
+  assert.match(paginationSource, /aria-label="单页条数"/);
+
+  for (const pagePath of pagePaths) {
+    const pageSource = readSource(pagePath);
+
+    assert.match(pageSource, /ListPagination/);
+    assert.match(
+      pageSource,
+      /const \[pageSize,\s*setPageSize\]|const pageSize =/
+    );
+    assert.match(pageSource, /pageSize:\s*String\(pageSize\)/);
+    assert.match(pageSource, /onPageSizeChange/);
+  }
 });
 
 test('channel cardkeys admin page shows channel and offers batch disable', () => {
@@ -209,10 +242,10 @@ test('upgrade task attempts table scrolls internally without truncating long fie
   assert.match(pageSource, /overflow-x-auto/);
   assert.match(pageSource, /<table className="w-max min-w-full text-sm">/);
   assert.match(pageSource, /whitespace-nowrap/);
-  assert.match(
-    pageSource,
-    /min-w-\[420px\] max-w-\[720px\] whitespace-normal break-words/
-  );
+  assert.match(pageSource, /min-w-\[420px\]/);
+  assert.match(pageSource, /max-w-\[720px\]/);
+  assert.match(pageSource, /whitespace-normal/);
+  assert.match(pageSource, /break-words/);
   assert.doesNotMatch(pageSource, /truncate/);
 });
 

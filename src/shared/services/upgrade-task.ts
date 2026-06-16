@@ -925,8 +925,10 @@ function formatCsvTimestamp(value: Date | string | null | undefined) {
   return value instanceof Date ? value.toISOString() : value;
 }
 
-function taskSourceLabel(sourceType: UpgradeTaskSourceType) {
-  return sourceType === 'partner' ? 'API接入' : '本站卡密充值';
+function taskOrderSourceLabel(item: UpgradeTaskListItem) {
+  return item.sourceType === 'partner'
+    ? item.partnerAppName || item.partnerAppKey || '第三方接入'
+    : '本站卡密充值';
 }
 
 export async function exportTaskListToCsv(args: {
@@ -941,7 +943,7 @@ export async function exportTaskListToCsv(args: {
   const items = rows.map(withTaskSource);
   const header = [
     '任务编号',
-    '接入方式',
+    '订单来源',
     '第三方来源',
     '第三方AppKey',
     '外部订单号/流水号',
@@ -964,7 +966,7 @@ export async function exportTaskListToCsv(args: {
     lines.push(
       [
         item.taskNo,
-        taskSourceLabel(item.sourceType),
+        taskOrderSourceLabel(item),
         item.partnerAppName || item.partnerAppKey || '',
         item.partnerAppKey || '',
         item.externalOrderNo || '',

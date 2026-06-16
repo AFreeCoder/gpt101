@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { ListPagination } from '@/shared/blocks/admin/list-pagination';
 import { Header } from '@/shared/blocks/dashboard';
 import {
   getMemberTypes,
@@ -49,6 +50,7 @@ export default function ChannelCardkeysPage() {
   const [memberType, setMemberType] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(30);
 
   // 导入弹窗
   const [showImport, setShowImport] = useState(false);
@@ -91,7 +93,7 @@ export default function ChannelCardkeysPage() {
     try {
       const params = new URLSearchParams({
         page: String(page),
-        pageSize: '30',
+        pageSize: String(pageSize),
       });
       if (channelId) params.set('channelId', channelId);
       if (productCode) params.set('productCode', productCode);
@@ -105,7 +107,7 @@ export default function ChannelCardkeysPage() {
       }
     } catch {}
     setLoading(false);
-  }, [channelId, productCode, memberType, statusFilter, page]);
+  }, [channelId, productCode, memberType, statusFilter, page, pageSize]);
 
   useEffect(() => {
     fetchData();
@@ -501,29 +503,20 @@ export default function ChannelCardkeysPage() {
         </div>
 
         {/* 分页 */}
-        {total > 30 && (
-          <div className="mt-4 flex justify-center gap-2">
-            {page > 1 && (
-              <button
-                onClick={() => setPage(page - 1)}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                上一页
-              </button>
-            )}
-            <span className="px-3 py-1 text-sm text-gray-500">
-              第 {page} 页，共 {Math.ceil(total / 30)} 页
-            </span>
-            {page * 30 < total && (
-              <button
-                onClick={() => setPage(page + 1)}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                下一页
-              </button>
-            )}
-          </div>
-        )}
+        <ListPagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={(nextPage) => {
+            setPage(nextPage);
+            setSelectedIds(new Set());
+          }}
+          onPageSizeChange={(nextPageSize) => {
+            setPageSize(nextPageSize);
+            setPage(1);
+            setSelectedIds(new Set());
+          }}
+        />
 
         {/* 导入弹窗 */}
         {showImport && (

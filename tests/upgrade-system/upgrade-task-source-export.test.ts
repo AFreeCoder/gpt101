@@ -233,7 +233,7 @@ async function seedSourceTasks(prefix: string) {
   };
 }
 
-test('getTaskList 支持按接入方式筛选并返回第三方来源信息', async () => {
+test('getTaskList 支持按订单来源筛选并返回第三方来源信息', async () => {
   const prefix = `tasksource${Date.now()}`;
   await cleanupByPrefix(prefix);
 
@@ -285,7 +285,7 @@ test('getTaskList 支持按接入方式筛选并返回第三方来源信息', as
   }
 });
 
-test('导出升级结果 CSV 包含接入方式和外部订单号流水号', async () => {
+test('导出升级结果 CSV 包含订单来源和外部订单号流水号', async () => {
   const prefix = `taskexport${Date.now()}`;
   await cleanupByPrefix(prefix);
 
@@ -303,10 +303,11 @@ test('导出升级结果 CSV 包含接入方式和外部订单号流水号', asy
       sourceType: 'partner',
     });
 
-    assert.match(csv, /接入方式/);
+    assert.match(csv, /订单来源/);
     assert.match(csv, /第三方来源/);
     assert.match(csv, /外部订单号\/流水号/);
-    assert.match(csv, /API接入/);
+    assert.doesNotMatch(csv, /接入方式/);
+    assert.doesNotMatch(csv, /API接入/);
     assert.match(csv, new RegExp(seeded.externalOrderNo));
     assert.match(csv, new RegExp(`${prefix} 第三方来源`));
     assert.doesNotMatch(csv, new RegExp(seeded.siteCode));

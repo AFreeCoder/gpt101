@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { ListPagination } from '@/shared/blocks/admin/list-pagination';
 import { Header } from '@/shared/blocks/dashboard';
 import {
   getMemberTypes,
@@ -44,6 +45,8 @@ export default function RedeemCodesPage() {
   const batchId = searchParams.get('batchId') || '';
   const search = searchParams.get('search') || '';
   const page = Number(searchParams.get('page')) || 1;
+  const pageSizeParam = Number(searchParams.get('pageSize'));
+  const pageSize = pageSizeParam > 0 ? pageSizeParam : 30;
 
   const memberTypes = productCode ? getMemberTypes(productCode) : [];
 
@@ -54,14 +57,15 @@ export default function RedeemCodesPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+      });
       if (status) params.set('status', status);
       if (productCode) params.set('productCode', productCode);
       if (memberType) params.set('memberType', memberType);
       if (batchId) params.set('batchId', batchId);
       if (search) params.set('search', search);
-      params.set('page', String(page));
-      params.set('pageSize', '30');
 
       const res = await fetch(`/api/admin/redeem-codes/list?${params}`);
       const data = await res.json();
@@ -71,7 +75,7 @@ export default function RedeemCodesPage() {
       }
     } catch {}
     setLoading(false);
-  }, [status, productCode, memberType, batchId, search, page]);
+  }, [status, productCode, memberType, batchId, search, page, pageSize]);
 
   useEffect(() => {
     fetchData();
@@ -86,6 +90,7 @@ export default function RedeemCodesPage() {
       memberType,
       batchId,
       search,
+      pageSize: String(pageSize),
       ...overrides,
     };
     Object.entries(merged).forEach(([k, v]) => {
@@ -403,29 +408,19 @@ export default function RedeemCodesPage() {
         </div>
 
         {/* 分页 */}
-        {total > 30 && (
-          <div className="mt-4 flex justify-center gap-2">
-            {page > 1 && (
-              <a
-                href={buildUrl({ page: String(page - 1) })}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                上一页
-              </a>
-            )}
-            <span className="px-3 py-1 text-sm text-gray-500">
-              第 {page} 页，共 {Math.ceil(total / 30)} 页
-            </span>
-            {page * 30 < total && (
-              <a
-                href={buildUrl({ page: String(page + 1) })}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                下一页
-              </a>
-            )}
-          </div>
-        )}
+        <ListPagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={(nextPage) => {
+            setSelectedIds(new Set());
+            router.push(buildUrl({ page: String(nextPage) }));
+          }}
+          onPageSizeChange={(nextPageSize) => {
+            setSelectedIds(new Set());
+            router.push(buildUrl({ pageSize: String(nextPageSize), page: '' }));
+          }}
+        />
 
         {/* 导出弹窗 */}
         {showExport && (
