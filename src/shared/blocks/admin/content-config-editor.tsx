@@ -19,9 +19,17 @@ type SaveResult = {
   message: string;
 };
 
+type SaveApiResponse = {
+  code: number;
+  message?: string;
+  data?: {
+    message?: string;
+  };
+};
+
 type ContentConfigEditorProps = {
   initialValue: ContentConfigEditorPayload;
-  onSave: (payload: ContentConfigEditorPayload) => Promise<SaveResult>;
+  locale: string;
 };
 
 function splitLines(value: string) {
@@ -316,15 +324,41 @@ function NoticeEditor({
 
 export function ContentConfigEditor({
   initialValue,
-  onSave,
+  locale,
 }: ContentConfigEditorProps) {
   const [value, setValue] = useState(initialValue);
   const [isPending, startTransition] = useTransition();
 
+  const saveContentConfig = async (): Promise<SaveResult> => {
+    const response = await fetch('/api/admin/content-config', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        locale,
+        payload: value,
+      }),
+    });
+    const result = (await response.json()) as SaveApiResponse;
+
+    if (!response.ok || result.code !== 0) {
+      return {
+        status: 'error',
+        message: result.message || '内容配置保存失败，请稍后重试',
+      };
+    }
+
+    return {
+      status: 'success',
+      message: result.data?.message || '内容配置已保存',
+    };
+  };
+
   const handleSave = () => {
     startTransition(async () => {
       try {
-        const result = await onSave(value);
+        const result = await saveContentConfig();
         if (result.status === 'success') {
           toast.success(result.message);
         } else {

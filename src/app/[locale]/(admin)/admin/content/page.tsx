@@ -9,19 +9,13 @@ import { Header, Main, MainHeader } from '@/shared/blocks/dashboard';
 import {
   getContentConfigValue,
   getDefaultUpgradeNoticeConfig,
-  getLocalizedContentConfigKey,
   HOMEPAGE_FAQ_CONFIG_KEY,
   MIRROR_FAQ_CONFIG_KEY,
-  normalizeFaqContentConfig,
-  normalizeUpgradeNoticeConfig,
   resolveFaqContentConfigForAdmin,
   resolveUpgradeNoticeConfigForAdmin,
   UPGRADE_NOTICE_CONFIG_KEY,
 } from '@/shared/lib/content-config';
-import {
-  getContentConfigValuesStrict,
-  saveContentConfigValues,
-} from '@/shared/models/content-config';
+import { getContentConfigValuesStrict } from '@/shared/models/content-config';
 import { Crumb } from '@/shared/types/blocks/common';
 import { DynamicPage, FAQ } from '@/shared/types/blocks/landing';
 
@@ -78,50 +72,6 @@ export default async function AdminContentPage({
         : '内容配置读取失败，已停止载入以避免覆盖现有配置';
   }
 
-  const handleSave = async (payload: ContentConfigEditorPayload) => {
-    'use server';
-
-    await requireAllPermissions({
-      codes: [PERMISSIONS.POSTS_READ, PERMISSIONS.POSTS_WRITE],
-      redirectUrl: '/admin/no-permission',
-      locale,
-    });
-
-    try {
-      const homepageFaqConfig = normalizeFaqContentConfig(
-        payload.homepageFaqConfig
-      );
-      const mirrorFaqConfig = normalizeFaqContentConfig(
-        payload.mirrorFaqConfig
-      );
-      const noticeConfig = normalizeUpgradeNoticeConfig(
-        payload.upgradeNoticeConfig
-      );
-
-      await saveContentConfigValues({
-        [getLocalizedContentConfigKey(HOMEPAGE_FAQ_CONFIG_KEY, locale)]:
-          JSON.stringify(homepageFaqConfig),
-        [getLocalizedContentConfigKey(MIRROR_FAQ_CONFIG_KEY, locale)]:
-          JSON.stringify(mirrorFaqConfig),
-        [getLocalizedContentConfigKey(UPGRADE_NOTICE_CONFIG_KEY, locale)]:
-          JSON.stringify(noticeConfig),
-      });
-
-      return {
-        status: 'success' as const,
-        message: '内容配置已保存',
-      };
-    } catch (error) {
-      return {
-        status: 'error' as const,
-        message:
-          error instanceof Error
-            ? error.message
-            : '内容配置保存失败，请稍后重试',
-      };
-    }
-  };
-
   const crumbs: Crumb[] = [
     { title: t('edit.crumbs.admin'), url: '/admin' },
     { title: '站点内容', is_active: true },
@@ -141,10 +91,7 @@ export default async function AdminContentPage({
             </p>
           </div>
         ) : initialValue ? (
-          <ContentConfigEditor
-            initialValue={initialValue}
-            onSave={handleSave}
-          />
+          <ContentConfigEditor initialValue={initialValue} locale={locale} />
         ) : null}
       </Main>
     </>

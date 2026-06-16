@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -37,22 +37,38 @@ test('content config model only saves whitelisted keys and revalidates public pa
 
 test('admin content page is separate from settings and uses content permissions', () => {
   const source = readSource('src/app/[locale]/(admin)/admin/content/page.tsx');
+  const editorSource = readSource(
+    'src/shared/blocks/admin/content-config-editor.tsx'
+  );
   const zhSidebar = readSource(
     'src/config/locale/messages/zh/admin/sidebar.json'
   );
   const enSidebar = readSource(
     'src/config/locale/messages/en/admin/sidebar.json'
   );
+  const apiSource = readSource('src/app/api/admin/content-config/route.ts');
+  const apiRoutePath = path.join(
+    repoRoot,
+    'src/app/api/admin/content-config/route.ts'
+  );
 
   assert.match(source, /ContentConfigEditor/);
   assert.match(source, /getContentConfigValuesStrict/);
   assert.match(source, /resolveFaqContentConfigForAdmin/);
-  assert.match(source, /getLocalizedContentConfigKey/);
   assert.match(source, /内容配置读取失败，暂不允许保存/);
-  assert.match(source, /status: 'error'/);
   assert.match(source, /PERMISSIONS\.POSTS_READ/);
   assert.match(source, /PERMISSIONS\.POSTS_WRITE/);
   assert.doesNotMatch(source, /SETTINGS_WRITE/);
+  assert.doesNotMatch(source, /'use server'/);
+  assert.doesNotMatch(source, /onSave=\{handleSave\}/);
+  assert.equal(existsSync(apiRoutePath), true);
+  assert.match(apiSource, /requireAllPermissions/);
+  assert.match(apiSource, /getLocalizedContentConfigKey/);
+  assert.match(apiSource, /normalizeFaqContentConfig/);
+  assert.match(apiSource, /normalizeUpgradeNoticeConfig/);
+  assert.match(apiSource, /saveContentConfigValues/);
+  assert.match(editorSource, /\/api\/admin\/content-config/);
+  assert.doesNotMatch(editorSource, /onSave:/);
   assert.match(zhSidebar, /站点内容/);
   assert.match(enSidebar, /Site Content/);
 });
