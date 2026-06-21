@@ -92,3 +92,15 @@ test('公开页 metadata 保留 canonical，upgrade 子域入口保留 noindex',
   assert.match(tutorialsSource, /canonicalUrl:\s*'\/tutorials'/);
   assert.match(upgradeSource, /robots:\s*\{[\s\S]*index:\s*false/);
 });
+
+test('缺失教程文章返回真正的 404，不渲染 200 空状态页', () => {
+  const tutorialDetailSource = readFileSync(
+    path.join(repoRoot, 'src/app/[locale]/(landing)/tutorials/[slug]/page.tsx'),
+    'utf8'
+  );
+
+  assert.match(tutorialDetailSource, /from 'next\/navigation'/);
+  assert.match(tutorialDetailSource, /notFound\(\)/);
+  assert.doesNotMatch(tutorialDetailSource, /Post not found/);
+  assert.match(tutorialDetailSource, /robots:\s*\{[\s\S]*index:\s*false/);
+});
