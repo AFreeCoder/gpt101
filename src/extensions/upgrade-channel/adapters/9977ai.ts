@@ -10,6 +10,9 @@ import type {
 } from '../types';
 
 const BASE_URL = 'https://9977ai.vip/';
+const VERIFY_PATH = 'api-verify-unified.php';
+const RECHARGE_PATH = 'simple-submit-recharge-unified.php';
+const REUSE_PATH = 'api-recharge-reuse-unified.php';
 const REQUEST_TIMEOUT_MS = 30_000;
 const REUSE_RETRY_COUNT = 3;
 
@@ -99,11 +102,39 @@ function normalizeStatus(payload: any): string {
     .toLowerCase();
 }
 
+function asRecord(value: unknown): Record<string, any> {
+  return value && typeof value === 'object'
+    ? (value as Record<string, any>)
+    : {};
+}
+
+function getVerifyData(payload: any): Record<string, any> {
+  return asRecord(payload?.data);
+}
+
+function getExistingRecord(payload: any): Record<string, any> {
+  return asRecord(getVerifyData(payload).existing_record);
+}
+
+function pickVerifyField(payload: any, fields: string[]) {
+  const data = getVerifyData(payload);
+  const existingRecord = getExistingRecord(payload);
+
+  return (
+    pickFirstPresentField(existingRecord, fields) ||
+    pickFirstPresentField(data, fields) ||
+    pickFirstPresentField(payload, fields)
+  );
+}
+
 function isAvailableVerifyResult(payload: any): boolean {
   const status = normalizeStatus(payload);
+  const data = getVerifyData(payload);
   return (
     payload?.success === true &&
-    (payload?.is_new === true ||
+    (data.allow_new_submission === true ||
+      data.has_existing_record === false ||
+      payload?.is_new === true ||
       status === 'active' ||
       status === 'available' ||
       status === 'new')
@@ -112,7 +143,9 @@ function isAvailableVerifyResult(payload: any): boolean {
 
 function isUsedVerifyResult(payload: any): boolean {
   const message = extractMessage(payload);
+  const data = getVerifyData(payload);
   return (
+    data.has_existing_record === true ||
     payload?.is_new === false ||
     normalizeStatus(payload) === 'used' ||
     message.includes('已使用') ||
@@ -128,20 +161,18 @@ export function create9977aiAdapter(
   const requestTimeoutMs = options.requestTimeoutMs || REQUEST_TIMEOUT_MS;
   const now = options.now || (() => new Date());
 
-  async function requestAction(
-    jar: CookieJar,
-    action: string,
-    data: Record<string, string> = {}
-  ) {
-    const body = new URLSearchParams();
-    body.set('ajax', '1');
-    body.set('action', action);
-    for (const [key, value] of Object.entries(data)) {
-      body.set(key, value);
-    }
+  function endpointUrl(path: string): string {
+    return new URL(path, baseUrl).toString();
+  }
 
+  async function requestJson(
+    jar: CookieJar,
+    path: string,
+    data: Record<string, unknown>
+  ) {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     };
     const cookieHeader = jar.toHeader();
     if (cookieHeader) {
@@ -150,11 +181,11 @@ export function create9977aiAdapter(
 
     const { response, data: responseData } = await fetchJsonWithTimeout(
       fetchImpl,
-      baseUrl,
+      endpointUrl(path),
       {
         method: 'POST',
         headers,
-        body,
+        body: JSON.stringify(data),
       },
       requestTimeoutMs
     );
@@ -166,8 +197,23 @@ export function create9977aiAdapter(
     jar: CookieJar,
     channelCardkey: string
   ): Promise<any> {
-    return requestAction(jar, 'verify_code', {
+    return requestJson(jar, VERIFY_PATH, {
       activation_code: channelCardkey,
+    });
+  }
+
+  async function submitRecharge(
+    jar: CookieJar,
+    sessionToken: string
+  ): Promise<any> {
+    return requestJson(jar, RECHARGE_PATH, {
+      user_data: sessionToken,
+    });
+  }
+
+  async function reuseRecord(jar: CookieJar): Promise<any> {
+    return requestJson(jar, REUSE_PATH, {
+      action: 'reuse_record',
     });
   }
 
@@ -181,7 +227,7 @@ export function create9977aiAdapter(
 
     for (let index = 0; index < REUSE_RETRY_COUNT; index++) {
       try {
-        const reuseData = await requestAction(jar, 'reuse_record');
+        const reuseData = await reuseRecord(jar);
         if (reuseData?.success) {
           return {
             ok: true,
@@ -209,7 +255,7 @@ export function create9977aiAdapter(
     lastMessage: string
   ): string {
     return buildAdminFailureMessage(
-      `submit_json 失败后自动复用 3 次仍未成功，${verificationMessage}：${lastMessage}`
+      `充值提交失败后自动复用 3 次仍未成功，${verificationMessage}：${lastMessage}`
     );
   }
 
@@ -221,13 +267,15 @@ export function create9977aiAdapter(
     if (
       isConfirmedCurrentRedemption({
         isRedeemed: isUsedVerifyResult(verifyData),
-        redeemEmail: pickFirstPresentField(verifyData, [
+        redeemEmail: pickVerifyField(verifyData, [
           'email',
           'userEmail',
           'redeemEmail',
           'user_id',
+          'bound_email',
+          'boundEmail',
         ]),
-        redeemTime: pickFirstPresentField(verifyData, [
+        redeemTime: pickVerifyField(verifyData, [
           'updated_at',
           'updatedAt',
           'used_at',
@@ -370,7 +418,7 @@ export function create9977aiAdapter(
           ok: false,
           retryable: true,
           message: buildAdminFailureMessage(
-            `verify_code 请求失败：${error?.message || '网络异常'}`
+            `卡密验证请求失败：${error?.message || '网络异常'}`
           ),
         };
       }
@@ -380,17 +428,12 @@ export function create9977aiAdapter(
           ok: false,
           retryable: false,
           message: buildAdminFailureMessage(
-            `verify_code 失败：${extractMessage(verifyData)}`
+            `卡密验证失败：${extractMessage(verifyData)}`
           ),
         };
       }
 
-      if (
-        verifyData?.is_new === false ||
-        String(verifyData?.status || '')
-          .trim()
-          .toLowerCase() === 'used'
-      ) {
+      if (isUsedVerifyResult(verifyData)) {
         return {
           ok: false,
           retryable: false,
@@ -402,10 +445,18 @@ export function create9977aiAdapter(
         };
       }
 
+      if (!isAvailableVerifyResult(verifyData)) {
+        return {
+          ok: false,
+          retryable: false,
+          message: buildAdminFailureMessage(
+            `卡密状态不允许新提交：${extractMessage(verifyData)}`
+          ),
+        };
+      }
+
       try {
-        const submitData = await requestAction(jar, 'submit_json', {
-          json_token: sessionToken,
-        });
+        const submitData = await submitRecharge(jar, sessionToken);
 
         if (submitData?.success) {
           return {
