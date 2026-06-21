@@ -101,6 +101,7 @@ export default async function PostAddPage({
     passby: {
       type: 'post',
     },
+    className: 'md:max-w-none',
     data: {},
     submit: {
       button: {
@@ -164,7 +165,7 @@ export default async function PostAddPage({
       <Header crumbs={crumbs} />
       <Main>
         <MainHeader title={t('add.title')} />
-        <FormCard form={form} className="md:max-w-xl" />
+        <FormCard form={form} className="w-full max-w-7xl" />
       </Main>
     </>
   );

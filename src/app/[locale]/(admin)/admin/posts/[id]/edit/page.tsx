@@ -113,6 +113,7 @@ export default async function PostEditPage({
       type: 'post',
       post: post,
     },
+    className: 'md:max-w-none',
     data: post,
     submit: {
       button: {
@@ -180,7 +181,7 @@ export default async function PostEditPage({
       <Header crumbs={crumbs} />
       <Main>
         <MainHeader title={t('edit.title')} />
-        <FormCard form={form} className="md:max-w-xl" />
+        <FormCard form={form} className="w-full max-w-7xl" />
       </Main>
     </>
   );

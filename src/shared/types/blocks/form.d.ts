@@ -60,6 +60,7 @@ export interface FormSubmit {
 export interface Form {
   title?: string;
   description?: string;
+  className?: string;
   fields: FormField[];
   data?: any;
   passby?: any;

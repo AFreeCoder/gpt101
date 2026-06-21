@@ -1,6 +1,5 @@
 'use client';
 
-import { isArray } from 'util';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader } from 'lucide-react';
@@ -22,6 +21,7 @@ import {
 } from '@/shared/components/ui/form';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { cn } from '@/shared/lib/utils';
 import {
   FormField as FormFieldType,
   FormSubmit,
@@ -185,6 +185,7 @@ const generateFormSchema = (fields: FormFieldType[]) => {
 export function Form({
   title,
   description,
+  className,
   fields,
   data,
   passby,
@@ -192,6 +193,7 @@ export function Form({
 }: {
   title?: string;
   description?: string;
+  className?: string;
   fields?: FormFieldType[];
   data?: any;
   passby?: any;
@@ -325,7 +327,7 @@ export function Form({
     <FormComponent {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="w-full space-y-0 pb-2 md:max-w-xl"
+        className={cn('w-full space-y-0 pb-2 md:max-w-xl', className)}
       >
         {/* {title && <h2 className="text-lg font-bold">{title}</h2>}
         {description && <p className="text-muted-foreground">{description}</p>} */}
