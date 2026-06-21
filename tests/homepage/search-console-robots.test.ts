@@ -46,10 +46,11 @@ test('sitemap 只暴露规范公开页，不输出 query URL', () => {
 
   assert.ok(urls.some((url) => url.endsWith('/lp/g/upgrade-chatgpt')));
   assert.ok(urls.some((url) => url.endsWith('/tutorials')));
-  assert.ok(
+  assert.equal(
     urls.some((url) =>
       url.endsWith('/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus')
-    )
+    ),
+    false
   );
   assert.equal(
     urls.some((url) => url.includes('?')),

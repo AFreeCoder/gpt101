@@ -37,12 +37,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus`,
-      lastModified: new Date('2025-10-28'),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
       url: `${baseUrl}/qf-dtyuedan-buy`,
       lastModified: new Date(),
       changeFrequency: 'weekly',

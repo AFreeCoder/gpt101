@@ -41,11 +41,6 @@ const nextConfig = {
         destination: '/tutorials/how-to-upgrade-gpt-plus',
         permanent: true,
       },
-      {
-        source: '/2025-latest-7-way-to-upgrade-chatgpt-plus',
-        destination: '/tutorials/2025-latest-7-way-to-upgrade-chatgpt-plus',
-        permanent: true,
-      },
     ];
   },
   async headers() {
