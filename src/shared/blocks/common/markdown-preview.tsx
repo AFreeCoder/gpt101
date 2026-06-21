@@ -2,10 +2,15 @@
 'use client';
 
 import { useMemo } from 'react';
+import GithubSlugger from 'github-slugger';
 import MarkdownIt from 'markdown-it';
 
 import 'github-markdown-css/github-markdown-light.css';
 import './markdown.css';
+
+interface MarkdownRenderEnv {
+  headingSlugger?: GithubSlugger;
+}
 
 export interface TocItem {
   id: string;
@@ -19,26 +24,17 @@ export function getTocItems(content: string): TocItem[] {
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   const toc: TocItem[] = [];
   let match;
+  const slugger = new GithubSlugger();
 
   while ((match = headingRegex.exec(content)) !== null) {
     const level = match[1].length;
     const text = match[2].trim();
-    const id = text
-      .toLowerCase()
-      .replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    const id = slugger.slug(text);
 
     toc.push({ id, text, level });
   }
 
   return toc;
-}
-
-function generateHeadingId(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-')
-    .replace(/(^-|-$)/g, '');
 }
 
 const md = new MarkdownIt({
@@ -48,15 +44,17 @@ const md = new MarkdownIt({
 });
 
 // Custom renderer for headings with IDs
-md.renderer.rules.heading_open = function (tokens, idx) {
+md.renderer.rules.heading_open = function (tokens, idx, _options, env) {
   const token = tokens[idx];
-  const level = token.markup.length;
+  const level = token.tag.slice(1);
   const nextToken = tokens[idx + 1];
 
   if (nextToken && nextToken.type === 'inline') {
-    const headingText = nextToken.content;
-    const id = generateHeadingId(headingText);
-    return `<h${level} id="${id}">`;
+    const headingText = nextToken.content.trim();
+    const slugger = (env as MarkdownRenderEnv).headingSlugger;
+    const id = slugger?.slug(headingText) || '';
+
+    return `<h${level} id="${md.utils.escapeHtml(id)}">`;
   }
 
   return `<h${level}>`;
@@ -86,7 +84,9 @@ interface MarkdownPreviewProps {
 
 export function MarkdownPreview({ content }: MarkdownPreviewProps) {
   const html = useMemo(() => {
-    return content ? md.render(content) : '';
+    const env: MarkdownRenderEnv = { headingSlugger: new GithubSlugger() };
+
+    return content ? md.render(content, env) : '';
   }, [content]);
 
   return (

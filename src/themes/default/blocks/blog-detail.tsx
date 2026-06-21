@@ -1,6 +1,10 @@
 'use client';
 
-import { TOCItems, TOCProvider } from 'fumadocs-ui/components/layout/toc';
+import {
+  TOCItems,
+  TOCProvider,
+  TOCScrollArea,
+} from 'fumadocs-ui/components/layout/toc';
 import { CalendarIcon, ListIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -72,7 +76,9 @@ export function BlogDetail({ post }: { post: PostType }) {
                       <h2 className="text-foreground mb-4 flex items-center gap-2 font-semibold">
                         <ListIcon className="size-4" /> {t('toc')}
                       </h2>
-                      <TOCItems />
+                      <TOCScrollArea className="max-h-[calc(100vh-9rem)] py-0">
+                        <TOCItems />
+                      </TOCScrollArea>
                     </div>
                   </div>
                 </div>
