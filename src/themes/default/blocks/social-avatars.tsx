@@ -1,24 +1,27 @@
-import Image from 'next/image';
 import { Star } from 'lucide-react';
 
-import { Avatar } from '@/shared/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/shared/components/ui/avatar';
 
-const userImgUrls = [
-  '/imgs/avatars/1.png',
-  '/imgs/avatars/2.png',
-  '/imgs/avatars/3.png',
-  '/imgs/avatars/4.png',
-  '/imgs/avatars/5.png',
-  '/imgs/avatars/6.png',
+const avatarItems = [
+  { label: 'G', className: 'bg-sky-100 text-sky-700' },
+  { label: 'P', className: 'bg-emerald-100 text-emerald-700' },
+  { label: 'T', className: 'bg-amber-100 text-amber-700' },
+  { label: '1', className: 'bg-violet-100 text-violet-700' },
+  { label: '0', className: 'bg-rose-100 text-rose-700' },
+  { label: '1', className: 'bg-cyan-100 text-cyan-700' },
 ];
 
 export function SocialAvatars({ tip }: { tip: string }) {
   return (
     <div className="mx-auto mt-8 flex w-fit flex-col items-center gap-2 sm:flex-row">
       <span className="mx-4 inline-flex items-center -space-x-2">
-        {userImgUrls.map((url, index) => (
+        {avatarItems.map((avatar, index) => (
           <Avatar className="size-10 border" key={index}>
-            <Image width={40} height={40} src={url} alt="placeholder" />
+            <AvatarFallback
+              className={`text-sm font-semibold ${avatar.className}`}
+            >
+              {avatar.label}
+            </AvatarFallback>
           </Avatar>
         ))}
       </span>

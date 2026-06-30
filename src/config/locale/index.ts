@@ -53,7 +53,6 @@ export const localeMessagesPaths = [
   'pages/chatgpt-mirror',
   'pages/lp-upgrade-chatgpt',
   'pages/pricing',
-  'pages/showcases',
   'pages/blog',
   'pages/updates',
 ];

@@ -29,10 +29,6 @@ export default async function AiMusicGeneratorPage({
       hero: {
         title: t.raw('page.title'),
         description: t.raw('page.description'),
-        background_image: {
-          src: '/imgs/bg/tree.jpg',
-          alt: 'hero background',
-        },
       },
       generator: {
         component: <MusicGenerator srOnlyTitle={t.raw('generator.title')} />,
