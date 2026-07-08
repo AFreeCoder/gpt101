@@ -93,7 +93,7 @@ test('resolveVerifiedSessionAccount 在提供账号校验器时优先使用校�
         email: 'user@example.com',
       },
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_123',
+        chatgpt_account_id: 'account_123',
         chatgpt_plan_type: 'free',
       },
     }),

@@ -134,7 +134,7 @@ test('resolveSessionAccountPayload 解析包含 profile/auth claims 的 JWT toke
         email: 'jwt@example.com',
       },
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_from_jwt',
+        chatgpt_account_id: 'account_from_jwt',
         chatgpt_plan_type: 'free',
       },
     })
@@ -151,6 +151,27 @@ test('resolveSessionAccountPayload 解析包含 profile/auth claims 的 JWT toke
   });
 });
 
+test('resolveSessionAccountPayload 不把 chatgpt_user_id 或 sub 当 account.id', () => {
+  const payload = Buffer.from(
+    JSON.stringify({
+      sub: 'google-oauth2|123456',
+      'https://api.openai.com/profile': {
+        email: 'jwt@example.com',
+      },
+      'https://api.openai.com/auth': {
+        chatgpt_user_id: 'user_123',
+        chatgpt_plan_type: 'free',
+      },
+    })
+  ).toString('base64url');
+  const sessionToken = `header.${payload}.signature`;
+
+  assert.throws(
+    () => resolveSessionAccountPayload(sessionToken),
+    /无法解析 Token/
+  );
+});
+
 test('resolveSessionAccountPayload 对 JWT plus 用户返回明确拦截提示', () => {
   const payload = Buffer.from(
     JSON.stringify({
@@ -159,7 +180,7 @@ test('resolveSessionAccountPayload 对 JWT plus 用户返回明确拦截提示',
         email: 'plus@example.com',
       },
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_plus',
+        chatgpt_account_id: 'account_plus',
         chatgpt_plan_type: 'plus',
       },
     })

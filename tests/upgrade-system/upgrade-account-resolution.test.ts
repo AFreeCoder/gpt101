@@ -39,7 +39,7 @@ test('resolveVerifiedSessionAccount 以远程返回的当前套餐为准拦截 p
         email: 'user@example.com',
       },
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_123',
+        chatgpt_account_id: 'account_123',
         chatgpt_plan_type: 'free',
       },
     }),
@@ -74,7 +74,7 @@ test('resolveVerifiedSessionAccount 会先预热 chatgpt cookie 再校验账号'
         email: 'user@example.com',
       },
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_123',
+        chatgpt_account_id: 'account_123',
         chatgpt_plan_type: 'free',
       },
     }),
@@ -169,7 +169,7 @@ test('resolveVerifiedSessionAccount 在 access token claims 与远程账号不�
         email: 'user@example.com',
       },
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_local',
+        chatgpt_account_id: 'account_local',
         chatgpt_plan_type: 'free',
       },
     }),
@@ -199,7 +199,7 @@ test('resolveVerifiedSessionAccount 在 access token 只有 account claim 且远
     user: { id: 'user_123', email: 'user@example.com' },
     accessToken: buildJwt({
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_claim',
+        chatgpt_account_id: 'account_claim',
       },
     }),
   });
@@ -221,6 +221,40 @@ test('resolveVerifiedSessionAccount 在 access token 只有 account claim 且远
       }),
     /账号信息不一致/
   );
+});
+
+test('resolveVerifiedSessionAccount 不把 chatgpt_user_id 或 sub 当远程 account id', async () => {
+  const sessionToken = JSON.stringify({
+    user: { id: 'user_123', email: 'user@example.com' },
+    account: { id: 'account_remote', planType: 'plus' },
+    accessToken: buildJwt({
+      sub: 'google-oauth2|123456',
+      'https://api.openai.com/profile': {
+        email: 'user@example.com',
+      },
+      'https://api.openai.com/auth': {
+        chatgpt_user_id: 'user_123',
+      },
+    }),
+  });
+
+  const result = await resolveVerifiedSessionAccount(sessionToken, {
+    fetchImpl: mockAccountsCheckResponse({
+      accounts: {
+        account_remote: {
+          account: {
+            account_id: 'account_remote',
+            plan_type: 'free',
+            is_default: true,
+          },
+        },
+      },
+    }) as typeof fetch,
+  });
+
+  assert.equal(result.email, 'user@example.com');
+  assert.equal(result.accountId, 'account_remote');
+  assert.equal(result.currentPlan, 'free');
 });
 
 test('resolveVerifiedSessionAccount 在 access token 只有 email claim 且远程邮箱不一致时拒绝提交', async () => {
@@ -263,7 +297,7 @@ test('resolveVerifiedSessionAccount 在远程账号与当前 token 信息不一�
         email: 'user@example.com',
       },
       'https://api.openai.com/auth': {
-        chatgpt_user_id: 'account_local',
+        chatgpt_account_id: 'account_local',
         chatgpt_plan_type: 'free',
       },
     }),

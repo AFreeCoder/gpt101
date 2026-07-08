@@ -96,12 +96,12 @@ function extractJwtAccountClaims(
     payload['https://api.openai.com/profile.email'],
     payload.email
   );
+  // Only chatgpt_account_id is comparable with accounts/check account_id.
+  // chatgpt_user_id and sub identify the login user/provider subject, not the
+  // ChatGPT account entry used for subscription upgrades.
   const accountId = readClaimString(
     auth.chatgpt_account_id,
-    auth.chatgpt_user_id,
-    payload['https://api.openai.com/auth.chatgpt_account_id'],
-    payload['https://api.openai.com/auth.chatgpt_user_id'],
-    payload.sub
+    payload['https://api.openai.com/auth.chatgpt_account_id']
   );
   const currentPlan = normalizePlanType(
     readClaimString(
