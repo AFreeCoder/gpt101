@@ -35,7 +35,8 @@
         },
         {
           "title": "客服支持",
-          "url": "/#customer-support",
+          "url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
+          "target": "_blank",
           "icon": "Headphones"
         }
       ]
@@ -115,8 +116,8 @@
             },
             {
               "title": "客服支持",
-              "url": "/#customer-support",
-              "target": "_self"
+              "url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
+              "target": "_blank"
             },
             {
               "title": "OpenAI 状态",

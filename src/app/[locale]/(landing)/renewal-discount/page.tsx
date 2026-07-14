@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 
+import {
+  CUSTOMER_SUPPORT_LABEL,
+  CUSTOMER_SUPPORT_URL,
+} from '@/shared/lib/customer-support';
+
 export default function RenewalDiscountPage() {
   const [verifyValue, setVerifyValue] = useState('');
   const [couponCode, setCouponCode] = useState('');
@@ -80,7 +85,7 @@ export default function RenewalDiscountPage() {
           value={verifyValue}
           onChange={(e) => setVerifyValue(e.target.value)}
           placeholder="输入您之前的订单号或卡密"
-          className="mb-4 w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          className="mb-4 w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
         />
 
         {!couponCode && (
@@ -115,8 +120,15 @@ export default function RenewalDiscountPage() {
       </div>
 
       <div className="mt-8 text-center text-sm text-gray-500">
-        遇到问题？请联系客服微信：
-        <span className="font-medium text-gray-700">AFreeCoder01</span>
+        遇到问题？
+        <a
+          href={CUSTOMER_SUPPORT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-blue-700 underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          {CUSTOMER_SUPPORT_LABEL}
+        </a>
       </div>
     </div>
   );

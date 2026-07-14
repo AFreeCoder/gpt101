@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { replaceLegacyCustomerSupportText } from '@/shared/lib/customer-support';
 import type { FAQ } from '@/shared/types/blocks/landing';
 
 export const HOMEPAGE_FAQ_CONFIG_KEY = 'homepage_faq_config';
@@ -157,7 +158,9 @@ function sanitizeFaqConfig(config: FaqContentConfig): FaqContentConfig {
     .map((item) => ({
       category: sanitizeText(item.category || '', 40),
       question: sanitizeText(item.question, MAX_TITLE_LENGTH),
-      answer: sanitizeText(item.answer, MAX_ANSWER_LENGTH),
+      answer: replaceLegacyCustomerSupportText(
+        sanitizeText(item.answer, MAX_ANSWER_LENGTH)
+      ),
       featured: item.featured === true,
     }))
     .filter((item) => item.question && item.answer);

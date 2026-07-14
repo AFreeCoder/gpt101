@@ -7,6 +7,10 @@ import {
   UpgradeTaskSummary,
   type UpgradeTaskSummaryData,
 } from '@/shared/blocks/upgrade/upgrade-task-summary';
+import {
+  CUSTOMER_SUPPORT_LABEL,
+  CUSTOMER_SUPPORT_URL,
+} from '@/shared/lib/customer-support';
 
 interface TaskStatus extends UpgradeTaskSummaryData {
   taskNo: string;
@@ -24,6 +28,7 @@ interface TaskStatus extends UpgradeTaskSummaryData {
 export type UpgradeStatusViewProps = {
   taskNo?: string;
   supportContact?: string | null;
+  /** @deprecated 客服入口统一展示为“联系客服”。 */
   supportContactLabel?: string;
   failedHelpText?: string;
   /** 与 UpgradeFlow 一致：'default' / 'channel' */
@@ -32,8 +37,7 @@ export type UpgradeStatusViewProps = {
 
 export function UpgradeStatusView({
   taskNo: taskNoProp,
-  supportContact = 'AFreeCoder01',
-  supportContactLabel = '微信',
+  supportContact = CUSTOMER_SUPPORT_URL,
   failedHelpText,
   variant = 'default',
 }: UpgradeStatusViewProps = {}) {
@@ -162,11 +166,16 @@ export function UpgradeStatusView({
 
           {task.status === 'failed' && !failedHelpText && supportContact && (
             <div className={`mt-4 text-center text-sm ${subtleText}`}>
-              请联系客服{supportContactLabel}：
-              <span className={`font-medium ${strongText}`}>
-                {supportContact}
-              </span>
-              ，提供任务编号
+              请
+              <a
+                href={supportContact}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`font-medium underline underline-offset-2 ${strongText}`}
+              >
+                {CUSTOMER_SUPPORT_LABEL}
+              </a>
+              ，并提供任务编号
               <span className={`font-mono ${strongText}`}>{task.taskNo}</span>
             </div>
           )}

@@ -19,6 +19,10 @@ import {
   trackAdPlusFunnelStep,
 } from '@/shared/lib/ad-funnel';
 import {
+  CUSTOMER_SUPPORT_LABEL,
+  CUSTOMER_SUPPORT_URL,
+} from '@/shared/lib/customer-support';
+import {
   sendGoogleAdsConversionAction,
   sendGtagEvent,
   sendOutboundClick,
@@ -37,6 +41,8 @@ export function Gpt101Hero({ section }: { section: Section }) {
   const purchaseChannels = section.purchase_channels || [];
   const upgradeButton = section.buttons?.[1];
   const upgradeAction = getUpgradeButtonAction(upgradeButton);
+  const customerServiceUrl =
+    section.customer_service_url || CUSTOMER_SUPPORT_URL;
 
   const sideAds = section.side_ads as { left?: any; right?: any } | undefined;
 
@@ -212,12 +218,17 @@ export function Gpt101Hero({ section }: { section: Section }) {
             >
               查看客户好评 ★★★★★
             </Link>
-            {section.customer_service_wechat && (
+            {section.customer_service_url && (
               <>
                 <span className="text-gray-400">|</span>
-                <span className="font-semibold text-blue-600">
-                  客服微信：{section.customer_service_wechat}
-                </span>
+                <a
+                  href={customerServiceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-blue-600 underline-offset-4 transition-colors hover:text-blue-700 hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+                >
+                  {CUSTOMER_SUPPORT_LABEL}
+                </a>
               </>
             )}
           </div>

@@ -118,14 +118,14 @@
           {
             "id": 6,
             "label": "[Backup] GPT Subscription (your account)",
-            "url": "",
-            "description": "Contact support WeChat: AFreeCoder01"
+            "url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
+            "description": "Contact support"
           },
           {
             "id": 7,
             "label": "[Pro] GPT Pro Subscription (your account)",
-            "url": "",
-            "description": "Contact support WeChat: AFreeCoder01"
+            "url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
+            "description": "Contact support"
           }
         ],
         "side_ads": {
@@ -271,12 +271,12 @@
           {
             "category": "Subscription",
             "question": "Q: How long does it take?",
-            "answer": "Usually 1-2 minutes. Contact support WeChat: AFreeCoder01 if you need help."
+            "answer": "Usually 1-2 minutes. Contact support if you need help."
           },
           {
             "category": "Support",
             "question": "Q: What if the subscription fails?",
-            "answer": "We'll process a refund per our policy. Refund timing depends on the payment platform. Contact WeChat: AFreeCoder01."
+            "answer": "We'll process a refund per our policy. Refund timing depends on the payment platform. Contact support if you need help."
           },
           {
             "category": "Account Safety",
@@ -286,7 +286,7 @@
           {
             "category": "Support",
             "question": "Q: Can I get an invoice?",
-            "answer": "Yes. Contact support WeChat: AFreeCoder01 with your billing details."
+            "answer": "Yes. Contact support with your billing details."
           },
           {
             "category": "Plan Choice",
@@ -300,7 +300,7 @@
         "block": "customer-support",
         "title": "Customer Support",
         "description": "Need help? We're here for you.",
-        "wechat_id": "AFreeCoder01",
+        "contact_url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
         "show_contact_card": true,
         "items": [
           {
@@ -327,8 +327,8 @@
         "id": "floating-cs",
         "block": "floating-customer-service",
         "disabled": false,
-        "wechat_id": "AFreeCoder01",
-        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg",
+        "contact_url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
+        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/af54dc7e725beb4d7557d4d18a6141d881dac1d06aaed98d4d2825828ae89588.jpg",
         "service_time": "Online: 9:00 ~ 23:00"
       }
     }

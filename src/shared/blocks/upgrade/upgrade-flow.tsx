@@ -23,6 +23,10 @@ import {
 } from '@/shared/lib/ad-funnel';
 import type { UpgradeNoticeConfig } from '@/shared/lib/content-config';
 import {
+  CUSTOMER_SUPPORT_LABEL,
+  CUSTOMER_SUPPORT_URL,
+} from '@/shared/lib/customer-support';
+import {
   sendGoogleAdsConversionAction,
   sendGtagEvent,
 } from '@/shared/lib/gtag';
@@ -35,6 +39,7 @@ import { isOutlookEmail } from '@/shared/lib/upgrade-email-warning';
 export type UpgradeFlowProps = {
   showSupportCard?: boolean;
   supportContact?: string | null;
+  /** @deprecated 客服入口统一展示为“联系客服”。 */
   supportContactLabel?: string;
   submitErrorMessage?: string;
   failedHelpText?: string;
@@ -49,8 +54,7 @@ const MEMBERSHIP_REFRESH_HINT =
 
 export function UpgradeFlow({
   showSupportCard = true,
-  supportContact = 'AFreeCoder01',
-  supportContactLabel = '微信',
+  supportContact = CUSTOMER_SUPPORT_URL,
   submitErrorMessage = '充值异常，请联系客服处理',
   failedHelpText,
   safetyIssueText = '异常联系客服处理',
@@ -398,9 +402,22 @@ export function UpgradeFlow({
                 ? '该卡密已提交升级，当前充值异常待客服处理'
                 : '该卡密已提交升级，请联系客服处理',
               tone: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300',
-              help: supportContact
-                ? `请联系客服协助处理 · ${supportContactLabel}：${supportContact}`
-                : '请联系客服协助处理。',
+              help: supportContact ? (
+                <>
+                  请
+                  <a
+                    href={supportContact}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold underline underline-offset-2"
+                  >
+                    {CUSTOMER_SUPPORT_LABEL}
+                  </a>
+                  协助处理。
+                </>
+              ) : (
+                '请联系客服协助处理。'
+              ),
             }
           : {
               title: '该卡密已提交升级',
@@ -1136,10 +1153,16 @@ export function UpgradeFlow({
                           </p>
                         ) : supportContact ? (
                           <p className="text-muted-foreground mt-0.5 text-xs">
-                            请联系客服协助处理 · {supportContactLabel}：
-                            <span className="text-foreground font-medium">
-                              {supportContact}
-                            </span>
+                            请
+                            <a
+                              href={supportContact}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-foreground font-medium underline underline-offset-2"
+                            >
+                              {CUSTOMER_SUPPORT_LABEL}
+                            </a>
+                            协助处理。
                           </p>
                         ) : null}
                       </div>
@@ -1240,9 +1263,14 @@ export function UpgradeFlow({
                   <p className="text-muted-foreground text-xs">
                     遇到问题？联系客服
                   </p>
-                  <p className="text-foreground mt-1 text-sm font-semibold">
-                    {supportContactLabel}：{supportContact}
-                  </p>
+                  <a
+                    href={supportContact}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary mt-1 inline-flex text-sm font-semibold underline-offset-4 hover:underline"
+                  >
+                    {CUSTOMER_SUPPORT_LABEL}
+                  </a>
                 </div>
               )}
             </div>

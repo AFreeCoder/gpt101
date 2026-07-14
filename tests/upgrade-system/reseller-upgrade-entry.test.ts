@@ -232,11 +232,11 @@ test('external channel pages are isolated from the main /upgrade route', () => {
   assert.match(statusSource, /redirect\(`\/upgrade\/status\/\$\{taskNo\}`\)/);
   assert.doesNotMatch(
     channelUpgradeSource,
-    /AFreeCoder01|联系客服微信|Footer|Header|TopBanner/
+    /AFreeCoder01|work\.weixin\.qq\.com|联系客服微信|Footer|Header|TopBanner/
   );
   assert.doesNotMatch(
     channelUpgradeStatusSource,
-    /AFreeCoder01|联系客服微信|Footer|Header|TopBanner/
+    /AFreeCoder01|work\.weixin\.qq\.com|联系客服微信|Footer|Header|TopBanner/
   );
 });
 

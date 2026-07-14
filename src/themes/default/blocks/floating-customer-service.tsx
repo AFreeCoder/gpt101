@@ -1,36 +1,40 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { MessageSquare, X, Clock, Copy } from 'lucide-react';
-import { toast } from 'sonner';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Clock, ExternalLink, MessageSquare, X } from 'lucide-react';
 
+import {
+  CUSTOMER_SUPPORT_LABEL,
+  CUSTOMER_SUPPORT_QR_CODE_URL,
+  CUSTOMER_SUPPORT_URL,
+} from '@/shared/lib/customer-support';
 import { Section } from '@/shared/types/blocks/landing';
 
 export function FloatingCustomerService({ section }: { section: Section }) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const wechatId = section.wechat_id || 'AFreeCoder01';
-  const qrCodeUrl = section.qr_code_url || 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg';
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const contactUrl = section.contact_url || CUSTOMER_SUPPORT_URL;
+  const qrCodeUrl = section.qr_code_url || CUSTOMER_SUPPORT_QR_CODE_URL;
   const serviceTime = section.service_time || '在线时间：9:00 ~ 23:00';
 
-  const handleCopy = useCallback(() => {
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      navigator.clipboard.writeText(wechatId).then(() => {
-        toast.success('已复制到剪贴板');
-      });
-    } else {
-      window.prompt('请复制客服微信号', wechatId);
-    }
-  }, [wechatId]);
+  const closePanel = useCallback(() => {
+    triggerRef.current?.focus();
+    setIsOpen(false);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
+        closePanel();
       }
     };
     const handleClickOutside = (e: MouseEvent) => {
-      if (isOpen && rootRef.current && !rootRef.current.contains(e.target as Node)) {
+      if (
+        isOpen &&
+        rootRef.current &&
+        !rootRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -40,12 +44,13 @@ export function FloatingCustomerService({ section }: { section: Section }) {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [closePanel, isOpen]);
 
   return (
-    <div ref={rootRef} className="fixed bottom-6 right-6 z-50">
+    <div ref={rootRef} className="fixed right-6 bottom-6 z-50">
       {/* 主按钮 */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
@@ -53,12 +58,12 @@ export function FloatingCustomerService({ section }: { section: Section }) {
         aria-expanded={isOpen}
       >
         <MessageSquare className="h-7 w-7" />
-        <span className="absolute right-0 top-0 h-3 w-3 animate-pulse rounded-full border-2 border-white bg-red-500" />
+        <span className="absolute top-0 right-0 h-3 w-3 animate-pulse rounded-full border-2 border-white bg-red-500" />
       </button>
 
       {/* 客服卡片 */}
       <div
-        className={`absolute bottom-20 right-0 w-64 overflow-hidden rounded-xl bg-white shadow-2xl transition-all duration-300 ${
+        className={`absolute right-0 bottom-20 w-64 overflow-hidden rounded-xl bg-white shadow-2xl transition-all duration-300 ${
           isOpen
             ? 'pointer-events-auto visible scale-100 opacity-100'
             : 'pointer-events-none invisible scale-95 opacity-0'
@@ -75,13 +80,13 @@ export function FloatingCustomerService({ section }: { section: Section }) {
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-semibold">在线微信客服</h3>
+                <h3 className="text-base font-semibold">在线客服</h3>
                 <p className="text-xs text-white/80">有任何问题请联系客服</p>
               </div>
             </div>
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={closePanel}
               className="text-white/80 transition-colors hover:text-white"
               aria-label="关闭"
             >
@@ -92,39 +97,44 @@ export function FloatingCustomerService({ section }: { section: Section }) {
 
         {/* 内容 */}
         <div className="space-y-3 p-4">
-          {/* 微信二维码 */}
+          {/* 客服二维码 */}
           <div className="text-center">
-            <p className="mb-2 text-xs font-medium text-gray-600">扫码添加客服微信</p>
+            <p className="mb-2 text-xs font-medium text-gray-600">
+              扫码联系客服
+            </p>
             <div className="flex justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={qrCodeUrl}
-                alt="客服微信二维码"
-                width={128}
-                height={128}
-                loading="lazy"
-                decoding="async"
-                className="h-auto w-32 rounded-lg border border-gray-200"
-              />
+              <a
+                href={contactUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={CUSTOMER_SUPPORT_LABEL}
+                className="rounded-lg focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={qrCodeUrl}
+                  alt="客服二维码"
+                  width={128}
+                  height={128}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-auto w-32 rounded-lg border border-gray-200"
+                />
+              </a>
             </div>
           </div>
 
-          {/* 微信号 + 复制 */}
+          {/* 客服链接 */}
           <div className="text-center">
-            <div className="flex items-center justify-center gap-2">
-              <div className="rounded border border-gray-200 bg-gray-50 px-2.5 py-1.5">
-                <p className="select-all text-sm font-bold text-gray-900">{wechatId}</p>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="flex items-center gap-1 rounded bg-blue-600 px-2.5 py-1.5 text-white transition-colors duration-200 hover:bg-blue-700"
-                aria-label="复制微信号"
-              >
-                <Copy className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">复制</span>
-              </button>
-            </div>
+            <a
+              href={contactUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              {CUSTOMER_SUPPORT_LABEL}
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            </a>
           </div>
 
           {/* 服务时间 */}

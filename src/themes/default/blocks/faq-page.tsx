@@ -4,12 +4,14 @@ import { useMemo, useState } from 'react';
 import { HelpCircle, MessageCircle, Search, SearchCheck } from 'lucide-react';
 
 import { Link } from '@/core/i18n/navigation';
+import { CustomerSupportText } from '@/shared/components/customer-support-text';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/shared/components/ui/accordion';
+import { CUSTOMER_SUPPORT_URL } from '@/shared/lib/customer-support';
 import type { FAQ } from '@/shared/types/blocks/landing';
 
 type FaqItem = NonNullable<FAQ['items']>[number];
@@ -100,7 +102,12 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
     0
   );
 
-  const supportLinks = [
+  const supportLinks: Array<{
+    title: string;
+    href: string;
+    icon: typeof SearchCheck;
+    external?: boolean;
+  }> = [
     {
       title: copy.selfQuery,
       href: '/query',
@@ -108,8 +115,9 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
     },
     {
       title: copy.contact,
-      href: '/#customer-support',
+      href: CUSTOMER_SUPPORT_URL,
       icon: MessageCircle,
+      external: true,
     },
   ];
 
@@ -198,6 +206,8 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
                   className="border-border hover:bg-muted flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors"
                 >
                   <item.icon className="h-4 w-4" />
@@ -234,13 +244,15 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
                 {copy.noResultDescription}
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
-                <Link
-                  href="/#customer-support"
+                <a
+                  href={CUSTOMER_SUPPORT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="border-border hover:bg-muted inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium transition-colors"
                 >
                   <MessageCircle className="h-4 w-4" />
                   {copy.contact}
-                </Link>
+                </a>
               </div>
             </div>
           ) : (
@@ -274,7 +286,9 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
                         </AccordionTrigger>
                         <AccordionContent>
                           <p className="text-muted-foreground pb-4 text-base leading-7">
-                            {item.answer || item.description || ''}
+                            <CustomerSupportText>
+                              {item.answer || item.description || ''}
+                            </CustomerSupportText>
                           </p>
                         </AccordionContent>
                       </AccordionItem>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { Link } from '@/core/i18n/navigation';
+import { CustomerSupportText } from '@/shared/components/customer-support-text';
 import {
   Accordion,
   AccordionContent,
@@ -39,7 +40,7 @@ export function Faq({
   return (
     <section id={section.id} className={`py-16 md:py-24 ${className || ''}`}>
       <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-[0.8fr_1.2fr] md:px-8">
-        <ScrollAnimation>
+        <ScrollAnimation className="min-w-0">
           <div className="md:sticky md:top-24">
             <div className="border-primary/20 text-primary mb-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
               FAQ
@@ -58,7 +59,7 @@ export function Faq({
           </div>
         </ScrollAnimation>
 
-        <ScrollAnimation delay={0.2}>
+        <ScrollAnimation className="min-w-0" delay={0.2}>
           <div className="min-w-0">
             {categories.length > 2 && (
               <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
@@ -107,7 +108,9 @@ export function Faq({
                   </AccordionTrigger>
                   <AccordionContent>
                     <p className="text-muted-foreground pb-4 text-base leading-7">
-                      {item.answer || item.description || ''}
+                      <CustomerSupportText>
+                        {item.answer || item.description || ''}
+                      </CustomerSupportText>
                     </p>
                   </AccordionContent>
                 </AccordionItem>

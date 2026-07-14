@@ -1,22 +1,17 @@
 'use client';
 
-import { toast } from 'sonner';
+import { ExternalLink, MessageCircle } from 'lucide-react';
+
 import { ScrollAnimation } from '@/shared/components/ui/scroll-animation';
+import {
+  CUSTOMER_SUPPORT_LABEL,
+  CUSTOMER_SUPPORT_URL,
+} from '@/shared/lib/customer-support';
 import { Section } from '@/shared/types/blocks/landing';
 
 export function CustomerSupport({ section }: { section: Section }) {
   const cards = section.items || [];
-  const wechatId = section.wechat_id || 'AFreeCoder01';
-
-  const handleCopy = () => {
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      navigator.clipboard.writeText(wechatId).then(() => {
-        toast.success('已复制到剪贴板');
-      });
-    } else {
-      window.prompt('请复制客服微信号', wechatId);
-    }
-  };
+  const contactUrl = section.contact_url || CUSTOMER_SUPPORT_URL;
 
   return (
     <section id={section.id || 'customer-support'} className="py-16 md:py-24">
@@ -50,7 +45,9 @@ export function CustomerSupport({ section }: { section: Section }) {
                           : 'bg-purple-100'
                   }`}
                 >
-                  <span className="text-3xl">{(card as Record<string, string>).icon}</span>
+                  <span className="text-3xl">
+                    {(card as Record<string, string>).icon}
+                  </span>
                 </div>
                 <h3 className="mb-3 text-lg font-bold text-gray-800">
                   {card.title}
@@ -61,23 +58,28 @@ export function CustomerSupport({ section }: { section: Section }) {
               </div>
             ))}
 
-            {/* 客服联系方式卡片（如果 section 中配置了 wechat_id） */}
+            {/* 客服联系方式卡片 */}
             {section.show_contact_card && (
               <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-lg transition-shadow duration-300 hover:shadow-xl">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
-                  <span className="text-3xl">💬</span>
+                  <MessageCircle
+                    className="h-8 w-8 text-purple-700"
+                    aria-hidden="true"
+                  />
                 </div>
                 <h3 className="mb-3 text-lg font-bold text-gray-800">
                   客服联系方式
                 </h3>
-                <p className="mb-3 text-sm text-gray-600">微信: {wechatId}</p>
-                <button
-                  onClick={handleCopy}
-                  className="mx-auto flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-purple-700"
+                <p className="mb-3 text-sm text-gray-600">需要人工协助？</p>
+                <a
+                  href={contactUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mx-auto inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
-                  <span>📋</span>
-                  一键复制
-                </button>
+                  {CUSTOMER_SUPPORT_LABEL}
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                </a>
               </div>
             )}
           </div>

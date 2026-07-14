@@ -4,6 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 const repoRoot = process.cwd();
+const customerSupportUrl = 'https://work.weixin.qq.com/ca/cawcde156287e5f967';
 
 function readSource(filePath: string) {
   return readFileSync(path.join(repoRoot, filePath), 'utf8');
@@ -18,6 +19,7 @@ test('FAQ block supports category filters and no longer renders backend text as 
   assert.match(source, /section\.categories/);
   assert.match(source, /全部/);
   assert.match(source, /defaultValue=\{\s*filteredItems\[0\]\?/);
+  assert.match(source, /CustomerSupportText/);
   assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
 });
 
@@ -79,7 +81,7 @@ test('FAQ page route uses homepage FAQ config as the full FAQ source', () => {
   assert.match(blockSource, /searchQuery/);
   assert.match(blockSource, /filteredGroups/);
   assert.match(blockSource, /\/query/);
-  assert.match(blockSource, /\/#customer-support/);
+  assert.match(blockSource, /CUSTOMER_SUPPORT_URL/);
   assert.doesNotMatch(blockSource, /\/batch-query/);
   assert.doesNotMatch(blockSource, /invoiceUrl/);
 });
@@ -100,6 +102,18 @@ test('landing navigation exposes FAQ and user card query links', () => {
   assert.ok(
     enLanding.header.nav.items.some(
       (item: { url?: string }) => item.url === '/faq'
+    )
+  );
+  assert.ok(
+    zhLanding.header.nav.items.some(
+      (item: { url?: string; target?: string }) =>
+        item.url === customerSupportUrl && item.target === '_blank'
+    )
+  );
+  assert.ok(
+    enLanding.header.nav.items.some(
+      (item: { url?: string; target?: string }) =>
+        item.url === customerSupportUrl && item.target === '_blank'
     )
   );
   assert.ok(
@@ -134,6 +148,7 @@ test('user card query page reuses upgrade verify-code API', () => {
   assert.match(pageSource, /卡密状态查询|Card status query/);
   assert.match(clientSource, /\/api\/upgrade\/verify-code/);
   assert.match(clientSource, /UpgradeTaskSummary/);
+  assert.match(clientSource, /CUSTOMER_SUPPORT_URL/);
   assert.doesNotMatch(clientSource, /\/batch-query/);
 });
 

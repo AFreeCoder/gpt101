@@ -8,6 +8,7 @@ import {
   UpgradeTaskSummary,
   type UpgradeTaskSummaryData,
 } from '@/shared/blocks/upgrade/upgrade-task-summary';
+import { CUSTOMER_SUPPORT_URL } from '@/shared/lib/customer-support';
 import { getProductMemberLabel } from '@/shared/lib/redeem-code';
 
 type QueryResult = {
@@ -183,13 +184,15 @@ export function QueryClient({ locale }: { locale: string }) {
           >
             {copy.upgrade}
           </Link>
-          <Link
-            href="/#customer-support"
+          <a
+            href={CUSTOMER_SUPPORT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="border-border hover:bg-muted inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium transition-colors"
           >
             <MessageCircle className="h-4 w-4" />
             {copy.contact}
-          </Link>
+          </a>
         </div>
         <p className="text-muted-foreground mt-4 text-sm leading-6">
           {copy.supportText}

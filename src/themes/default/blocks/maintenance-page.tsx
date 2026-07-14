@@ -1,40 +1,35 @@
 'use client';
 
-import { useCallback } from 'react';
-import { ArrowLeft, Copy, Shield } from 'lucide-react';
-import { toast } from 'sonner';
+import { ArrowLeft, ExternalLink, Shield } from 'lucide-react';
+import Link from 'next/link';
+
+import {
+  CUSTOMER_SUPPORT_LABEL,
+  CUSTOMER_SUPPORT_QR_CODE_URL,
+  CUSTOMER_SUPPORT_URL,
+} from '@/shared/lib/customer-support';
 
 interface MaintenancePageProps {
-  wechatId?: string;
+  contactUrl?: string;
   qrCodeUrl?: string;
 }
 
 export function MaintenancePage({
-  wechatId = 'AFreeCoder01',
-  qrCodeUrl = 'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg',
+  contactUrl = CUSTOMER_SUPPORT_URL,
+  qrCodeUrl = CUSTOMER_SUPPORT_QR_CODE_URL,
 }: MaintenancePageProps) {
-  const handleCopy = useCallback(() => {
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      navigator.clipboard.writeText(wechatId).then(() => {
-        toast.success('微信号已复制到剪贴板');
-      });
-    } else {
-      window.prompt('请复制客服微信号', wechatId);
-    }
-  }, [wechatId]);
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-blue-50 px-4 py-8">
+    <div className="flex min-h-screen items-center justify-center bg-blue-50 px-4 pt-24 pb-8 md:pt-36">
       <div className="w-full max-w-lg">
         {/* 返回按钮 */}
         <div className="mb-6">
-          <a
+          <Link
             href="/"
             className="inline-flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-800"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>返回</span>
-          </a>
+          </Link>
         </div>
 
         {/* 主要内容卡片 */}
@@ -57,46 +52,47 @@ export function MaintenancePage({
           {/* 客服联系区域 */}
           <div className="px-6 pb-6">
             <div className="mb-6 text-center">
-              <h2 className="text-lg font-bold text-gray-800">添加客服微信</h2>
+              <h2 className="text-lg font-bold text-gray-800">联系客服</h2>
             </div>
 
-            <div className="mb-6 flex items-start gap-6">
+            <div className="mb-6 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
               {/* 左侧二维码 */}
               <div className="flex-shrink-0 text-center">
-                <div className="mb-2 h-32 w-32">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={qrCodeUrl}
-                    alt="客服微信二维码"
-                    className="h-full w-full rounded-xl border border-gray-200 object-cover shadow-sm"
-                  />
+                <div className="mb-2 w-32">
+                  <a
+                    href={contactUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={CUSTOMER_SUPPORT_LABEL}
+                    className="block rounded-xl focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={qrCodeUrl}
+                      alt="客服二维码"
+                      className="h-auto w-full rounded-xl border border-gray-200 shadow-sm"
+                    />
+                  </a>
                 </div>
-                <p className="text-xs text-gray-600">客服微信二维码</p>
+                <p className="text-xs text-gray-600">客服二维码</p>
               </div>
 
-              {/* 右侧微信号 */}
-              <div className="flex-1">
+              {/* 右侧客服链接 */}
+              <div className="w-full flex-1">
                 <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="text-sm text-gray-700">
-                      微信：<span className="font-mono font-semibold">{wechatId}</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleCopy}
-                      className="flex items-center gap-1 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-1.5 text-sm text-white transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
-                    >
-                      <Copy className="h-3 w-3" />
-                      复制
-                    </button>
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2 text-yellow-700">
-                      <span>添加时请备注：<span className="font-bold">gpt</span></span>
-                    </div>
-                    <div className="flex items-center gap-2 text-green-700">
-                      <span>添加客服后即可正常充值</span>
-                    </div>
+                  <p className="mb-3 text-sm text-gray-700">需要人工协助？</p>
+                  <a
+                    href={contactUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors duration-300 hover:from-blue-700 hover:to-purple-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  >
+                    {CUSTOMER_SUPPORT_LABEL}
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  </a>
+                  <div className="space-y-2 text-xs text-gray-600">
+                    <p>点击“联系客服”后，将打开企业微信客服页面。</p>
+                    <p>也可以使用微信扫描左侧二维码。</p>
                   </div>
                 </div>
               </div>
@@ -105,12 +101,12 @@ export function MaintenancePage({
 
           {/* 返回首页 */}
           <div className="px-6 pb-6">
-            <a
+            <Link
               href="/"
               className="block w-full rounded-lg bg-gray-100 py-3 text-center text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gray-200"
             >
               返回首页
-            </a>
+            </Link>
           </div>
         </div>
       </div>

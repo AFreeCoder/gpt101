@@ -34,7 +34,7 @@
           }
         ],
         "reviews_link": true,
-        "customer_service_wechat": "AFreeCoder01",
+        "customer_service_url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
         "disclaimer": {
           "text": "支付与订单查询将在第三方平台完成，具体到账以订单状态为准。退款政策详见",
           "link": {
@@ -92,7 +92,7 @@
           },
           {
             "question": "Q: 如何联系客服？",
-            "answer": "如有问题，请联系微信客服：AFreeCoder01。"
+            "answer": "如有问题，请联系客服。"
           }
         ]
       },
@@ -100,8 +100,8 @@
         "id": "floating-cs",
         "block": "floating-customer-service",
         "disabled": false,
-        "wechat_id": "AFreeCoder01",
-        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg",
+        "contact_url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
+        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/af54dc7e725beb4d7557d4d18a6141d881dac1d06aaed98d4d2825828ae89588.jpg",
         "service_time": "在线时间：9:00 ~ 23:00"
       }
     }
