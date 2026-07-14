@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
 import { eq, inArray, like } from 'drizzle-orm';
+
+import { databaseTest } from '../helpers/database-test';
 
 import {
   channelCardkey,
@@ -175,7 +176,7 @@ async function seedSingleChannelRetryCase(prefix: string, driver: string) {
   };
 }
 
-test('坏卡失败后会被禁用，retry 不会再次命中同一张坏卡', async () => {
+databaseTest('坏卡失败后会被禁用，retry 不会再次命中同一张坏卡', async () => {
   const prefix = `regbadcard${Date.now()}`;
   await cleanupByPrefix(prefix);
 

@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 import { useLocale } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
 
 import { usePathname, useRouter } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
@@ -17,10 +17,7 @@ const DISMISSED_EXPIRY_DAYS = 1; // Expiry in days
 const PREFERRED_LOCALE_KEY = 'locale';
 
 export function LocaleDetector() {
-  if (envConfigs.locale_detect_enabled !== 'true') {
-    return null;
-  }
-
+  const enabled = envConfigs.locale_detect_enabled === 'true';
   const currentLocale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -70,7 +67,7 @@ export function LocaleDetector() {
 
   useEffect(() => {
     // Only run initial check once to avoid interference with manual locale switches
-    if (hasCheckedRef.current) {
+    if (!enabled || hasCheckedRef.current) {
       return;
     }
 
@@ -107,10 +104,14 @@ export function LocaleDetector() {
     ) {
       setShowBanner(true);
     }
-  }, [currentLocale, switchToLocale]);
+  }, [currentLocale, enabled, switchToLocale]);
 
   // Adjust header and layout spacing when banner visibility changes
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     if (showBanner && bannerRef.current) {
       const bannerHeight = bannerRef.current.offsetHeight;
 
@@ -165,10 +166,10 @@ export function LocaleDetector() {
         (sidebarWrapper as HTMLElement).style.paddingTop = '0px';
       }
     };
-  }, [showBanner]);
+  }, [enabled, showBanner]);
 
   useEffect(() => {
-    if (!showBanner || !bannerRef.current) {
+    if (!enabled || !showBanner || !bannerRef.current) {
       return;
     }
 
@@ -189,7 +190,7 @@ export function LocaleDetector() {
       resizeObserver.disconnect();
       window.removeEventListener('resize', updateHeight);
     };
-  }, [showBanner]);
+  }, [enabled, showBanner]);
 
   const handleSwitch = () => {
     if (browserLocale) {
@@ -229,7 +230,7 @@ export function LocaleDetector() {
   const targetLocaleName =
     localeNames[browserLocale as keyof typeof localeNames] || browserLocale;
 
-  if (!showBanner || !browserLocale) {
+  if (!enabled || !showBanner || !browserLocale) {
     return null;
   }
 

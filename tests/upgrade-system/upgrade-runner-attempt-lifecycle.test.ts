@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
 import { eq, inArray, like } from 'drizzle-orm';
+
+import { databaseTest } from '../helpers/database-test';
 
 import {
   channelCardkey,
@@ -53,7 +54,7 @@ async function cleanupByPrefix(prefix: string, taskId: string) {
   }
 }
 
-test('runTask 选中渠道卡密并开始执行时立即创建 running attempt，完成后更新同一条记录', async () => {
+databaseTest('runTask 选中渠道卡密并开始执行时立即创建 running attempt，完成后更新同一条记录', async () => {
   const prefix = `regattemptlive${Date.now()}`;
   const taskId = uid(`${prefix}_task`);
   const channelId = uid(`${prefix}_channel`);

@@ -11,7 +11,7 @@ test('docker build workflow 推送 sha 镜像并传递广告 conversion build ar
   const workflow = readText('.github', 'workflows', 'docker-build.yaml');
 
   assert.match(workflow, /type=sha,format=long/);
-  assert.match(workflow, /docker\/build-push-action@v5/);
+  assert.match(workflow, /docker\/build-push-action@v7/);
   assert.match(
     workflow,
     /build-args:\s*\|[\s\S]*NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO=/

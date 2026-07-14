@@ -12,6 +12,8 @@ export function Time({
   metadata?: Record<string, any>;
   className?: string;
 }) {
+  const currentLocale = useLocale();
+
   if (!value) {
     if (placeholder) {
       return <div className={className}>{placeholder}</div>;
@@ -20,10 +22,7 @@ export function Time({
     return null;
   }
 
-  let locale = useLocale();
-  if (locale === 'zh') {
-    locale = 'zh-cn';
-  }
+  const locale = currentLocale === 'zh' ? 'zh-cn' : currentLocale;
 
   return (
     <div className={className}>

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
 import { eq, inArray, like } from 'drizzle-orm';
+
+import { databaseTest } from '../helpers/database-test';
 
 import {
   channelCardkey,
@@ -79,7 +80,7 @@ async function cleanupByPrefix(prefix: string) {
   }
 }
 
-test('recoverStaleRunningTasks 用已有 running attempt 的渠道卡确认成功，不重新执行充值', async () => {
+databaseTest('recoverStaleRunningTasks 用已有 running attempt 的渠道卡确认成功，不重新执行充值', async () => {
   const prefix = `regrunrecover${Date.now()}`;
   await cleanupByPrefix(prefix);
 

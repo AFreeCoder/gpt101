@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import test, { after } from 'node:test';
+import { after } from 'node:test';
 import { inArray, like } from 'drizzle-orm';
+
+import { databaseTest } from '../helpers/database-test';
 
 import {
   redeemCode,
@@ -233,7 +235,7 @@ async function seedSourceTasks(prefix: string) {
   };
 }
 
-test('getTaskList 支持按订单来源筛选并返回第三方来源信息', async () => {
+databaseTest('getTaskList 支持按订单来源筛选并返回第三方来源信息', async () => {
   const prefix = `tasksource${Date.now()}`;
   await cleanupByPrefix(prefix);
 
@@ -285,7 +287,7 @@ test('getTaskList 支持按订单来源筛选并返回第三方来源信息', as
   }
 });
 
-test('导出升级结果 CSV 包含订单来源和外部订单号流水号', async () => {
+databaseTest('导出升级结果 CSV 包含订单来源和外部订单号流水号', async () => {
   const prefix = `taskexport${Date.now()}`;
   await cleanupByPrefix(prefix);
 

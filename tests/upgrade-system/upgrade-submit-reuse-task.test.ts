@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
 import { count, eq, inArray, like } from 'drizzle-orm';
+
+import { databaseTest } from '../helpers/database-test';
 
 import {
   redeemCode,
@@ -115,7 +116,7 @@ async function seedReleasedFailedTask(prefix: string) {
   return { code, redeemCodeId, taskId, taskNo };
 }
 
-test('submitUpgradeTask 复用同一卡密已释放的失败任务', async () => {
+databaseTest('submitUpgradeTask 复用同一卡密已释放的失败任务', async () => {
   const prefix = `submitreuse${Date.now()}`;
   await cleanupByPrefix(prefix);
   const seeded = await seedReleasedFailedTask(prefix);

@@ -22,8 +22,8 @@ export async function getThemePage(pageName: string, theme?: string) {
 
   try {
     // load theme page
-    const module = await import(`@/themes/${loadTheme}/pages/${pageName}`);
-    return module.default;
+    const themeModule = await import(`@/themes/${loadTheme}/pages/${pageName}`);
+    return themeModule.default;
   } catch (error) {
     // fallback to default theme
     if (loadTheme !== defaultTheme) {
@@ -49,8 +49,10 @@ export async function getThemeLayout(layoutName: string, theme?: string) {
 
   try {
     // load theme layout
-    const module = await import(`@/themes/${loadTheme}/layouts/${layoutName}`);
-    return module.default;
+    const themeModule = await import(
+      `@/themes/${loadTheme}/layouts/${layoutName}`
+    );
+    return themeModule.default;
   } catch (error) {
     // fallback to default theme
     if (loadTheme !== defaultTheme) {
@@ -87,9 +89,11 @@ export async function getThemeBlock(blockName: string, theme?: string) {
 
   try {
     // load theme block
-    const module = await import(`@/themes/${loadTheme}/blocks/${blockName}`);
+    const themeModule = await import(
+      `@/themes/${loadTheme}/blocks/${blockName}`
+    );
     // Try PascalCase named export first, then original blockName
-    const component = module[pascalCaseName] || module[blockName];
+    const component = themeModule[pascalCaseName] || themeModule[blockName];
     if (!component) {
       throw new Error(`No valid export found in block "${blockName}"`);
     }

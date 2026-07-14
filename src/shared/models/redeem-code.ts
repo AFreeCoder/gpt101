@@ -481,7 +481,7 @@ async function getBatchTextActionCounts(
     return { matchedCount: 0, affectedCount: 0 };
   }
 
-  const codeWhere = inArray(redeemCode.code, codes);
+  const codeWhere = normalizedRedeemCodeWhere(codes);
   const eligibleWhere = and(
     codeWhere,
     inArray(redeemCode.status, eligibleStatuses)
@@ -498,6 +498,10 @@ async function getBatchTextActionCounts(
     .where(eligibleWhere);
 
   return { matchedCount, affectedCount };
+}
+
+function normalizedRedeemCodeWhere(codes: string[]) {
+  return sql`upper(${redeemCode.code}) IN ${codes}`;
 }
 
 function buildBatchTextActionResult(args: {
@@ -536,7 +540,7 @@ export async function batchDisableCodesByText(
       })
       .where(
         and(
-          inArray(redeemCode.code, uniqueCodes),
+          normalizedRedeemCodeWhere(uniqueCodes),
           eq(redeemCode.status, RedeemCodeStatus.AVAILABLE)
         )
       );
@@ -569,7 +573,7 @@ export async function batchDeleteCodesByText(
       .delete(redeemCode)
       .where(
         and(
-          inArray(redeemCode.code, uniqueCodes),
+          normalizedRedeemCodeWhere(uniqueCodes),
           inArray(redeemCode.status, deletableStatuses)
         )
       );

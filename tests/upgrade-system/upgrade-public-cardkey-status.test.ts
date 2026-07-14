@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
 import { eq, inArray, like } from 'drizzle-orm';
+
+import { databaseTest } from '../helpers/database-test';
 
 import { POST as verifyCodePost } from '../../src/app/api/upgrade/verify-code/route';
 import {
@@ -131,7 +132,7 @@ async function seedConsumedTask(args: {
   return { taskId, taskNo, code };
 }
 
-test('verifyRedeemCode 对已成功使用的本站卡密返回公开任务摘要', async () => {
+databaseTest('verifyRedeemCode 对已成功使用的本站卡密返回公开任务摘要', async () => {
   const prefix = `pubsuccess${Date.now()}`;
   await cleanupByPrefix(prefix);
   const seeded = await seedConsumedTask({
@@ -158,7 +159,7 @@ test('verifyRedeemCode 对已成功使用的本站卡密返回公开任务摘要
   }
 });
 
-test('verifyRedeemCode 对人工处理失败的占用卡密不返回已使用语义', async () => {
+databaseTest('verifyRedeemCode 对人工处理失败的占用卡密不返回已使用语义', async () => {
   const prefix = `pubmanual${Date.now()}`;
   await cleanupByPrefix(prefix);
   const seeded = await seedConsumedTask({
@@ -186,7 +187,7 @@ test('verifyRedeemCode 对人工处理失败的占用卡密不返回已使用语
   }
 });
 
-test('queryTaskStatus 返回成功任务的邮箱和会员摘要', async () => {
+databaseTest('queryTaskStatus 返回成功任务的邮箱和会员摘要', async () => {
   const prefix = `pubstatus${Date.now()}`;
   await cleanupByPrefix(prefix);
   const seeded = await seedConsumedTask({
@@ -210,7 +211,7 @@ test('queryTaskStatus 返回成功任务的邮箱和会员摘要', async () => {
   }
 });
 
-test('verify-code API 对已成功卡密返回详情而不是错误', async () => {
+databaseTest('verify-code API 对已成功卡密返回详情而不是错误', async () => {
   const prefix = `pubapi${Date.now()}`;
   await cleanupByPrefix(prefix);
   const seeded = await seedConsumedTask({
