@@ -68,3 +68,12 @@ seo/
 # 部署敏感文件和产物
 deploy/.env
 deploy/backups/
+
+# 本地 Agent / Codex 配置与项目级 Skills
+/.agents/
+/.codex/
+/.claude/skills
+
+# 本地 Git worktree
+/.worktree/
+/.worktrees/
