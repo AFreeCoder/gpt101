@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
 import { Header } from '@/shared/blocks/dashboard';
@@ -93,7 +94,13 @@ export default function ChannelCardkeysPage() {
   }, [channelId, filterProduct, filterMember, filterStatus, page]);
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void fetchData();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [fetchData]);
 
   // 切换筛选时重置页码
@@ -222,12 +229,12 @@ export default function ChannelCardkeysPage() {
       <Header />
       <div className="p-6">
       <div className="mb-2">
-        <a
+        <Link
           href="/admin/upgrade-channels"
           className="text-sm text-blue-600 hover:underline"
         >
           &larr; 返回渠道列表
-        </a>
+        </Link>
       </div>
 
       <div className="mb-4 flex items-center justify-between">

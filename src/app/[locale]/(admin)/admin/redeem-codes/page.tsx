@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ListPagination } from '@/shared/blocks/admin/list-pagination';
@@ -186,12 +187,12 @@ export default function RedeemCodesPage() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">卡密列表</h2>
           <div className="flex gap-2">
-            <a
+            <Link
               href="/admin/redeem-codes/batch-query"
               className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
             >
               批量查询
-            </a>
+            </Link>
             <button
               onClick={handleExport}
               className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
@@ -209,13 +210,13 @@ export default function RedeemCodesPage() {
             { key: 'consumed', label: '已使用' },
             { key: 'disabled', label: '已禁用' },
           ].map((tab) => (
-            <a
+            <Link
               key={tab.key}
               href={buildUrl({ status: tab.key, page: '' })}
               className={`px-4 py-2 text-sm ${status === tab.key ? 'border-b-2 border-blue-600 font-medium text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
             >
               {tab.label}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -223,7 +224,7 @@ export default function RedeemCodesPage() {
         <div className="mb-4 flex flex-wrap gap-2">
           {/* 产品筛选 */}
           {PRODUCT_TYPES.map((p) => (
-            <a
+            <Link
               key={p.code}
               href={buildUrl({
                 productCode: productCode === p.code ? '' : p.code,
@@ -233,7 +234,7 @@ export default function RedeemCodesPage() {
               className={`rounded-full px-3 py-1 text-xs ${productCode === p.code ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
             >
               {p.label}
-            </a>
+            </Link>
           ))}
 
           {/* 会员类型筛选（选了产品后显示） */}
@@ -241,7 +242,7 @@ export default function RedeemCodesPage() {
             <>
               <span className="text-xs leading-6 text-gray-400">|</span>
               {memberTypes.map((m) => (
-                <a
+                <Link
                   key={m.code}
                   href={buildUrl({
                     memberType: memberType === m.code ? '' : m.code,
@@ -250,18 +251,18 @@ export default function RedeemCodesPage() {
                   className={`rounded-full px-3 py-1 text-xs ${memberType === m.code ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 >
                   {m.label}
-                </a>
+                </Link>
               ))}
             </>
           )}
 
           {(productCode || memberType) && (
-            <a
+            <Link
               href="/admin/redeem-codes"
               className="rounded-full bg-red-100 px-3 py-1 text-xs text-red-600 hover:bg-red-200"
             >
               清除筛选
-            </a>
+            </Link>
           )}
         </div>
 

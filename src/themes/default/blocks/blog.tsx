@@ -3,6 +3,7 @@ import { Calendar } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Link } from '@/core/i18n/navigation';
+import { LazyImage } from '@/shared/blocks/common/lazy-image';
 import { Tabs } from '@/shared/blocks/common/tabs';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -75,9 +76,11 @@ export function Blog({
                 <div className="border-border flex flex-col overflow-clip rounded-xl border">
                   {item.image && (
                     <div>
-                      <img
+                      <LazyImage
                         src={item.image}
                         alt={item.title || ''}
+                        width={1200}
+                        height={675}
                         className="aspect-16/9 h-full w-full object-cover object-center"
                       />
                     </div>

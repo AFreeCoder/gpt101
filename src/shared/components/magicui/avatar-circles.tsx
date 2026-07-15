@@ -1,5 +1,6 @@
 "use client";
 
+import { LazyImage } from "@/shared/blocks/common/lazy-image";
 import { cn } from "@/shared/lib/utils";
 
 interface Avatar {
@@ -26,7 +27,7 @@ export const AvatarCircles = ({
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img
+          <LazyImage
             key={index}
             className="h-10 w-10 rounded-full border-2 border-white dark:border-gray-800"
             src={url.imageUrl}

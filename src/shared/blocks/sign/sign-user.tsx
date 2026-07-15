@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 import { Coins, LayoutDashboard, Loader2, LogOut, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 import { useAppContext } from '@/shared/contexts/app';
+import { useHydrated } from '@/shared/hooks/use-hydrated';
 import { cn } from '@/shared/lib/utils';
 import { User as UserType } from '@/shared/models/user';
 import { NavItem, UserNav } from '@/shared/types/blocks/common';
@@ -47,10 +48,7 @@ export function SignUser({
   const t = useTranslations('common.sign');
   const router = useRouter();
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   // get app context values
   const {
@@ -77,13 +75,13 @@ export function SignUser({
   const oneTapInitialized = useRef(false);
 
   useEffect(() => {
-    fetchConfigs();
-  }, []);
+    void fetchConfigs();
+  }, [fetchConfigs]);
 
   // set is check sign
   useEffect(() => {
     setIsCheckSign(isPending);
-  }, [isPending]);
+  }, [isPending, setIsCheckSign]);
 
   // show one tap if not initialized
   useEffect(() => {
@@ -98,7 +96,7 @@ export function SignUser({
       oneTapInitialized.current = true;
       showOneTap(configs);
     }
-  }, [configs, session, isPending]);
+  }, [configs, isPending, session, showOneTap]);
 
   // set user
   useEffect(() => {

@@ -110,7 +110,13 @@ export default function ChannelCardkeysPage() {
   }, [channelId, productCode, memberType, statusFilter, page, pageSize]);
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void fetchData();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [fetchData]);
 
   // 全选

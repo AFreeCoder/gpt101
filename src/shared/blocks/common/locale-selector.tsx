@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Check, Globe, Languages } from 'lucide-react';
 import { useLocale } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
 
 import { usePathname, useRouter } from '@/core/i18n/navigation';
 import { localeNames } from '@/config/locale';
@@ -14,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
+import { useHydrated } from '@/shared/hooks/use-hydrated';
 import { cacheSet } from '@/shared/lib/cache';
 
 export function LocaleSelector({
@@ -25,11 +25,7 @@ export function LocaleSelector({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   const handleSwitchLanguage = (value: string) => {
     if (value !== currentLocale) {

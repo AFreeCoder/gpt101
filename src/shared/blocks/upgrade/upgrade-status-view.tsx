@@ -70,9 +70,11 @@ export function UpgradeStatusView({
   }, [taskNo]);
 
   useEffect(() => {
-    fetchStatus();
+    const initialTimer = window.setTimeout(() => void fetchStatus(), 0);
 
-    if (!polling) return;
+    if (!polling) {
+      return () => window.clearTimeout(initialTimer);
+    }
 
     const timer = setInterval(fetchStatus, 2000);
     // 最长轮询 2 分钟
@@ -84,6 +86,7 @@ export function UpgradeStatusView({
     return () => {
       clearInterval(timer);
       clearTimeout(timeout);
+      clearTimeout(initialTimer);
     };
   }, [fetchStatus, polling]);
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { Ban, RotateCcw, Search, Trash2 } from 'lucide-react';
 
 import { Header } from '@/shared/blocks/dashboard';
@@ -238,12 +239,12 @@ export default function RedeemCodeBatchQueryPage() {
               每行一个卡密，最多 100 个。
             </p>
           </div>
-          <a
+          <Link
             href="/admin/redeem-codes"
             className="rounded-lg border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
           >
             返回卡密列表
-          </a>
+          </Link>
         </div>
 
         <form onSubmit={handleSubmit} className="mb-6">

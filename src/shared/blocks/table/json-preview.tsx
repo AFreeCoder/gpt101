@@ -1,3 +1,11 @@
+function formatJson(value: string) {
+  try {
+    return JSON.stringify(JSON.parse(value), null, 2);
+  } catch {
+    return null;
+  }
+}
+
 export function JsonPreview({
   value,
   placeholder,
@@ -21,10 +29,11 @@ export function JsonPreview({
     return <div className={className}>{value}</div>;
   }
 
-  try {
-    const json = JSON.parse(value);
-    return <pre className={className}>{JSON.stringify(json, null, 2)}</pre>;
-  } catch (error) {
-    return <div className={className}>{value}</div>;
+  const formattedJson = formatJson(value);
+
+  if (formattedJson !== null) {
+    return <pre className={className}>{formattedJson}</pre>;
   }
+
+  return <div className={className}>{value}</div>;
 }

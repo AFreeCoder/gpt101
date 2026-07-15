@@ -18,7 +18,6 @@ type MinIntervalOptions = {
 type Store = Map<string, number>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __minIntervalRateLimitStore: Store | undefined;
 }
 

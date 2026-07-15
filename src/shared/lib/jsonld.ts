@@ -4,7 +4,7 @@
  */
 
 /** 生成 FAQPage JSON-LD */
-export function buildFaqJsonLd(items: Array<Record<string, any>>) { // eslint-disable-line @typescript-eslint/no-explicit-any
+export function buildFaqJsonLd(items: Array<Record<string, any>>) {
   const validItems = items.filter((item) => item.question && item.answer);
   if (!validItems.length) return null;
 
@@ -23,7 +23,11 @@ export function buildFaqJsonLd(items: Array<Record<string, any>>) { // eslint-di
 }
 
 /** 生成 WebSite JSON-LD */
-export function buildWebsiteJsonLd(name: string, url: string, description: string) {
+export function buildWebsiteJsonLd(
+  name: string,
+  url: string,
+  description: string
+) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',

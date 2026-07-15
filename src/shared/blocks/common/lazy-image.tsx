@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 import 'react-lazy-load-image-component/src/effects/blur.css';
@@ -15,6 +16,7 @@ export function LazyImage({
   fill,
   priority,
   sizes,
+  style,
 }: {
   src: string;
   alt: string;
@@ -26,6 +28,7 @@ export function LazyImage({
   fill?: boolean;
   priority?: boolean;
   sizes?: string;
+  style?: CSSProperties;
 }) {
   return (
     <LazyLoadImage
@@ -36,6 +39,7 @@ export function LazyImage({
       effect="blur" // 支持 blur、opacity 等
       placeholderSrc={placeholderSrc} // 可选
       className={className}
+      style={style}
     />
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import NextImage from 'next/image';
 import { IconRefresh, IconUpload, IconX } from '@tabler/icons-react';
 import { ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -105,42 +106,38 @@ export function ImageUploader({
 
   // 同步 defaultPreviews 的变化（只在外部变化时同步，避免循环）
   useEffect(() => {
-    // 跳过初始化
-    if (!isInitializedRef.current) {
-      return;
-    }
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled || !isInitializedRef.current) return;
 
-    // 如果是内部变化触发的，跳过
-    if (isInternalChangeRef.current) {
-      isInternalChangeRef.current = false;
-      return;
-    }
-
-    const defaultUrls = defaultPreviews || [];
-
-    // 使用函数式更新来访问最新的 items
-    setItems((currentItems) => {
-      const currentUrls = currentItems
-        .filter((item) => item.status === 'uploaded' && item.url)
-        .map((item) => item.url as string);
-
-      // 比较当前 items 和 defaultPreviews 是否一致
-      const isSame =
-        defaultUrls.length === currentUrls.length &&
-        defaultUrls.every((url, index) => url === currentUrls[index]);
-
-      // 只有当不一致时才返回新的 items
-      if (!isSame) {
-        return defaultUrls.map((url, index) => ({
-          id: `preset-${url}-${index}`,
-          preview: url,
-          url,
-          status: 'uploaded' as UploadStatus,
-        }));
+      if (isInternalChangeRef.current) {
+        isInternalChangeRef.current = false;
+        return;
       }
 
-      return currentItems;
+      const defaultUrls = defaultPreviews || [];
+      setItems((currentItems) => {
+        const currentUrls = currentItems
+          .filter((item) => item.status === 'uploaded' && item.url)
+          .map((item) => item.url as string);
+        const isSame =
+          defaultUrls.length === currentUrls.length &&
+          defaultUrls.every((url, index) => url === currentUrls[index]);
+
+        return isSame
+          ? currentItems
+          : defaultUrls.map((url, index) => ({
+              id: `preset-${url}-${index}`,
+              preview: url,
+              url,
+              status: 'uploaded' as UploadStatus,
+            }));
+      });
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [defaultPreviews]);
 
   // 清理 blob URLs
@@ -501,9 +498,12 @@ export function ImageUploader({
             className="group border-border bg-muted/50 hover:border-border hover:bg-muted relative overflow-hidden rounded-xl border p-1 shadow-sm transition"
           >
             <div className="relative overflow-hidden rounded-lg">
-              <img
+              <NextImage
                 src={item.preview}
                 alt="Reference"
+                width={128}
+                height={128}
+                unoptimized
                 className="h-32 w-32 rounded-lg object-cover"
               />
               {item.size && (

@@ -52,7 +52,15 @@ export default function UpgradeChannelsPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void fetchData();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchData]);
 
   const openCreate = () => {
     setEditingId(null);

@@ -60,7 +60,13 @@ export default function UpgradeTaskAttemptsPage() {
   }, [statusFilter, search, page, pageSize]);
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void fetchData();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [fetchData]);
 
   return (

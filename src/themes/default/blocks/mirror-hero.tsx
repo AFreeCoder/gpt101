@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Check, Info, ArrowRight } from 'lucide-react';
 
 import { Section } from '@/shared/types/blocks/landing';
@@ -9,7 +9,10 @@ export function MirrorHero({ section }: { section: Section }) {
   const [displayText, setDisplayText] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const texts: string[] = section.typewriter_texts || [];
+  const texts = useMemo<string[]>(
+    () => section.typewriter_texts || [],
+    [section.typewriter_texts]
+  );
 
   const cleanup = useCallback(() => {
     if (timerRef.current) {

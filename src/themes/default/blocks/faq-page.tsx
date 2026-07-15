@@ -54,7 +54,7 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
   const copy = getCopy(locale);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(copy.all);
-  const items = faq.items || [];
+  const items = useMemo(() => faq.items || [], [faq.items]);
 
   const categories = useMemo(() => {
     const ordered = [

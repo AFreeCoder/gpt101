@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -94,7 +94,7 @@ export function VerifyEmailPage({
     // Back to sign-in should allow users to sign in with a different account.
     // Do not include email/verify flags that would show "verification sent" hints.
     return `/sign-in?${query.toString()}`;
-  }, [email, nextUrl]);
+  }, [nextUrl]);
 
   const hardNavigateToSignIn = (prefillEmail?: string) => {
     if (typeof window === 'undefined') return;
@@ -115,13 +115,13 @@ export function VerifyEmailPage({
     return () => window.clearInterval(timer);
   }, [email]);
 
-  const hardNavigateToNextUrl = () => {
+  const hardNavigateToNextUrl = useCallback(() => {
     if (typeof window === 'undefined') return;
     // Force a full navigation so server components read the latest cookies/session.
     window.location.assign(`${base}${nextUrl}`);
-  };
+  }, [base, nextUrl]);
 
-  const checkSessionAndRedirect = async () => {
+  const checkSessionAndRedirect = useCallback(async () => {
     // Avoid spamming get-session (especially since we also poll cooldown timer).
     const now = Date.now();
     if (now - lastSessionCheckAtRef.current < 800) return;
@@ -135,7 +135,7 @@ export function VerifyEmailPage({
     } catch {
       // ignore
     }
-  };
+  }, [hardNavigateToNextUrl]);
 
   // If verification email link signs the user in successfully, session will exist.
   useEffect(() => {
@@ -144,7 +144,7 @@ export function VerifyEmailPage({
     if (!isPending && session?.user) {
       hardNavigateToNextUrl();
     }
-  }, [isPending, session?.user, nextUrl, router]);
+  }, [hardNavigateToNextUrl, isPending, session?.user]);
 
   // On initial mount, actively fetch session once (and briefly poll) to catch
   // the common flow: user clicks verification link -> cookie gets set -> redirected here.
@@ -172,7 +172,7 @@ export function VerifyEmailPage({
     return () => {
       cancelled = true;
     };
-  }, [nextUrl]);
+  }, [checkSessionAndRedirect]);
 
   // Cross-tab session sync: when user verifies/logs in in another tab,
   // this tab should detect the new session without a full refresh.
@@ -196,7 +196,7 @@ export function VerifyEmailPage({
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [nextUrl]);
+  }, [checkSessionAndRedirect]);
 
   useEffect(() => {
     if (sent === '1') {

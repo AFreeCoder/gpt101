@@ -1,5 +1,7 @@
 "use client";
 
+import NextImage from "next/image";
+
 import { Button } from "@/shared/components/ui/button";
 import {
   ButtonGroup,
@@ -20,7 +22,14 @@ import {
   XIcon,
 } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
-import { createContext, memo, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Streamdown } from "streamdown";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
@@ -188,7 +197,10 @@ export const MessageBranchContent = ({
   ...props
 }: MessageBranchContentProps) => {
   const { currentBranch, setBranches, branches } = useMessageBranch();
-  const childrenArray = Array.isArray(children) ? children : [children];
+  const childrenArray = useMemo(
+    () => (Array.isArray(children) ? children : [children]),
+    [children]
+  );
 
   // Use useEffect to update branches when they change
   useEffect(() => {
@@ -337,6 +349,7 @@ export function MessageAttachment({
   const mediaType =
     data.mediaType?.startsWith("image/") && data.url ? "image" : "file";
   const isImage = mediaType === "image";
+  const imageUrl = data.url || "";
   const attachmentLabel = filename || (isImage ? "Image" : "Attachment");
 
   return (
@@ -349,11 +362,12 @@ export function MessageAttachment({
     >
       {isImage ? (
         <>
-          <img
+          <NextImage
             alt={filename || "attachment"}
             className="size-full object-cover"
             height={100}
-            src={data.url}
+            src={imageUrl}
+            unoptimized
             width={100}
           />
           {onRemove && (

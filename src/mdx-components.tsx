@@ -2,6 +2,7 @@ import React from 'react';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
 
+import { LazyImage } from '@/shared/blocks/common/lazy-image';
 import {
   Accordion,
   AccordionContent,
@@ -9,6 +10,43 @@ import {
   AccordionTrigger,
 } from '@/shared/components/ui/accordion';
 import { cn } from '@/shared/lib/utils';
+
+type ImportedImage = {
+  src: string;
+  width?: number;
+  height?: number;
+};
+
+function getImageDimension(
+  value: string | number | undefined,
+  fallback: number
+) {
+  const dimension = Number(value);
+  return Number.isFinite(dimension) && dimension > 0 ? dimension : fallback;
+}
+
+function CustomImage(props: React.ComponentProps<'img'>) {
+  const source = props.src as string | ImportedImage | undefined;
+  const importedImage =
+    typeof source === 'object' && source !== null ? source : undefined;
+  const imageSrc = importedImage?.src || source;
+
+  if (typeof imageSrc !== 'string' || !imageSrc) {
+    return null;
+  }
+
+  return (
+    <LazyImage
+      src={imageSrc}
+      alt={props.alt || ''}
+      width={getImageDimension(props.width, importedImage?.width || 1200)}
+      height={getImageDimension(props.height, importedImage?.height || 675)}
+      title={props.title}
+      className={cn('h-auto max-w-full rounded-lg border', props.className)}
+      style={props.style}
+    />
+  );
+}
 
 // Custom link component with nofollow for external links
 const CustomLink = ({
@@ -85,23 +123,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
   const mergedComponents = {
     ...defaultMdxComponents,
     a: CustomLink,
-    img: (props: React.ComponentProps<'img'>) => {
-      const { src } = props;
-      // If src is an object (imported image), use its src property
-      const imageSrc =
-        typeof src === 'object' && src !== null && 'src' in src
-          ? (src as any).src
-          : src;
-
-      return (
-        <img
-          {...props}
-          src={imageSrc}
-          className={cn('rounded-lg border', props.className)}
-          style={{ maxWidth: '100%', height: 'auto' }}
-        />
-      );
-    },
+    img: CustomImage,
     Video: ({ className, ...props }: React.ComponentProps<'video'>) => (
       <video
         className={cn('rounded-md border', className)}

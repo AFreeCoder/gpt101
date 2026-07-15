@@ -1,9 +1,10 @@
 "use client";
 
 import { Moon, SunDim } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { flushSync } from "react-dom";
 import { cn } from "@/shared/lib/utils";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 import { useTheme } from "next-themes";
 
 type props = {
@@ -12,14 +13,8 @@ type props = {
 
 export const AnimatedThemeToggler = ({ className }: props) => {
   const { theme, setTheme } = useTheme();
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-
-    setIsDarkMode(theme === "dark");
-  }, [theme]);
+  const mounted = useHydrated();
+  const isDarkMode = theme === "dark";
 
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const changeTheme = async () => {
@@ -29,7 +24,6 @@ export const AnimatedThemeToggler = ({ className }: props) => {
       flushSync(() => {
         const dark = document.documentElement.classList.toggle("dark");
         setTheme(dark ? "dark" : "light");
-        setIsDarkMode(dark);
       });
     }).ready;
 

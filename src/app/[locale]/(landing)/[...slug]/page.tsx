@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
 import { getLocalPage } from '@/shared/models/post';
+import type { DynamicPage as DynamicPageType } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
 
@@ -134,17 +135,23 @@ export default async function DynamicPage({
 
   const messageKey = `pages.${dynamicPageSlug}`;
 
+  let dynamicPage: DynamicPageType | undefined;
+
   try {
     const t = await getTranslations({ locale, namespace: messageKey });
 
-    // return dynamic page
     if (t.has('page')) {
-      const Page = await getThemePage('dynamic-page');
-      return <Page locale={locale} page={t.raw('page')} />;
+      dynamicPage = t.raw('page') as DynamicPageType;
     }
-  } catch (error) {
+  } catch {
     // ignore error if translation not found
     return notFound();
+  }
+
+  // Render outside the try/catch so React errors can propagate to the boundary.
+  if (dynamicPage) {
+    const Page = await getThemePage('dynamic-page');
+    return <Page locale={locale} page={dynamicPage} />;
   }
 
   // 3. page not found

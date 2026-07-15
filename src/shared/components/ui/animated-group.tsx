@@ -1,7 +1,20 @@
 "use client";
-import { ReactNode } from "react";
-import { motion, Variants } from "motion/react";
-import React from "react";
+
+import { motion, type Variants } from "motion/react";
+import React, { type ReactNode } from "react";
+
+const animatedElements = {
+  article: motion.article,
+  div: motion.div,
+  li: motion.li,
+  ol: motion.ol,
+  p: motion.p,
+  section: motion.section,
+  span: motion.span,
+  ul: motion.ul,
+};
+
+type AnimatedElement = keyof typeof animatedElements;
 
 export type PresetType =
   | "fade"
@@ -23,8 +36,8 @@ export type AnimatedGroupProps = {
     item?: Variants;
   };
   preset?: PresetType;
-  as?: React.ElementType;
-  asChild?: React.ElementType;
+  as?: AnimatedElement;
+  asChild?: AnimatedElement;
 };
 
 const defaultContainerVariants: Variants = {
@@ -115,8 +128,8 @@ function AnimatedGroup({
   const containerVariants = variants?.container || selectedVariants.container;
   const itemVariants = variants?.item || selectedVariants.item;
 
-  const MotionComponent = React.useMemo(() => motion(as), [as]);
-  const MotionChild = React.useMemo(() => motion(asChild), [asChild]);
+  const MotionComponent = animatedElements[as];
+  const MotionChild = animatedElements[asChild];
 
   return (
     <MotionComponent

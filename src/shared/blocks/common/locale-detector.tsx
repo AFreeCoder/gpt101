@@ -66,44 +66,40 @@ export function LocaleDetector() {
   );
 
   useEffect(() => {
-    // Only run initial check once to avoid interference with manual locale switches
-    if (!enabled || hasCheckedRef.current) {
-      return;
-    }
+    if (!enabled || hasCheckedRef.current) return;
 
-    hasCheckedRef.current = true;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled || hasCheckedRef.current) return;
+      hasCheckedRef.current = true;
 
-    // Get browser locale
-    const detectedLocale = detectBrowserLocale();
-    setBrowserLocale(detectedLocale);
+      const detectedLocale = detectBrowserLocale();
+      setBrowserLocale(detectedLocale);
 
-    // Check if user has dismissed the banner or already set a preference
-    const dismissed = isDismissed();
-    const preferredLocale = cacheGet(PREFERRED_LOCALE_KEY);
+      const dismissed = isDismissed();
+      const preferredLocale = cacheGet(PREFERRED_LOCALE_KEY);
+      if (
+        preferredLocale &&
+        preferredLocale !== currentLocale &&
+        locales.includes(preferredLocale)
+      ) {
+        switchToLocale(preferredLocale);
+        return;
+      }
 
-    // If user has previously clicked to switch locale, auto-switch to that preference
-    if (
-      preferredLocale &&
-      preferredLocale !== currentLocale &&
-      locales.includes(preferredLocale)
-    ) {
-      switchToLocale(preferredLocale);
-      return;
-    }
+      if (
+        detectedLocale &&
+        detectedLocale !== currentLocale &&
+        !dismissed &&
+        !preferredLocale
+      ) {
+        setShowBanner(true);
+      }
+    });
 
-    // Show banner if:
-    // 1. Browser locale is different from current locale
-    // 2. User hasn't dismissed the banner (or dismissal has expired)
-    // 3. Browser locale is supported
-    // 4. User hasn't set a preference yet (no auto-switch, only show banner)
-    if (
-      detectedLocale &&
-      detectedLocale !== currentLocale &&
-      !dismissed &&
-      !preferredLocale
-    ) {
-      setShowBanner(true);
-    }
+    return () => {
+      cancelled = true;
+    };
   }, [currentLocale, enabled, switchToLocale]);
 
   // Adjust header and layout spacing when banner visibility changes

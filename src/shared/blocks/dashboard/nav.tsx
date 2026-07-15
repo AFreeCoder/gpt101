@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 
 import { Link, usePathname, useRouter } from '@/core/i18n/navigation';
@@ -21,16 +20,13 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/shared/components/ui/sidebar';
+import { useHydrated } from '@/shared/hooks/use-hydrated';
 import { NavItem, type Nav as NavType } from '@/shared/types/blocks/common';
 
 export function Nav({ nav, className }: { nav: NavType; className?: string }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   return (
     <SidebarGroup className={className}>

@@ -1,5 +1,7 @@
 "use client";
 
+import NextImage from "next/image";
+
 import { Button } from "@/shared/components/ui/button";
 import {
   Command,
@@ -35,6 +37,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 import type { ChatStatus, FileUIPart } from "ai";
 import {
   CornerDownLeftIcon,
@@ -277,6 +280,7 @@ export function PromptInputAttachment({
   const mediaType =
     data.mediaType?.startsWith("image/") && data.url ? "image" : "file";
   const isImage = mediaType === "image";
+  const imageUrl = data.url || "";
 
   const attachmentLabel = filename || (isImage ? "Image" : "Attachment");
 
@@ -294,11 +298,12 @@ export function PromptInputAttachment({
           <div className="relative size-5 shrink-0">
             <div className="absolute inset-0 flex size-5 items-center justify-center overflow-hidden rounded bg-background transition-opacity group-hover:opacity-0">
               {isImage ? (
-                <img
+                <NextImage
                   alt={filename || "attachment"}
                   className="size-5 object-cover"
                   height={20}
-                  src={data.url}
+                  src={imageUrl}
+                  unoptimized
                   width={20}
                 />
               ) : (
@@ -329,11 +334,12 @@ export function PromptInputAttachment({
         <div className="w-auto space-y-3">
           {isImage && (
             <div className="flex max-h-96 w-96 items-center justify-center overflow-hidden rounded-md border">
-              <img
+              <NextImage
                 alt={filename || "attachment preview"}
                 className="max-h-full max-w-full object-contain"
                 height={384}
-                src={data.url}
+                src={imageUrl}
+                unoptimized
                 width={448}
               />
             </div>
@@ -542,36 +548,58 @@ export const PromptInput = ({
     [matchesAccept, maxFiles, maxFileSize, onError]
   );
 
-  const add = usingProvider
-    ? (files: File[] | FileList) => controller.attachments.add(files)
-    : addLocal;
+  const add = useCallback(
+    (files: File[] | FileList) => {
+      if (controller) {
+        controller.attachments.add(files);
+      } else {
+        addLocal(files);
+      }
+    },
+    [addLocal, controller]
+  );
 
-  const remove = usingProvider
-    ? (id: string) => controller.attachments.remove(id)
-    : (id: string) =>
-        setItems((prev) => {
-          const found = prev.find((file) => file.id === id);
-          if (found?.url) {
-            URL.revokeObjectURL(found.url);
-          }
-          return prev.filter((file) => file.id !== id);
-        });
+  const remove = useCallback(
+    (id: string) => {
+      if (controller) {
+        controller.attachments.remove(id);
+        return;
+      }
 
-  const clear = usingProvider
-    ? () => controller.attachments.clear()
-    : () =>
-        setItems((prev) => {
-          for (const file of prev) {
-            if (file.url) {
-              URL.revokeObjectURL(file.url);
-            }
-          }
-          return [];
-        });
+      setItems((prev) => {
+        const found = prev.find((file) => file.id === id);
+        if (found?.url) {
+          URL.revokeObjectURL(found.url);
+        }
+        return prev.filter((file) => file.id !== id);
+      });
+    },
+    [controller]
+  );
 
-  const openFileDialog = usingProvider
-    ? () => controller.attachments.openFileDialog()
-    : openFileDialogLocal;
+  const clear = useCallback(() => {
+    if (controller) {
+      controller.attachments.clear();
+      return;
+    }
+
+    setItems((prev) => {
+      for (const file of prev) {
+        if (file.url) {
+          URL.revokeObjectURL(file.url);
+        }
+      }
+      return [];
+    });
+  }, [controller]);
+
+  const openFileDialog = useCallback(() => {
+    if (controller) {
+      controller.attachments.openFileDialog();
+    } else {
+      openFileDialogLocal();
+    }
+  }, [controller, openFileDialogLocal]);
 
   // Let provider know about our hidden file input so external menus can call openFileDialog()
   useEffect(() => {
@@ -1085,16 +1113,15 @@ export const PromptInputSpeechButton = ({
   ...props
 }: PromptInputSpeechButtonProps) => {
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(
-    null
-  );
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const hydrated = useHydrated();
+  const recognitionSupported =
+    hydrated &&
+    typeof window !== "undefined" &&
+    ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
-    ) {
+    if (recognitionSupported) {
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       const speechRecognition = new SpeechRecognition();
@@ -1140,17 +1167,18 @@ export const PromptInputSpeechButton = ({
       };
 
       recognitionRef.current = speechRecognition;
-      setRecognition(speechRecognition);
     }
 
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
+        recognitionRef.current = null;
       }
     };
-  }, [textareaRef, onTranscriptionChange]);
+  }, [onTranscriptionChange, recognitionSupported, textareaRef]);
 
   const toggleListening = useCallback(() => {
+    const recognition = recognitionRef.current;
     if (!recognition) {
       return;
     }
@@ -1160,7 +1188,7 @@ export const PromptInputSpeechButton = ({
     } else {
       recognition.start();
     }
-  }, [recognition, isListening]);
+  }, [isListening]);
 
   return (
     <PromptInputButton
@@ -1169,7 +1197,7 @@ export const PromptInputSpeechButton = ({
         isListening && "animate-pulse bg-accent text-accent-foreground",
         className
       )}
-      disabled={!recognition}
+      disabled={!recognitionSupported}
       onClick={toggleListening}
       {...props}
     >
@@ -1181,11 +1209,7 @@ export const PromptInputSpeechButton = ({
 export type PromptInputSelectProps = ComponentProps<typeof Select>;
 
 export const PromptInputSelect = (props: PromptInputSelectProps) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   if (!mounted) {
     return null;

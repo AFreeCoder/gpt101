@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Monitor, Moon, SunDim } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
@@ -10,6 +9,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@/shared/components/ui/toggle-group';
+import { useHydrated } from '@/shared/hooks/use-hydrated';
 
 export function ThemeToggler({
   type = 'icon',
@@ -19,11 +19,7 @@ export function ThemeToggler({
   className?: string;
 }) {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
   const handleThemeChange = (value: string) => {
     setTheme(value);
   };

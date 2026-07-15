@@ -17,6 +17,11 @@ export default defineConfig([
   },
   globalIgnores([
     '.next/**',
+    '.worktree/**',
+    '.worktrees/**',
+    '.agents/**',
+    '.codex/**',
+    '.claude/**',
     '.source/**',
     'build/**',
     'coverage/**',
