@@ -75,13 +75,14 @@ export function Blog({
               >
                 <div className="border-border flex flex-col overflow-clip rounded-xl border">
                   {item.image && (
-                    <div>
+                    <div className="aspect-video w-full overflow-hidden">
                       <LazyImage
                         src={item.image}
                         alt={item.title || ''}
                         width={1200}
                         height={675}
-                        className="aspect-16/9 h-full w-full object-cover object-center"
+                        wrapperClassName="!block !h-full !w-full"
+                        className="h-full w-full object-cover object-center"
                       />
                     </div>
                   )}
