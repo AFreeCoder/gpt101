@@ -32,6 +32,22 @@ test('deploy workflow 只拉取镜像并启动，不再在服务器本地 build'
   assert.match(workflow, /port:\s*22222/);
 });
 
+test('deploy workflow 仅在全部健康检查通过后清理历史镜像', () => {
+  const workflow = readText('.github', 'workflows', 'deploy.yml');
+  const workerHealthyIndex = workflow.indexOf(
+    'echo "gpt101-worker 状态正常: running"'
+  );
+  const retentionIndex = workflow.indexOf(
+    'bash "$DEPLOY_DIR/image-retention.sh"'
+  );
+
+  assert.notEqual(workerHealthyIndex, -1);
+  assert.notEqual(retentionIndex, -1);
+  assert.ok(retentionIndex > workerHealthyIndex);
+  assert.match(workflow, /--repository "\$IMAGE_REPOSITORY" --keep 3/);
+  assert.doesNotMatch(workflow, /docker image prune -a/);
+});
+
 test('生产 compose 通过 APP_IMAGE 引用镜像，不再声明 build', () => {
   const compose = readText('deploy', 'docker-compose.yml');
 
@@ -61,6 +77,20 @@ test('rollback 脚本不再触发 docker compose build', () => {
   assert.match(
     script,
     /docker compose up -d --remove-orphans gpt101 gpt101-worker/
+  );
+});
+
+test('rollback 按提交号拉取构建流程发布的 sha 标签', () => {
+  const script = readText('deploy', 'rollback.sh');
+
+  assert.equal(
+    script.match(/image_tag="\$\(resolve_image_repository\):sha-\$commit"/g)
+      ?.length,
+    2
+  );
+  assert.doesNotMatch(
+    script,
+    /image_tag="\$\(resolve_image_repository\):\$commit"/
   );
 });
 

@@ -141,7 +141,8 @@ case "${1:-help}" in
     echo "=== 源码回滚: $commit ==="
     backup_db
     checkout_source_version "$commit"
-    image_tag="$(resolve_image_repository):$commit"
+    commit="$(cd "$APP_DIR" && git rev-parse HEAD)"
+    image_tag="$(resolve_image_repository):sha-$commit"
     deploy_with_image "$image_tag"
     echo "源码回滚完成: $commit ($image_tag)"
     ;;
@@ -170,7 +171,8 @@ case "${1:-help}" in
         commit="${2:?用法: rollback.sh db-restore <file> --with-source <commit>}"
         restore_db "$backup_file"
         checkout_source_version "$commit"
-        image_tag="$(resolve_image_repository):$commit"
+        commit="$(cd "$APP_DIR" && git rev-parse HEAD)"
+        image_tag="$(resolve_image_repository):sha-$commit"
         deploy_with_image "$image_tag"
         ;;
       *)

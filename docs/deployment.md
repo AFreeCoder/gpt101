@@ -68,6 +68,7 @@ pnpm build
 - `.github/workflows/docker-build.yaml`
 - `.github/workflows/deploy.yml`
 - `deploy/docker-compose.yml`
+- `deploy/image-retention.sh`
 - `deploy/rollback.sh`
 
 `docs/deploy-plan.md` 是历史方案说明，不是当前发布事实源；如果它与本文件或当前部署脚本冲突，以当前 workflow、compose、rollback 脚本和本文件为准。
@@ -85,9 +86,14 @@ pnpm build
   - 部署脚本要求备份文件非空，并执行 `gzip -t`
 - Retention:
   - 自动部署会删除 7 天以前的 `pre-deploy-*.sql.gz`
+  - 新版本通过 PostgreSQL、Web 和 Worker 全部检查后，自动执行 `deploy/image-retention.sh`
+  - 生产机本地按不同镜像 ID 只保留当前运行版本和最近两个成功生产版本
+  - 清理只移除 `gpt101:rollback-*` 和当前 GHCR 仓库的本地 `sha-*` 引用，不删除其他项目镜像
+  - GHCR 远端历史版本不受本地保留策略影响，继续作为更早版本的回滚来源
 - What failure means:
   - 部署前数据库备份创建或校验失败时，生产部署必须停止
   - 首次部署且没有 `gpt101-postgres` 容器时，部署脚本会跳过备份
+  - 镜像清理失败发生在新版本健康检查之后；线上版本继续运行，但 workflow 会失败并要求人工处理镜像占用
 
 ## Rollback and Recovery
 
@@ -98,7 +104,8 @@ pnpm build
 - Previous-version or artifact rollback path:
   - 部署脚本会在部署前把当前运行的 `gpt101` 容器镜像打为 `gpt101:rollback-YYYYMMDD_HHMMSS-<commit>` 和 `gpt101:rollback-latest`
   - 回滚元数据写入 `deploy/backups/last-rollback-image.txt`
-  - `./rollback.sh source <commit>` 只能在确认对应 GHCR 镜像 tag 可用后使用；常规快速恢复优先用 `./rollback.sh image`
+  - 本地只保留当前版本和最近两个成功生产版本；执行 `./rollback.sh list-images` 可查看本地回滚标签
+  - `./rollback.sh source <commit>` 会解析完整提交号并拉取 GHCR 的 `sha-<完整提交号>` 标签；常规快速恢复优先用 `./rollback.sh image`
 - Database restore path:
   - `./rollback.sh db-restore [backup-file] --with-image [tag]`
   - `./rollback.sh db-restore [backup-file] --with-source <commit>`
@@ -139,6 +146,8 @@ pnpm build
   - `ls -lh deploy/backups/pre-deploy-*.sql.gz | tail`
   - `gzip -t "$(ls -t deploy/backups/pre-deploy-*.sql.gz | head -1)"`
   - `cat deploy/backups/last-rollback-image.txt`
+  - `./deploy/rollback.sh list-images`
+  - `bash deploy/image-retention.sh --repository ghcr.io/afreecoder/gpt101 --keep 3 --dry-run`
 
 ## Success Criteria
 
@@ -151,6 +160,7 @@ pnpm build
 - `deploy/backups/last-rollback-image.txt` 存在并指向可用回滚镜像
 - `gpt101` 和 `gpt101-postgres` 健康检查通过
 - `gpt101-worker` 为 `running`
+- 镜像保留清理成功，或已明确识别仍引用旧镜像的容器并停止发布收尾
 - 外部访问 `https://gpt101.org/` 正常
 - 本次变更相关业务检查通过
 
@@ -162,6 +172,7 @@ pnpm build
 - Failure after live impact:
   - 优先使用 `deploy/rollback.sh image` 恢复到最近一次部署前镜像
   - 恢复后重新执行运行态、日志、外部访问和业务检查
+  - 如果仅镜像保留清理失败且新版本健康，不自动回滚；先用 `--dry-run` 定位仍引用旧镜像的容器，再人工处理
 - When to stop and ask:
   - 需要数据库恢复、环境重建、数据删除、凭据轮换或破坏性 schema 操作时
 - Evidence to collect:

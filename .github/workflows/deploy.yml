@@ -260,5 +260,5 @@ jobs:
 
             # --- 清理 ---
 
-            docker image prune -f
+            bash "$DEPLOY_DIR/image-retention.sh" --repository "$IMAGE_REPOSITORY" --keep 3
             echo "部署完成！提交: ${APP_COMMIT}，分支: ${DEPLOY_BRANCH}"
