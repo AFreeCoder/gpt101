@@ -10,6 +10,13 @@
     "author_name": "Author Name",
     "author_role": "Author Role",
     "author_image": "Author Image",
+    "image_url": {
+      "label": "Image URL",
+      "placeholder": "https://example.com/image.jpg",
+      "apply": "Use URL",
+      "hint": "Paste an http:// or https:// image URL and apply it. This does not require site image storage.",
+      "invalid": "Enter a valid http:// or https:// image URL"
+    },
     "status": "Status",
     "created_at": "Created At",
     "updated_at": "Updated At",

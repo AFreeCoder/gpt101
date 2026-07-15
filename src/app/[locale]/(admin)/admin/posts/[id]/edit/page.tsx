@@ -91,6 +91,13 @@ export default async function PostEditPage({
         title: t('fields.image'),
         metadata: {
           max: 1,
+          urlInput: {
+            label: t('fields.image_url.label'),
+            placeholder: t('fields.image_url.placeholder'),
+            applyLabel: t('fields.image_url.apply'),
+            hint: t('fields.image_url.hint'),
+            invalidMessage: t('fields.image_url.invalid'),
+          },
         },
       },
       {
@@ -102,6 +109,15 @@ export default async function PostEditPage({
         name: 'authorImage',
         type: 'upload_image',
         title: t('fields.author_image'),
+        metadata: {
+          urlInput: {
+            label: t('fields.image_url.label'),
+            placeholder: t('fields.image_url.placeholder'),
+            applyLabel: t('fields.image_url.apply'),
+            hint: t('fields.image_url.hint'),
+            invalidMessage: t('fields.image_url.invalid'),
+          },
+        },
       },
       {
         name: 'content',

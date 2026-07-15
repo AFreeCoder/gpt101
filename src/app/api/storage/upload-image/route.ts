@@ -2,6 +2,9 @@ import { md5 } from '@/shared/lib/hash';
 import { respData, respErr } from '@/shared/lib/resp';
 import { getStorageService } from '@/shared/services/storage';
 
+const STORAGE_NOT_CONFIGURED_MESSAGE =
+  'Image storage is not configured. Configure R2 or S3 in Admin Settings > Storage, or use an image URL.';
+
 const extFromMime = (mimeType: string) => {
   const map: Record<string, string> = {
     'image/jpeg': 'jpg',
@@ -36,6 +39,11 @@ export async function POST(req: Request) {
     }
 
     const storageService = await getStorageService();
+    if (storageService.getProviderNames().length === 0) {
+      console.warn('[API] Upload rejected: no storage provider configured');
+      return respErr(STORAGE_NOT_CONFIGURED_MESSAGE);
+    }
+
     const uploadResults = [];
 
     for (const file of files) {
@@ -102,6 +110,9 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     console.error('upload image failed:', e);
+    if (e instanceof Error && e.message === 'No storage provider configured') {
+      return respErr(STORAGE_NOT_CONFIGURED_MESSAGE);
+    }
     return respErr('upload image failed');
   }
 }
