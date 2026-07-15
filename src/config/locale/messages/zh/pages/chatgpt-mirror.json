@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "title": "GPT 镜像服务 - 国内网络可用",
+    "description": "GPT 镜像服务支持 GPT-5、GPTs 商店、DALL-E 3 画图等常见功能，天卡 5 元起，月卡 58 元。"
+  },
   "page": {
     "show_sections": [
       "hero",

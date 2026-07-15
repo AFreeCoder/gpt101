@@ -13,10 +13,15 @@ import {
   buildServiceJsonLd,
   buildWebsiteJsonLd,
 } from '@/shared/lib/jsonld';
+import { getMetadata } from '@/shared/lib/seo';
 import { getContentConfigValues } from '@/shared/models/content-config';
 import { DynamicPage, FAQ } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
+
+export const generateMetadata = getMetadata({
+  canonicalUrl: '/',
+});
 
 export default async function LandingPage({
   params,

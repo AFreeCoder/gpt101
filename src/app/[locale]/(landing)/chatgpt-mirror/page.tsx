@@ -15,9 +15,7 @@ import { DynamicPage, FAQ } from '@/shared/types/blocks/landing';
 export const revalidate = 3600;
 
 export const generateMetadata = getMetadata({
-  title: 'GPT 镜像服务 - 国内网络可用',
-  description:
-    'GPT 镜像服务 - 国内网络可用，支持GPT-5、GPTs商店、DALL-E 3画图等常见功能。天卡¥5起，月卡¥58。',
+  metadataKey: 'pages.chatgpt-mirror.metadata',
   canonicalUrl: '/chatgpt-mirror',
 });
 

@@ -4,6 +4,12 @@ import createIntlMiddleware from 'next-intl/middleware';
 
 import { routing } from '@/core/i18n/config';
 import {
+  getTutorialLocaleRedirectPath,
+  parseLocalizedPath,
+  shouldSuppressAlternateLinks,
+} from '@/shared/lib/seo-routing';
+import { getSeoSiteUrl } from '@/shared/lib/seo-site-url';
+import {
   getUpgradeSubdomainRedirectPath,
   getUpgradeSubdomainRewritePath,
 } from '@/shared/lib/upgrade-subdomain';
@@ -31,10 +37,7 @@ function applyQueryRobotsHeader(response: NextResponse, request: NextRequest) {
   return response;
 }
 
-function createUpgradeSubdomainRedirectUrl(
-  request: NextRequest,
-  pathname: string
-) {
+function createPublicRedirectUrl(request: NextRequest, pathname: string) {
   const forwardedHost = getForwardedHeaderValue(request, 'x-forwarded-host');
   const forwardedProto = getForwardedHeaderValue(request, 'x-forwarded-proto');
   const host =
@@ -47,6 +50,20 @@ function createUpgradeSubdomainRedirectUrl(
     `${pathname}${request.nextUrl.search}`,
     `${protocol}://${host}`
   );
+}
+
+function createUpgradeSubdomainRedirectUrl(
+  request: NextRequest,
+  pathname: string
+) {
+  return createPublicRedirectUrl(request, pathname);
+}
+
+function createCanonicalSiteRedirectUrl(
+  request: NextRequest,
+  pathname: string
+) {
+  return new URL(`${pathname}${request.nextUrl.search}`, getSeoSiteUrl());
 }
 
 function createUpgradeSubdomainRewriteUrl(
@@ -108,15 +125,30 @@ export async function proxy(request: NextRequest) {
     return withPublicCacheHeaders(NextResponse.next(), request);
   }
 
+  const tutorialLocaleRedirectPath = getTutorialLocaleRedirectPath(
+    pathname,
+    routing.defaultLocale,
+    routing.locales
+  );
+  if (tutorialLocaleRedirectPath) {
+    return NextResponse.redirect(
+      createCanonicalSiteRedirectUrl(request, tutorialLocaleRedirectPath),
+      308
+    );
+  }
+
   // Handle internationalization first
   const intlResponse = intlMiddleware(request);
 
-  // Extract locale from pathname
-  const locale = pathname.split('/')[1];
-  const isValidLocale = routing.locales.includes(locale as any);
-  const pathWithoutLocale = isValidLocale
-    ? pathname.slice(locale.length + 1)
-    : pathname;
+  const {
+    locale,
+    hasLocalePrefix: isValidLocale,
+    pathWithoutLocale,
+  } = parseLocalizedPath(pathname, routing.defaultLocale, routing.locales);
+
+  if (shouldSuppressAlternateLinks(pathWithoutLocale)) {
+    intlResponse.headers.delete('Link');
+  }
 
   // Only check authentication for admin routes
   if (

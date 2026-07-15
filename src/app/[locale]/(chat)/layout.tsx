@@ -1,27 +1,15 @@
-'use client';
-
 import { ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
 
-import { ChatLibrary } from '@/shared/blocks/chat/library';
-import { LocaleDetector } from '@/shared/blocks/common';
-import { DashboardLayout } from '@/shared/blocks/dashboard';
-import { ChatContextProvider } from '@/shared/contexts/chat';
-import { Sidebar as SidebarType } from '@/shared/types/blocks/dashboard';
+import { getMetadata } from '@/shared/lib/seo';
+
+import { ChatLayoutClient } from './chat-layout-client';
+
+export const generateMetadata = getMetadata({
+  title: 'GPT101 Chat',
+  description: 'GPT101 AI 对话工具',
+  noIndex: true,
+});
 
 export default function ChatLayout({ children }: { children: ReactNode }) {
-  const t = useTranslations('ai.chat');
-
-  const sidebar: SidebarType = t.raw('sidebar');
-
-  sidebar.library = <ChatLibrary />;
-
-  return (
-    <ChatContextProvider>
-      <DashboardLayout sidebar={sidebar}>
-        <LocaleDetector />
-        {children}
-      </DashboardLayout>
-    </ChatContextProvider>
-  );
+  return <ChatLayoutClient>{children}</ChatLayoutClient>;
 }

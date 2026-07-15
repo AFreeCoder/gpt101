@@ -2,16 +2,14 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
+import { buildFaqJsonLd, buildServiceJsonLd } from '@/shared/lib/jsonld';
 import { getMetadata } from '@/shared/lib/seo';
-import { buildServiceJsonLd, buildFaqJsonLd } from '@/shared/lib/jsonld';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
 
 export const generateMetadata = getMetadata({
-  title: 'GPT Plus 快速升级',
-  description:
-    'GPT Plus 代充快速升级：无需海外信用卡，微信/支付宝可用，通常 1-2 分钟完成充值。',
+  metadataKey: 'pages.lp-upgrade-chatgpt.metadata',
   canonicalUrl: '/lp/g/upgrade-chatgpt',
 });
 

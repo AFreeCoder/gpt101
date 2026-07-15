@@ -47,10 +47,7 @@ export function getMetadata(
     }
 
     // canonical url
-    const canonicalUrl = await getCanonicalUrl(
-      options.canonicalUrl || '',
-      locale || ''
-    );
+    const canonicalUrl = getCanonicalUrl(options.canonicalUrl, locale || '');
 
     const title =
       passedMetadata.title || translatedMetadata.title || defaultMetadata.title;
@@ -86,14 +83,18 @@ export function getMetadata(
         passedMetadata.keywords ||
         translatedMetadata.keywords ||
         defaultMetadata.keywords,
-      alternates: {
-        canonical: canonicalUrl,
-      },
+      ...(canonicalUrl
+        ? {
+            alternates: {
+              canonical: canonicalUrl,
+            },
+          }
+        : {}),
 
       openGraph: {
         type: 'website',
         locale: locale,
-        url: canonicalUrl,
+        ...(canonicalUrl ? { url: canonicalUrl } : {}),
         title,
         description,
         siteName: appName,
@@ -129,9 +130,12 @@ async function getTranslatedMetadata(metadataKey: string, locale: string) {
   };
 }
 
-async function getCanonicalUrl(canonicalUrl: string, locale: string) {
+function getCanonicalUrl(
+  canonicalUrl: string | undefined,
+  locale: string
+): string | undefined {
   if (!canonicalUrl) {
-    canonicalUrl = '/';
+    return undefined;
   }
 
   if (canonicalUrl.startsWith('http')) {
