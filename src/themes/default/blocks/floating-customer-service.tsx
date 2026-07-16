@@ -62,7 +62,7 @@ export function FloatingCustomerService({ section }: { section: Section }) {
       {isOpen && (
         <div
           id="floating-customer-support-panel"
-          className="animate-in fade-in-0 zoom-in-95 absolute right-0 bottom-20 w-[min(15rem,calc(100vw-1.5rem))] rounded-2xl border border-slate-200 bg-white p-4 pt-12 text-slate-900 shadow-2xl duration-200 motion-reduce:animate-none"
+          className="animate-in fade-in-0 zoom-in-95 absolute right-0 bottom-20 w-[min(15rem,calc(100vw-1.5rem))] rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-2xl duration-200 motion-reduce:animate-none"
           role="dialog"
           aria-label="客服二维码"
         >
@@ -74,6 +74,13 @@ export function FloatingCustomerService({ section }: { section: Section }) {
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
+
+          <div className="mb-3 pr-10">
+            <h3 className="text-base font-semibold text-slate-900">在线客服</h3>
+            <p className="mt-0.5 text-xs leading-5 text-slate-500">
+              有任何问题请联系客服
+            </p>
+          </div>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

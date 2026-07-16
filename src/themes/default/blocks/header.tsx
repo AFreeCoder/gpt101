@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
 import { Link, usePathname } from '@/core/i18n/navigation';
@@ -31,6 +31,9 @@ import { cn } from '@/shared/lib/utils';
 import { NavItem } from '@/shared/types/blocks/common';
 import { Header as HeaderType } from '@/shared/types/blocks/landing';
 
+const CUSTOMER_SUPPORT_SECTION_HASH = '#customer-support';
+const CUSTOMER_SUPPORT_SECTION_ID = 'customer-support';
+
 // For Next.js hydration mismatch warning, conditionally render NavigationMenuTrigger only after mount to avoid inconsistency between server/client render
 function NavigationMenuTrigger(
   props: React.ComponentProps<typeof RawNavigationMenuTrigger>
@@ -48,6 +51,51 @@ export function Header({ header }: { header: HeaderType }) {
   const scrollRafRef = useRef<number | null>(null);
   const isLarge = useMedia('(min-width: 64rem)');
   const pathname = usePathname();
+
+  const scrollToCustomerSupport = useCallback(() => {
+    const target = document.getElementById(CUSTOMER_SUPPORT_SECTION_ID);
+
+    if (!target) {
+      return false;
+    }
+
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    target.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
+
+    return true;
+  }, []);
+
+  const handleNavItemClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    url?: string,
+    closeMenu?: () => void
+  ) => {
+    closeMenu?.();
+
+    const isCustomerSupportSectionLink =
+      url === CUSTOMER_SUPPORT_SECTION_HASH ||
+      url === `/${CUSTOMER_SUPPORT_SECTION_HASH}`;
+
+    if (!isCustomerSupportSectionLink || pathname !== '/') {
+      return;
+    }
+
+    if (!scrollToCustomerSupport()) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (window.location.hash !== CUSTOMER_SUPPORT_SECTION_HASH) {
+      window.history.pushState(null, '', CUSTOMER_SUPPORT_SECTION_HASH);
+    }
+  };
 
   useEffect(() => {
     // Listen to scroll event to enable header styles on scroll
@@ -77,6 +125,19 @@ export function Header({ header }: { header: HeaderType }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (
+      pathname !== '/' ||
+      window.location.hash !== CUSTOMER_SUPPORT_SECTION_HASH
+    ) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(scrollToCustomerSupport);
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [pathname, scrollToCustomerSupport]);
+
   // Navigation menu for large screens
   const NavMenu = () => {
     return (
@@ -92,6 +153,9 @@ export function Header({ header }: { header: HeaderType }) {
                   <Link
                     href={item.url || ''}
                     target={item.target || '_self'}
+                    onClick={(event) =>
+                      handleNavItemClick(event, item.url as string | undefined)
+                    }
                     className={`flex flex-row items-center gap-2 px-4 py-1.5 text-sm ${
                       item.is_active || pathname.endsWith(item.url as string)
                         ? 'bg-muted/40 text-muted-foreground'
@@ -191,7 +255,13 @@ export function Header({ header }: { header: HeaderType }) {
                 ) : (
                   <Link
                     href={item.url || ''}
-                    onClick={closeMenu}
+                    onClick={(event) =>
+                      handleNavItemClick(
+                        event,
+                        item.url as string | undefined,
+                        closeMenu
+                      )
+                    }
                     className="data-[state=open]:bg-muted flex items-center justify-between px-4 py-3 text-lg **:!font-normal"
                   >
                     {item.title}

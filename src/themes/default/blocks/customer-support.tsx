@@ -16,7 +16,7 @@ export function CustomerSupport({ section }: { section: Section }) {
   return (
     <section
       id={section.id || 'customer-support'}
-      className="scroll-mt-20 py-16 md:py-24"
+      className="scroll-mt-20 py-16 md:scroll-mt-28 md:py-24"
     >
       <div className="mx-auto max-w-6xl px-4">
         <ScrollAnimation>

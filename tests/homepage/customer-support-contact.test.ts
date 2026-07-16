@@ -112,7 +112,28 @@ test('全站客服链接由统一二维码弹窗接管', () => {
   assert.match(floatingSource, /w-\[min\(15rem,calc\(100vw-1\.5rem\)\)\]/);
   assert.match(floatingSource, /motion-reduce:animate-none/);
   assert.match(floatingSource, /h-11 w-11/);
+  assert.match(floatingSource, /在线客服/);
+  assert.match(floatingSource, /有任何问题请联系客服/);
+  assert.match(floatingSource, /微信扫码联系客服/);
   assert.doesNotMatch(floatingSource, /data-customer-support-bypass/);
   assert.doesNotMatch(floatingSource, /href=/);
   assert.match(layoutSource, /<CustomerSupportDialog locale=\{locale\} \/>/);
+});
+
+test('顶部导航在首页明确滚动到专业客服支持区域', () => {
+  const headerSource = readFileSync(
+    path.join(process.cwd(), 'src/themes/default/blocks/header.tsx'),
+    'utf8'
+  );
+  const customerSupportSource = readFileSync(
+    path.join(process.cwd(), 'src/themes/default/blocks/customer-support.tsx'),
+    'utf8'
+  );
+
+  assert.match(headerSource, /CUSTOMER_SUPPORT_SECTION_HASH/);
+  assert.match(headerSource, /scrollIntoView/);
+  assert.match(headerSource, /handleNavItemClick/);
+  assert.match(headerSource, /prefers-reduced-motion/);
+  assert.match(customerSupportSource, /section\.id \|\| 'customer-support'/);
+  assert.match(customerSupportSource, /md:scroll-mt-28/);
 });
