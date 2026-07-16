@@ -172,8 +172,6 @@ export function UpgradeStatusView({
               请
               <a
                 href={supportContact}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={`font-medium underline underline-offset-2 ${strongText}`}
               >
                 {CUSTOMER_SUPPORT_LABEL}

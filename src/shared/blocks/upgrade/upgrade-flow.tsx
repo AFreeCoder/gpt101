@@ -407,8 +407,6 @@ export function UpgradeFlow({
                   请
                   <a
                     href={supportContact}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="font-semibold underline underline-offset-2"
                   >
                     {CUSTOMER_SUPPORT_LABEL}
@@ -1156,8 +1154,6 @@ export function UpgradeFlow({
                             请
                             <a
                               href={supportContact}
-                              target="_blank"
-                              rel="noopener noreferrer"
                               className="text-foreground font-medium underline underline-offset-2"
                             >
                               {CUSTOMER_SUPPORT_LABEL}
@@ -1265,8 +1261,6 @@ export function UpgradeFlow({
                   </p>
                   <a
                     href={supportContact}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-primary mt-1 inline-flex text-sm font-semibold underline-offset-4 hover:underline"
                   >
                     {CUSTOMER_SUPPORT_LABEL}

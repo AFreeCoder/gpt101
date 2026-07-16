@@ -15,6 +15,8 @@ const LEGACY_QR_CODE_URL =
   'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/2026/03/05/17726209788829.jpg';
 const PREVIOUS_QR_CODE_URL =
   'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/af54dc7e725beb4d7557d4d18a6141d881dac1d06aaed98d4d2825828ae89588.jpg';
+const LEGACY_CUSTOMER_SUPPORT_URL =
+  'https://work.weixin.qq.com/ca/cawcde156287e5f967';
 
 function readCustomerFacingFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -37,10 +39,7 @@ function readCustomerFacingFiles(directory: string): string[] {
 }
 
 test('客服地址和二维码使用统一的新配置', () => {
-  assert.equal(
-    CUSTOMER_SUPPORT_URL,
-    'https://work.weixin.qq.com/ca/cawcde156287e5f967'
-  );
+  assert.equal(CUSTOMER_SUPPORT_URL, '#customer-support-dialog');
   assert.equal(CUSTOMER_SUPPORT_LABEL, '联系客服');
   assert.equal(
     CUSTOMER_SUPPORT_QR_CODE_URL,
@@ -72,6 +71,10 @@ test('面向用户的源码和内容不再包含旧微信号或旧二维码', ()
   assert.doesNotMatch(customerFacingSource, new RegExp(LEGACY_WECHAT_ID));
   assert.doesNotMatch(customerFacingSource, new RegExp(LEGACY_QR_CODE_URL));
   assert.doesNotMatch(customerFacingSource, new RegExp(PREVIOUS_QR_CODE_URL));
+  assert.doesNotMatch(
+    customerFacingSource,
+    new RegExp(LEGACY_CUSTOMER_SUPPORT_URL)
+  );
   assert.match(customerFacingSource, new RegExp(CUSTOMER_SUPPORT_URL));
   assert.match(customerFacingSource, new RegExp(CUSTOMER_SUPPORT_QR_CODE_URL));
 });
@@ -88,11 +91,28 @@ test('全站客服链接由统一二维码弹窗接管', () => {
     path.join(process.cwd(), 'src/app/layout.tsx'),
     'utf8'
   );
+  const floatingSource = readFileSync(
+    path.join(
+      process.cwd(),
+      'src/themes/default/blocks/floating-customer-service.tsx'
+    ),
+    'utf8'
+  );
 
   assert.match(dialogSource, /document\.addEventListener\('click'/);
+  assert.match(dialogSource, /document\.addEventListener\('auxclick'/);
   assert.match(dialogSource, /isCustomerSupportLink/);
   assert.match(dialogSource, /event\.preventDefault\(\)/);
-  assert.match(dialogSource, /data-customer-support-bypass/);
   assert.match(dialogSource, /CUSTOMER_SUPPORT_QR_CODE_URL/);
+  assert.match(dialogSource, /max-w-\[17\.5rem\]/);
+  assert.match(dialogSource, /h-11 w-11/);
+  assert.doesNotMatch(dialogSource, /data-customer-support-bypass/);
+  assert.doesNotMatch(dialogSource, /打开企业微信|Open WeCom/);
+  assert.doesNotMatch(dialogSource, /href=\{CUSTOMER_SUPPORT_URL\}/);
+  assert.match(floatingSource, /w-\[min\(15rem,calc\(100vw-1\.5rem\)\)\]/);
+  assert.match(floatingSource, /motion-reduce:animate-none/);
+  assert.match(floatingSource, /h-11 w-11/);
+  assert.doesNotMatch(floatingSource, /data-customer-support-bypass/);
+  assert.doesNotMatch(floatingSource, /href=/);
   assert.match(layoutSource, /<CustomerSupportDialog locale=\{locale\} \/>/);
 });

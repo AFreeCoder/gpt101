@@ -1,7 +1,7 @@
 'use client';
 
-import { ArrowLeft, ExternalLink, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { ArrowLeft, Shield } from 'lucide-react';
 
 import {
   CUSTOMER_SUPPORT_LABEL,
@@ -59,20 +59,12 @@ export function MaintenancePage({
               {/* 左侧二维码 */}
               <div className="flex-shrink-0 text-center">
                 <div className="mb-2 w-32">
-                  <a
-                    href={contactUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={CUSTOMER_SUPPORT_LABEL}
-                    className="block rounded-xl focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={qrCodeUrl}
-                      alt="客服二维码"
-                      className="h-auto w-full rounded-xl border border-gray-200 shadow-sm"
-                    />
-                  </a>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={qrCodeUrl}
+                    alt="客服二维码"
+                    className="h-auto w-full rounded-xl border border-gray-200 shadow-sm"
+                  />
                 </div>
                 <p className="text-xs text-gray-600">客服二维码</p>
               </div>
@@ -83,15 +75,12 @@ export function MaintenancePage({
                   <p className="mb-3 text-sm text-gray-700">需要人工协助？</p>
                   <a
                     href={contactUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors duration-300 hover:from-blue-700 hover:to-purple-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
                     {CUSTOMER_SUPPORT_LABEL}
-                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                   </a>
                   <div className="space-y-2 text-xs text-gray-600">
-                    <p>点击“联系客服”后，将打开企业微信客服页面。</p>
+                    <p>点击“联系客服”后，将显示客服二维码。</p>
                     <p>也可以使用微信扫描左侧二维码。</p>
                   </div>
                 </div>

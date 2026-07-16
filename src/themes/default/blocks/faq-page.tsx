@@ -106,7 +106,6 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
     title: string;
     href: string;
     icon: typeof SearchCheck;
-    external?: boolean;
   }> = [
     {
       title: copy.selfQuery,
@@ -117,7 +116,6 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
       title: copy.contact,
       href: CUSTOMER_SUPPORT_URL,
       icon: MessageCircle,
-      external: true,
     },
   ];
 
@@ -206,8 +204,6 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
                   className="border-border hover:bg-muted flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors"
                 >
                   <item.icon className="h-4 w-4" />
@@ -246,8 +242,6 @@ export function FaqPage({ faq, locale }: FaqPageProps) {
               <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <a
                   href={CUSTOMER_SUPPORT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="border-border hover:bg-muted inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium transition-colors"
                 >
                   <MessageCircle className="h-4 w-4" />

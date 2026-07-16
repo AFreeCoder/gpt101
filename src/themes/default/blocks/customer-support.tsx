@@ -1,6 +1,6 @@
 'use client';
 
-import { ExternalLink, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 import { ScrollAnimation } from '@/shared/components/ui/scroll-animation';
 import {
@@ -76,12 +76,9 @@ export function CustomerSupport({ section }: { section: Section }) {
                 <p className="mb-3 text-sm text-gray-600">需要人工协助？</p>
                 <a
                   href={contactUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="mx-auto inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   {CUSTOMER_SUPPORT_LABEL}
-                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
                 </a>
               </div>
             )}

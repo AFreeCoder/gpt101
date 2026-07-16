@@ -123,8 +123,6 @@ export default function RenewalDiscountPage() {
         遇到问题？
         <a
           href={CUSTOMER_SUPPORT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
           className="font-medium text-blue-700 underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           {CUSTOMER_SUPPORT_LABEL}

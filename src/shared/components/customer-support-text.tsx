@@ -22,8 +22,6 @@ export function CustomerSupportText({ children }: { children: string }) {
           <a
             key={`${part}-${index}`}
             href={CUSTOMER_SUPPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-primary font-medium underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {part}

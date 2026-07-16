@@ -115,8 +115,8 @@
             },
             {
               "title": "客服支持",
-              "url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
-              "target": "_blank"
+              "url": "#customer-support-dialog",
+              "target": "_self"
             },
             {
               "title": "OpenAI 状态",

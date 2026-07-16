@@ -155,7 +155,7 @@
         "block": "customer-support",
         "title": "专业客服支持",
         "description": "遇到问题？我们随时为您提供帮助",
-        "contact_url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
+        "contact_url": "#customer-support-dialog",
         "show_contact_card": true,
         "items": [
           {
@@ -182,9 +182,7 @@
         "id": "floating-cs",
         "block": "floating-customer-service",
         "disabled": false,
-        "contact_url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
-        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/82bb926252c354bd79b1b40843ef39e275b252ed95c1cba27b1217fa31f76189.png",
-        "service_time": "在线时间：9:00 ~ 23:00"
+        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/82bb926252c354bd79b1b40843ef39e275b252ed95c1cba27b1217fa31f76189.png"
       }
     }
   }

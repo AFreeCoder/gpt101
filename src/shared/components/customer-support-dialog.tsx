@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ExternalLink, MessageCircle } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import {
@@ -23,9 +23,12 @@ function isCustomerSupportLink(link: HTMLAnchorElement) {
   }
 
   try {
+    const linkUrl = new URL(href, window.location.href);
+
     return (
-      new URL(href, window.location.href).href ===
-      new URL(CUSTOMER_SUPPORT_URL).href
+      linkUrl.hash === CUSTOMER_SUPPORT_URL ||
+      (linkUrl.hostname === 'work.weixin.qq.com' &&
+        linkUrl.pathname.startsWith('/ca/'))
     );
   } catch {
     return false;
@@ -38,14 +41,7 @@ export function CustomerSupportDialog({ locale }: { locale: string }) {
 
   useEffect(() => {
     const handleCustomerSupportClick = (event: MouseEvent) => {
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      ) {
+      if (event.defaultPrevented || (event.button !== 0 && event.button !== 1)) {
         return;
       }
 
@@ -57,11 +53,7 @@ export function CustomerSupportDialog({ locale }: { locale: string }) {
 
       const link = target.closest<HTMLAnchorElement>('a[href]');
 
-      if (
-        !link ||
-        link.hasAttribute('data-customer-support-bypass') ||
-        !isCustomerSupportLink(link)
-      ) {
+      if (!link || !isCustomerSupportLink(link)) {
         return;
       }
 
@@ -69,71 +61,50 @@ export function CustomerSupportDialog({ locale }: { locale: string }) {
       setIsOpen(true);
     };
 
-    document.addEventListener('click', handleCustomerSupportClick);
+    document.addEventListener('click', handleCustomerSupportClick, true);
+    document.addEventListener('auxclick', handleCustomerSupportClick, true);
 
     return () => {
-      document.removeEventListener('click', handleCustomerSupportClick);
+      document.removeEventListener('click', handleCustomerSupportClick, true);
+      document.removeEventListener('auxclick', handleCustomerSupportClick, true);
     };
   }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-sm overflow-hidden p-0">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-5 text-white">
-          <DialogHeader className="items-center text-center sm:text-center">
-            <div className="mb-1 flex h-11 w-11 items-center justify-center rounded-full bg-white/15">
-              <MessageCircle className="h-6 w-6" aria-hidden="true" />
-            </div>
-            <DialogTitle className="text-xl text-white">
-              {isZh ? '联系客服' : 'Contact support'}
-            </DialogTitle>
-            <DialogDescription className="text-white/80">
-              {isZh
-                ? '微信扫码添加客服，获取购买与售后帮助'
-                : 'Scan with WeChat for purchase and after-sales support'}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+      <DialogContent
+        showCloseButton={false}
+        className="w-[calc(100%-1.5rem)] max-w-[17.5rem] gap-0 rounded-2xl border border-slate-200 bg-white p-4 pt-12 text-slate-900 shadow-2xl sm:max-w-[17.5rem] sm:p-5 sm:pt-12"
+      >
+        <DialogTitle className="sr-only">
+          {isZh ? '客服二维码' : 'Customer support QR code'}
+        </DialogTitle>
 
-        <div className="space-y-5 px-6 pt-2 pb-6">
-          <div className="flex justify-center">
-            <a
-              href={CUSTOMER_SUPPORT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-customer-support-bypass="true"
-              aria-label={isZh ? '使用企业微信联系客服' : 'Open WeCom support'}
-              className="rounded-xl focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-4 focus-visible:outline-none"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={CUSTOMER_SUPPORT_QR_CODE_URL}
-                alt={isZh ? '客服二维码' : 'Customer support QR code'}
-                width={220}
-                height={220}
-                decoding="async"
-                className="h-auto w-55 rounded-xl border border-gray-200 bg-white p-2 shadow-sm"
-              />
-            </a>
-          </div>
-
-          <p className="text-muted-foreground text-center text-sm">
-            {isZh
-              ? '长按或截图保存二维码，也可以直接打开企业微信。'
-              : 'Save the QR code or open WeCom directly.'}
-          </p>
-
-          <a
-            href={CUSTOMER_SUPPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-customer-support-bypass="true"
-            className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+        <DialogClose asChild>
+          <button
+            type="button"
+            aria-label={isZh ? '关闭客服二维码' : 'Close support QR code'}
+            className="absolute top-1.5 right-1.5 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-slate-500 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
-            {isZh ? '打开企业微信' : 'Open WeCom'}
-            <ExternalLink className="h-4 w-4" aria-hidden="true" />
-          </a>
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </DialogClose>
+
+        <div className="mx-auto w-full max-w-56">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={CUSTOMER_SUPPORT_QR_CODE_URL}
+            alt={isZh ? '客服二维码' : 'Customer support QR code'}
+            width={224}
+            height={224}
+            decoding="async"
+            className="h-auto w-full rounded-xl bg-white"
+          />
         </div>
+
+        <DialogDescription className="mt-3 text-center text-sm font-medium text-slate-600">
+          {isZh ? '微信扫码联系客服' : 'Scan with WeChat to contact support'}
+        </DialogDescription>
       </DialogContent>
     </Dialog>
   );

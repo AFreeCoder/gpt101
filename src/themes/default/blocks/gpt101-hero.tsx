@@ -223,8 +223,6 @@ export function Gpt101Hero({ section }: { section: Section }) {
                 <span className="text-gray-400">|</span>
                 <a
                   href={customerServiceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="font-semibold text-blue-600 underline-offset-4 transition-colors hover:text-blue-700 hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   {CUSTOMER_SUPPORT_LABEL}
