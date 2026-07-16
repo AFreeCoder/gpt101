@@ -2,7 +2,7 @@ export const CUSTOMER_SUPPORT_URL =
   'https://work.weixin.qq.com/ca/cawcde156287e5f967';
 
 export const CUSTOMER_SUPPORT_QR_CODE_URL =
-  'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/af54dc7e725beb4d7557d4d18a6141d881dac1d06aaed98d4d2825828ae89588.jpg';
+  'https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/82bb926252c354bd79b1b40843ef39e275b252ed95c1cba27b1217fa31f76189.png';
 
 export const CUSTOMER_SUPPORT_LABEL = '联系客服';
 export const CUSTOMER_SUPPORT_LABEL_EN = 'Contact support';

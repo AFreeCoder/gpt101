@@ -12,6 +12,7 @@ import NextTopLoader from 'nextjs-toploader';
 
 import { envConfigs } from '@/config';
 import { UtmCapture } from '@/shared/blocks/common/utm-capture';
+import { CustomerSupportDialog } from '@/shared/components/customer-support-dialog';
 import { shouldSkipGlobalCustomerService } from '@/shared/lib/upgrade-subdomain';
 import { getAllConfigs } from '@/shared/models/config';
 import { getAdsService } from '@/shared/services/ads';
@@ -164,6 +165,7 @@ export default async function RootLayout({
         />
 
         <UtmCapture />
+        <CustomerSupportDialog locale={locale} />
 
         {children}
 

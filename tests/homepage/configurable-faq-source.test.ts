@@ -4,7 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 const repoRoot = process.cwd();
-const customerSupportUrl = 'https://work.weixin.qq.com/ca/cawcde156287e5f967';
+const customerSupportSectionUrl = '/#customer-support';
 
 function readSource(filePath: string) {
   return readFileSync(path.join(repoRoot, filePath), 'utf8');
@@ -107,13 +107,13 @@ test('landing navigation exposes FAQ and user card query links', () => {
   assert.ok(
     zhLanding.header.nav.items.some(
       (item: { url?: string; target?: string }) =>
-        item.url === customerSupportUrl && item.target === '_blank'
+        item.url === customerSupportSectionUrl && !item.target
     )
   );
   assert.ok(
     enLanding.header.nav.items.some(
       (item: { url?: string; target?: string }) =>
-        item.url === customerSupportUrl && item.target === '_blank'
+        item.url === customerSupportSectionUrl && !item.target
     )
   );
   assert.ok(
@@ -137,6 +137,18 @@ test('landing navigation exposes FAQ and user card query links', () => {
       )
       .some((item: { url?: string }) => item.url === '/batch-query')
   );
+});
+
+test('home page removes the mirror recommendation banner', () => {
+  const zhConfig = JSON.parse(
+    readSource('src/config/locale/messages/zh/pages/index.json')
+  );
+  const enConfig = JSON.parse(
+    readSource('src/config/locale/messages/en/pages/index.json')
+  );
+
+  assert.equal(zhConfig.page.sections.hero.mirror_banner, undefined);
+  assert.equal(enConfig.page.sections.hero.mirror_banner, undefined);
 });
 
 test('user card query page reuses upgrade verify-code API', () => {

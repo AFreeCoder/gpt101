@@ -107,6 +107,7 @@ export function FloatingCustomerService({ section }: { section: Section }) {
                 href={contactUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-customer-support-bypass="true"
                 aria-label={CUSTOMER_SUPPORT_LABEL}
                 className="rounded-lg focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
@@ -130,6 +131,7 @@ export function FloatingCustomerService({ section }: { section: Section }) {
               href={contactUrl}
               target="_blank"
               rel="noopener noreferrer"
+              data-customer-support-bypass="true"
               className="inline-flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               {CUSTOMER_SUPPORT_LABEL}

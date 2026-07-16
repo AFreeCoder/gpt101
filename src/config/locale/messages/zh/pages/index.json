@@ -16,13 +16,6 @@
         "highlight_text": "一站式 GPT",
         "normal_text": "充值服务",
         "description": "Plus / Pro / Team 全支持，微信支付宝通常1-2分钟到账，无需信用卡",
-        "mirror_banner": {
-          "title": "网络访问不便？",
-          "subtitle": "推荐稳定的镜像服务",
-          "highlight": "→ 国内网络可用，功能体验更完整，只需¥58/月",
-          "url": "/chatgpt-mirror",
-          "button_text": "了解镜像服务"
-        },
         "features": [
           {
             "text": "无需海外信用卡",
@@ -388,7 +381,7 @@
         "block": "floating-customer-service",
         "disabled": false,
         "contact_url": "https://work.weixin.qq.com/ca/cawcde156287e5f967",
-        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/af54dc7e725beb4d7557d4d18a6141d881dac1d06aaed98d4d2825828ae89588.jpg",
+        "qr_code_url": "https://tjjsjwhj-blog.oss-cn-beijing.aliyuncs.com/article-publish-assistant/82bb926252c354bd79b1b40843ef39e275b252ed95c1cba27b1217fa31f76189.png",
         "service_time": "在线时间：9:00 ~ 23:00"
       }
     }

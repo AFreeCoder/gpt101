@@ -14,7 +14,10 @@ export function CustomerSupport({ section }: { section: Section }) {
   const contactUrl = section.contact_url || CUSTOMER_SUPPORT_URL;
 
   return (
-    <section id={section.id || 'customer-support'} className="py-16 md:py-24">
+    <section
+      id={section.id || 'customer-support'}
+      className="scroll-mt-20 py-16 md:py-24"
+    >
       <div className="mx-auto max-w-6xl px-4">
         <ScrollAnimation>
           <div className="mb-12 text-center">
