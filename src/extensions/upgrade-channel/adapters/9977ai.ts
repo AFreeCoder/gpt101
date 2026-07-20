@@ -128,16 +128,11 @@ function pickVerifyField(payload: any, fields: string[]) {
 }
 
 function isAvailableVerifyResult(payload: any): boolean {
-  const status = normalizeStatus(payload);
   const data = getVerifyData(payload);
   return (
     payload?.success === true &&
-    (data.allow_new_submission === true ||
-      data.has_existing_record === false ||
-      payload?.is_new === true ||
-      status === 'active' ||
-      status === 'available' ||
-      status === 'new')
+    data.allow_new_submission === true &&
+    data.has_existing_record === false
   );
 }
 
@@ -218,10 +213,7 @@ export function create9977aiAdapter(
   }
 
   async function reuseRecordWithRetries(
-    jar: CookieJar,
-    channelCardkey: string,
-    chatgptEmail: string,
-    attemptStartedAt: Date
+    jar: CookieJar
   ): Promise<UpgradeResult> {
     let lastMessage = '9977 渠道复用记录失败';
 
@@ -241,22 +233,16 @@ export function create9977aiAdapter(
       }
     }
 
-    return classifyFailedRecharge(
-      jar,
-      channelCardkey,
-      chatgptEmail,
-      attemptStartedAt,
-      lastMessage
-    );
-  }
-
-  function buildReuseFailureWithVerificationMessage(
-    verificationMessage: string,
-    lastMessage: string
-  ): string {
-    return buildAdminFailureMessage(
-      `充值提交失败后自动复用 3 次仍未成功，${verificationMessage}：${lastMessage}`
-    );
+    return {
+      ok: false,
+      retryable: false,
+      stopFallback: true,
+      preserveRedeemCode: true,
+      cardkeyAction: 'consume',
+      message: buildAdminFailureMessage(
+        `充值提交失败后自动复用 3 次仍未成功，需人工处理：${lastMessage}`
+      ),
+    };
   }
 
   function confirmUsedCodeFromVerifyData(
@@ -298,63 +284,6 @@ export function create9977aiAdapter(
     return null;
   }
 
-  async function classifyFailedRecharge(
-    jar: CookieJar,
-    channelCardkey: string,
-    chatgptEmail: string,
-    attemptStartedAt: Date,
-    lastMessage: string
-  ): Promise<UpgradeResult> {
-    try {
-      const verifyData = await verifyCode(jar, channelCardkey);
-
-      if (isAvailableVerifyResult(verifyData)) {
-        return {
-          ok: false,
-          retryable: true,
-          cardkeyAction: 'release',
-          message: buildReuseFailureWithVerificationMessage(
-            '二次验卡仍有效，释放渠道卡密',
-            lastMessage
-          ),
-        };
-      }
-
-      if (isUsedVerifyResult(verifyData)) {
-        const confirmed = confirmUsedCodeFromVerifyData(
-          verifyData,
-          chatgptEmail,
-          attemptStartedAt
-        );
-        if (confirmed) return confirmed;
-      }
-    } catch (error: any) {
-      return {
-        ok: false,
-        retryable: false,
-        stopFallback: true,
-        preserveRedeemCode: true,
-        cardkeyAction: 'consume',
-        message: buildReuseFailureWithVerificationMessage(
-          `二次验卡失败，需人工处理：${error?.message || '网络异常'}`,
-          lastMessage
-        ),
-      };
-    }
-
-    return {
-      ok: false,
-      retryable: false,
-      stopFallback: true,
-      preserveRedeemCode: true,
-      cardkeyAction: 'consume',
-      message: buildReuseFailureWithVerificationMessage(
-        '二次验卡无法确认当前账号，需人工处理',
-        lastMessage
-      ),
-    };
-  }
-
   async function confirmUsedCode(
     jar: CookieJar,
     channelCardkey: string,
@@ -390,7 +319,6 @@ export function create9977aiAdapter(
 
     async execute(req: UpgradeRequest): Promise<UpgradeResult> {
       const { channelCardkey, sessionToken } = req;
-      const attemptStartedAt = now();
 
       if (!channelCardkey) {
         return {
@@ -465,19 +393,9 @@ export function create9977aiAdapter(
           };
         }
 
-        return reuseRecordWithRetries(
-          jar,
-          channelCardkey,
-          req.chatgptEmail,
-          attemptStartedAt
-        );
-      } catch (error: any) {
-        return reuseRecordWithRetries(
-          jar,
-          channelCardkey,
-          req.chatgptEmail,
-          attemptStartedAt
-        );
+        return reuseRecordWithRetries(jar);
+      } catch {
+        return reuseRecordWithRetries(jar);
       }
     },
   };

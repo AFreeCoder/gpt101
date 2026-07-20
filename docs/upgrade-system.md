@@ -169,11 +169,11 @@ Base URL: `https://api.987ai.vip/api`
 
 9977ai 没有公开 API 文档，实际流程来自页面脚本逆向与真实卡密验证：
 
-| 步骤 | 动作           | 请求方式                                                                             |
-| ---- | -------------- | ------------------------------------------------------------------------------------ |
-| 1    | `verify_code`  | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=verify_code&activation_code=...` |
-| 2    | `submit_json`  | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=submit_json&json_token=...`      |
-| 3    | `reuse_record` | `POST https://9977ai.vip/`，表单参数 `ajax=1&action=reuse_record`                    |
+| 步骤 | 动作           | 请求方式                                                                |
+| ---- | -------------- | ----------------------------------------------------------------------- |
+| 1    | `verify_code`  | `POST /api-verify-unified.php`，JSON 参数 `activation_code`             |
+| 2    | `submit_json`  | `POST /simple-submit-recharge-unified.php`，JSON 参数 `user_data`       |
+| 3    | `reuse_record` | `POST /api-recharge-reuse-unified.php`，JSON 参数 `action=reuse_record` |
 
 接入策略只对统一流程暴露：
 
@@ -182,15 +182,15 @@ Base URL: `https://api.987ai.vip/api`
 
 特殊规则：
 
-- `verify_code` 返回 `status=used` 或 `is_new=false`：直接终止后续渠道，任务转人工处理。
+- 只有 `allow_new_submission=true` 且 `has_existing_record=false` 同时成立，才允许首次提交；旧版 `status=active` / `is_new=true` 不再单独作为可用依据。
+- `has_existing_record=true`、`status=used` 或 `is_new=false`：历史记录优先，直接终止后续渠道，任务转人工处理。
 - `submit_json` 失败：后台自动调用 `reuse_record` 重试 3 次。
-- 3 次仍失败：不再尝试下一个渠道。
+- 3 次仍失败：不再二次验卡，不释放渠道卡密和本站卡密，不再尝试下一个渠道，任务直接转人工处理。
 - 对用户前端统一展示：`充值异常，请联系客服处理。`
 - 对后台：
-  - 若 `reuse_record` 明确返回“未找到对应的充值记录”，说明 9977 未建立可复用充值记录，渠道卡密和本站卡密都释放，不进入人工占用态。
-  - 其他 `reuse_record` 失败会再次 `verify_code`；若二次验卡显示已用，且返回的邮箱匹配当前 ChatGPT 邮箱、兑换/更新时间落在本次尝试时间附近，则直接判定任务成功。
-  - 其他无法确认是否已绑定的失败仍把渠道卡密标记为已占用，不释放回池；本站卡密保持占用。
-  - 仅结果不确定的人工处理任务写入 `manualRequired=true`，禁止后台普通重试。
+  - 只要充值请求已经提交，即使 `reuse_record` 返回“未找到对应的充值记录”，也不能据此判定卡密可重新入池。
+  - 3 次复用仍失败时，渠道卡密标记为已占用，本站卡密保持占用，任务写入 `manualRequired=true` 并禁止后台普通重试。
+  - 只有管理员确认 9977 不可能再继续充值后，才可人工改用其他渠道。
 
 ### 2.7 cdk.aifadian.org 渠道对接
 
@@ -594,7 +594,7 @@ DATABASE_URL="postgresql://..." npx tsx scripts/init-rbac.ts --admin-email=xxx@x
   镜像构建时会额外执行一次 `esbuild`，把 `worker.ts` 打包为 `worker.js`，确保 `gpt101-worker` 容器可以直接以 `node worker.js` 启动。
 
 - **9977ai 渠道终止型失败策略**  
-  9977ai adapter 现在支持 `verify_code` / `submit_json` / 内部 `reuse_record` 自动重试 3 次。进入 9977ai 的绑定型失败分支后不会再切下一个渠道，任务落为失败并标记人工处理。若复用记录明确不存在，渠道卡密释放回池；其他无法确认是否已绑定的失败仍保守占用渠道卡密与本站卡密。
+  9977ai adapter 现在支持 `verify_code` / `submit_json` / 内部 `reuse_record` 自动重试 3 次。只有 `allow_new_submission=true` 且 `has_existing_record=false` 才允许首次提交；一旦充值请求已经提交，3 次复用仍失败就不会再二次验卡、释放卡密或切换下一个渠道，任务直接失败并标记人工处理，同时保守占用渠道卡密与本站卡密。
 
 - **987ai 排队任务等待策略**：987ai adapter 不再使用固定轮询次数超时，改为与前台逻辑一致，每 3 秒持续查询任务状态，直到上游返回 `completed` / `failed` / `unknown`。状态查询连续失败 5 次时，才按充值结果不确定转人工保守处理。
 
